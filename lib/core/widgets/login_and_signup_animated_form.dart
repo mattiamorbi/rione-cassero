@@ -40,6 +40,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   bool hasMinLength = false;
 
   TextEditingController nameController = TextEditingController();
+  TextEditingController surnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController passwordConfirmationController =
@@ -69,6 +70,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                 : const SizedBox.shrink(),
           ),
           nameField(),
+          surnameField(),
           emailField(),
           passwordField(),
           Gap(18.h),
@@ -243,6 +245,40 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
               }
             },
             controller: nameController,
+          ),
+          Gap(18.h),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget surnameField() {
+    if (widget.isSignUpPage == true) {
+      return Column(
+        children: [
+          AppTextFormField(
+            hint: 'Surname',
+            onChanged: (value) {
+              if (value.isNotEmpty &&
+                  value.length <= 13 &&
+                  riveHelper.isLookingLeft) {
+                riveHelper.addDownLeftController();
+              } else if (value.isNotEmpty &&
+                  value.length > 13 &&
+                  riveHelper.isLookingRight) {
+                riveHelper.addDownRightController();
+              }
+            },
+            validator: (value) {
+              String surname = (value ?? '').trim();
+              surnameController.text = surname;
+              if (surname.isEmpty) {
+                riveHelper.addFailController();
+                return 'Please enter a valid surname';
+              }
+            },
+            controller: surnameController,
           ),
           Gap(18.h),
         ],

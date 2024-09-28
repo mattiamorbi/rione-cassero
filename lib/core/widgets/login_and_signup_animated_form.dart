@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:rive/rive.dart';
 
 import 'package:upper/helpers/app_regex.dart';
 import 'package:upper/routing/routes.dart';
@@ -51,8 +50,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   final RiveAnimationControllerHelper riveHelper =
       RiveAnimationControllerHelper();
 
-  final passwordFocuseNode = FocusNode();
-  final passwordConfirmationFocuseNode = FocusNode();
+  final passwordFocusNode = FocusNode();
+  final passwordConfirmationFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -60,15 +59,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       key: formKey,
       child: Column(
         children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height / 5,
-            child: riveHelper.riveArtboard != null
-                ? Rive(
-                    fit: BoxFit.cover,
-                    artboard: riveHelper.riveArtboard!,
-                  )
-                : const SizedBox.shrink(),
-          ),
+          const Image(image: AssetImage("assets/images/upper.jpeg")),
           nameField(),
           surnameField(),
           emailField(),
@@ -88,20 +79,20 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   }
 
   void checkForPasswordConfirmationFocused() {
-    passwordConfirmationFocuseNode.addListener(() {
-      if (passwordConfirmationFocuseNode.hasFocus && isObscureText) {
+    passwordConfirmationFocusNode.addListener(() {
+      if (passwordConfirmationFocusNode.hasFocus && isObscureText) {
         riveHelper.addHandsUpController();
-      } else if (!passwordConfirmationFocuseNode.hasFocus && isObscureText) {
+      } else if (!passwordConfirmationFocusNode.hasFocus && isObscureText) {
         riveHelper.addHandsDownController();
       }
     });
   }
 
   void checkForPasswordFocused() {
-    passwordFocuseNode.addListener(() {
-      if (passwordFocuseNode.hasFocus && isObscureText) {
+    passwordFocusNode.addListener(() {
+      if (passwordFocusNode.hasFocus && isObscureText) {
         riveHelper.addHandsUpController();
-      } else if (!passwordFocuseNode.hasFocus && isObscureText) {
+      } else if (!passwordFocusNode.hasFocus && isObscureText) {
         riveHelper.addHandsDownController();
       }
     });
@@ -112,10 +103,11 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     super.dispose();
     emailController.dispose();
     nameController.dispose();
+    surnameController.dispose();
     passwordController.dispose();
     passwordConfirmationController.dispose();
-    passwordFocuseNode.dispose();
-    passwordConfirmationFocuseNode.dispose();
+    passwordFocusNode.dispose();
+    passwordConfirmationFocusNode.dispose();
   }
 
   Widget emailField() {
@@ -196,7 +188,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       buttonText: "Login",
       textStyle: TextStyles.font16White600Weight,
       onPressed: () async {
-        passwordFocuseNode.unfocus();
+        passwordFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
           context.read<AuthCubit>().signInWithEmail(
                 emailController.text,
@@ -292,8 +284,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       buttonText: "Create Password",
       textStyle: TextStyles.font16White600Weight,
       onPressed: () async {
-        passwordFocuseNode.unfocus();
-        passwordConfirmationFocuseNode.unfocus();
+        passwordFocusNode.unfocus();
+        passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
           context.read<AuthCubit>().createAccountAndLinkItWithGoogleAccount(
                 nameController.text,
@@ -309,7 +301,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   Widget passwordConfirmationField() {
     if (widget.isSignUpPage == true || widget.isPasswordPage == true) {
       return AppTextFormField(
-        focusNode: passwordConfirmationFocuseNode,
+        focusNode: passwordConfirmationFocusNode,
         controller: passwordConfirmationController,
         hint: 'Password Confirmation',
         isObscureText: isObscureText,
@@ -350,7 +342,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
 
   AppTextFormField passwordField() {
     return AppTextFormField(
-      focusNode: passwordFocuseNode,
+      focusNode: passwordFocusNode,
       controller: passwordController,
       hint: 'Password',
       isObscureText: isObscureText,
@@ -396,8 +388,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       buttonText: "Create Account",
       textStyle: TextStyles.font16White600Weight,
       onPressed: () async {
-        passwordFocuseNode.unfocus();
-        passwordConfirmationFocuseNode.unfocus();
+        passwordFocusNode.unfocus();
+        passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
           context.read<AuthCubit>().signUpWithEmail(
                 nameController.text,

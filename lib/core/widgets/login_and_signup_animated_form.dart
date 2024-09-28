@@ -9,7 +9,6 @@ import 'package:upper/helpers/app_regex.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/helpers/rive_controller.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
@@ -47,9 +46,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
 
   final formKey = GlobalKey<FormState>();
 
-  final RiveAnimationControllerHelper riveHelper =
-      RiveAnimationControllerHelper();
-
   final passwordFocusNode = FocusNode();
   final passwordConfirmationFocusNode = FocusNode();
 
@@ -78,25 +74,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     );
   }
 
-  void checkForPasswordConfirmationFocused() {
-    passwordConfirmationFocusNode.addListener(() {
-      if (passwordConfirmationFocusNode.hasFocus && isObscureText) {
-        riveHelper.addHandsUpController();
-      } else if (!passwordConfirmationFocusNode.hasFocus && isObscureText) {
-        riveHelper.addHandsDownController();
-      }
-    });
-  }
-
-  void checkForPasswordFocused() {
-    passwordFocusNode.addListener(() {
-      if (passwordFocusNode.hasFocus && isObscureText) {
-        riveHelper.addHandsUpController();
-      } else if (!passwordFocusNode.hasFocus && isObscureText) {
-        riveHelper.addHandsDownController();
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -116,31 +93,16 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         children: [
           AppTextFormField(
             hint: 'Email',
-            onChanged: (value) {
-              if (value.isNotEmpty &&
-                  value.length <= 13 &&
-                  !riveHelper.isLookingLeft) {
-                riveHelper.addDownLeftController();
-              } else if (value.isNotEmpty &&
-                  value.length > 13 &&
-                  !riveHelper.isLookingRight) {
-                riveHelper.addDownRightController();
-              } else if (value.isEmpty) {
-                riveHelper.addDownLeftController();
-              }
-            },
             validator: (value) {
               String email = (value ?? '').trim();
 
               emailController.text = email;
 
               if (email.isEmpty) {
-                riveHelper.addFailController();
                 return 'Please enter an email address';
               }
 
               if (!AppRegex.isEmailValid(email)) {
-                riveHelper.addFailController();
                 return 'Please enter a valid email address';
               }
             },
@@ -175,12 +137,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   @override
   void initState() {
     super.initState();
-    riveHelper.loadRiveFile('assets/animation/headless_bear.riv').then((_) {
-      setState(() {});
-    });
     setupPasswordControllerListener();
-    checkForPasswordFocused();
-    checkForPasswordConfirmationFocused();
   }
 
   AppTextButton loginButton(BuildContext context) {
@@ -217,22 +174,10 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         children: [
           AppTextFormField(
             hint: 'Name',
-            onChanged: (value) {
-              if (value.isNotEmpty &&
-                  value.length <= 13 &&
-                  riveHelper.isLookingLeft) {
-                riveHelper.addDownLeftController();
-              } else if (value.isNotEmpty &&
-                  value.length > 13 &&
-                  riveHelper.isLookingRight) {
-                riveHelper.addDownRightController();
-              }
-            },
             validator: (value) {
               String name = (value ?? '').trim();
               nameController.text = name;
               if (name.isEmpty) {
-                riveHelper.addFailController();
                 return 'Please enter a valid name';
               }
             },
@@ -251,22 +196,10 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         children: [
           AppTextFormField(
             hint: 'Surname',
-            onChanged: (value) {
-              if (value.isNotEmpty &&
-                  value.length <= 13 &&
-                  riveHelper.isLookingLeft) {
-                riveHelper.addDownLeftController();
-              } else if (value.isNotEmpty &&
-                  value.length > 13 &&
-                  riveHelper.isLookingRight) {
-                riveHelper.addDownRightController();
-              }
-            },
             validator: (value) {
               String surname = (value ?? '').trim();
               surnameController.text = surname;
               if (surname.isEmpty) {
-                riveHelper.addFailController();
                 return 'Please enter a valid surname';
               }
             },
@@ -310,9 +243,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             setState(() {
               if (isObscureText) {
                 isObscureText = false;
-                riveHelper.addHandsDownController();
               } else {
-                riveHelper.addHandsUpController();
                 isObscureText = true;
               }
             });
@@ -325,13 +256,11 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         ),
         validator: (value) {
           if (value != passwordController.text) {
-            riveHelper.addFailController();
             return 'Enter a matched passwords';
           }
           if (value == null ||
               value.isEmpty ||
               !AppRegex.isPasswordValid(value)) {
-            riveHelper.addFailController();
             return 'Please enter a valid password';
           }
         },
@@ -351,9 +280,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           setState(() {
             if (isObscureText) {
               isObscureText = false;
-              riveHelper.addHandsDownController();
             } else {
-              riveHelper.addHandsUpController();
               isObscureText = true;
             }
           });
@@ -368,7 +295,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         if (value == null ||
             value.isEmpty ||
             !AppRegex.isPasswordValid(value)) {
-          riveHelper.addFailController();
           return 'Please enter a valid password';
         }
       },

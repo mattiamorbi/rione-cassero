@@ -10,7 +10,6 @@ import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
 import 'package:upper/core/widgets/progress_indicator.dart' as pi;
 import 'package:upper/core/widgets/terms_and_conditions_text.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/helpers/rive_controller.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/theming/styles.dart';
@@ -18,8 +17,6 @@ import 'package:upper/theming/styles.dart';
 class CreatePassword extends StatelessWidget {
   late GoogleSignInAccount googleUser;
   late OAuthCredential credential;
-  final RiveAnimationControllerHelper riveHelper =
-      RiveAnimationControllerHelper();
 
   CreatePassword({
     super.key,
@@ -52,7 +49,6 @@ class CreatePassword extends StatelessWidget {
                           if (state is AuthLoading) {
                             pi.ProgressIndicator.showProgressIndicator(context);
                           } else if (state is AuthError) {
-                            riveHelper.addFailController();
                             await AwesomeDialog(
                               context: context,
                               dialogType: DialogType.error,
@@ -61,7 +57,6 @@ class CreatePassword extends StatelessWidget {
                               desc: state.message,
                             ).show();
                           } else if (state is UserSingupAndLinkedWithGoogle) {
-                            riveHelper.addSuccessController();
                             await AwesomeDialog(
                               context: context,
                               dialogType: DialogType.success,
@@ -70,7 +65,6 @@ class CreatePassword extends StatelessWidget {
                               desc: 'You have successfully signed up.',
                             ).show();
                             await Future.delayed(const Duration(seconds: 2));
-                            riveHelper.removeAllControllers();
                             if (!context.mounted) return;
                             context.pushNamedAndRemoveUntil(
                               Routes.homeScreen,

@@ -30,7 +30,7 @@ class EmailAndPassword extends StatefulWidget {
   });
 
   @override
-  State<EmailAndPassword> createState() => _EmailAndPasswordState();
+  State<EmailAndPassword> createState() => _EmailAndPasswordState(isSignUpPage ?? false);
 }
 
 class _EmailAndPasswordState extends State<EmailAndPassword> {
@@ -41,6 +41,12 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   TextEditingController surnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+  TextEditingController birthdateController = TextEditingController();
+  TextEditingController birthplaceController = TextEditingController();
+  TextEditingController capController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController telephoneController = TextEditingController();
   TextEditingController passwordConfirmationController =
       TextEditingController();
 
@@ -49,23 +55,34 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   final passwordFocusNode = FocusNode();
   final passwordConfirmationFocusNode = FocusNode();
 
+  final bool isSignup;
+
+  _EmailAndPasswordState(this.isSignup);
+
   @override
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
       child: Column(
         children: [
-          const Image(image: AssetImage("assets/images/upper.jpeg")),
-          nameField(),
-          surnameField(),
+          genericField(nameController, 'Nome', 'Inserisci un nome valido'),
+          genericField(surnameController, 'Cognome', 'Inserisci un cognome valido'),
           emailField(),
           passwordField(),
           Gap(18.h),
           passwordConfirmationField(),
+          Gap(18.h),
+          genericField(birthplaceController, 'Luogo di nascita', 'Inserisci un luogo valido'),
+          genericField(birthdateController, 'Data di nascita', 'Inserisci un luogo valido'),
+          genericField(addressController, 'Indirizzo', 'Inserisci un indirizzo valido'),
+          genericField(cityController, 'Citta', 'Inserisci una citta valida'),
+          genericField(capController, 'CAP', 'Inserisci un CAP valido'),
+          genericField(telephoneController, 'Telefono', 'Inserisci un telefono valido'),
           forgetPasswordTextButton(),
           Gap(10.h),
           PasswordValidations(
             hasMinLength: hasMinLength,
+            isSignup: isSignup,
           ),
           Gap(20.h),
           loginOrSignUpOrPasswordButton(context),
@@ -78,13 +95,17 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   @override
   void dispose() {
     super.dispose();
-    emailController.dispose();
     nameController.dispose();
     surnameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
+    addressController.dispose();
+    birthdateController.dispose();
+    birthplaceController.dispose();
+    capController.dispose();
+    cityController.dispose();
+    telephoneController.dispose();
     passwordConfirmationController.dispose();
-    passwordFocusNode.dispose();
-    passwordConfirmationFocusNode.dispose();
   }
 
   Widget emailField() {
@@ -142,8 +163,10 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
 
   AppTextButton loginButton(BuildContext context) {
     return AppTextButton(
-      buttonText: "Login",
+      buttonText: "Entra in UPPER",
       textStyle: TextStyles.font16White600Weight,
+      buttonWidth: 300,
+      buttonHeight: 70,
       onPressed: () async {
         passwordFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
@@ -212,6 +235,28 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     return const SizedBox.shrink();
   }
 
+  Widget genericField(TextEditingController controller, String placeholder, String errorMessage) {
+    if (widget.isSignUpPage == true) {
+      return Column(
+        children: [
+          AppTextFormField(
+            hint: placeholder,
+            validator: (value) {
+              String enteredValue = (value ?? '').trim();
+              controller.text = enteredValue;
+              if (enteredValue.isEmpty) {
+                return errorMessage;
+              }
+            },
+            controller: controller,
+          ),
+          Gap(18.h),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
   AppTextButton passwordButton(BuildContext context) {
     return AppTextButton(
       buttonText: "Create Password",
@@ -236,7 +281,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       return AppTextFormField(
         focusNode: passwordConfirmationFocusNode,
         controller: passwordConfirmationController,
-        hint: 'Password Confirmation',
+        hint: 'Conferma la password',
         isObscureText: isObscureText,
         suffixIcon: GestureDetector(
           onTap: () {
@@ -311,7 +356,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
 
   AppTextButton signUpButton(BuildContext context) {
     return AppTextButton(
-      buttonText: "Create Account",
+      buttonText: "Iscriviti",
       textStyle: TextStyles.font16White600Weight,
       onPressed: () async {
         passwordFocusNode.unfocus();
@@ -319,9 +364,11 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         if (formKey.currentState!.validate()) {
           context.read<AuthCubit>().signUpWithEmail(
                 nameController.text,
+                surnameController.text,
                 emailController.text,
                 passwordController.text,
               );
+
         }
       },
     );

@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
-
 import 'package:upper/core/widgets/already_have_account_text.dart';
 import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
 import 'package:upper/core/widgets/progress_indicator.dart' as pi;
@@ -23,20 +22,22 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
+        ),
         child: Padding(
-          padding:
-              EdgeInsets.only(left: 30.w, right: 30.w, bottom: 15.h, top: 5.h),
+          padding: EdgeInsets.all(40),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Create Account',
+                  'Iscriviti ad UPPER',
                   style: TextStyles.font24Blue700Weight,
                 ),
                 Gap(8.h),
@@ -97,18 +98,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           isSignUpPage: true,
                         ),
                         Gap(10.h),
-                        const SigninWithGoogleText(),
-                        Gap(5.h),
-                        InkWell(
-                          onTap: () {
-                            context.read<AuthCubit>().signInWithGoogle();
-                          },
-                          child: SvgPicture.asset(
-                            'assets/svgs/google_logo.svg',
-                            width: 40.w,
-                            height: 40.h,
-                          ),
-                        ),
                         const TermsAndConditionsText(),
                         Gap(15.h),
                         const AlreadyHaveAccountText(),

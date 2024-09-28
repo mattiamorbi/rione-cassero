@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:upper/models/user.dart' as up;
 
 part 'auth_state.dart';
 
@@ -70,14 +72,14 @@ class AuthCubit extends Cubit<AuthState> {
       }
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
+          await googleUser.authentication;
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
       final UserCredential authResult =
-      await _auth.signInWithCredential(credential);
+          await _auth.signInWithCredential(credential);
       if (authResult.additionalUserInfo!.isNewUser) {
         // Delete the user account if it is a new user to Create it automatically in Next Screen
         await _auth.currentUser!.delete();
@@ -98,17 +100,27 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signUpWithEmail(
-      String name, String email, String password) async {
+      String name, String surname, String email, String password) async {
     emit(AuthLoading());
     try {
       await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      await _auth.currentUser!.updateDisplayName(name);
+      await _auth.currentUser!.updateDisplayName("${name} ${surname}");
       await _auth.currentUser!.sendEmailVerification();
+      await updateUserInfo(_auth.currentUser!.uid, name, surname);
       await _auth.signOut();
       emit(UserSingupButNotVerified());
     } catch (e) {
       emit(AuthError(e.toString()));
     }
+  }
+
+  Future<void> updateUserInfo(
+    String uid,
+    String name,
+    String surname,
+  ) async {
+    var users = FirebaseFirestore.instance.collection('users');
+    users.doc(uid).set(up.User(name: name, surname: surname).toJson());
   }
 }

@@ -1,9 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:rive/rive.dart';
 import 'package:upper/firebase_options.dart';
 import 'package:upper/routing/app_router.dart';
 import 'package:upper/routing/routes.dart';
@@ -16,6 +16,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseFirestore.instance.settings =
+      const Settings(persistenceEnabled: true);
   await ScreenUtil.ensureScreenSize();
   FirebaseAuth.instance.authStateChanges().listen(
     (user) {
@@ -27,7 +29,6 @@ Future<void> main() async {
     },
   );
   await preloadSVGs(['assets/svgs/google_logo.svg']);
-  await RiveFile.initialize();
 
   runApp(MyApp(router: AppRouter()));
 }

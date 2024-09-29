@@ -25,11 +25,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
+          image: DecorationImage(image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
         ),
         child: Padding(
-          padding: EdgeInsets.all(40),
+          padding: const EdgeInsets.all(40),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,8 +39,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 Gap(8.h),
                 Text(
-                  'Sign up now and start exploring all that our\napp has to offer. We\'re excited to welcome\nyou to our community!',
-                  style: TextStyles.font14Grey400Weight,
+                  'Iscriviti ora per conoscere in anteprima i nostri eventi!',
+                  style: TextStyles.font14White400Weight,
                 ),
                 Gap(8.h),
                 BlocConsumer<AuthCubit, AuthState>(

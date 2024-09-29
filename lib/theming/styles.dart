@@ -31,6 +31,11 @@ class TextStyles {
     fontWeight: FontWeight.w400,
     color: ColorsManager.gray,
   );
+  static TextStyle font14White400Weight = TextStyle(
+    fontSize: 14.sp,
+    fontWeight: FontWeight.w400,
+    color: Colors.white,
+  );
   static TextStyle font14Hint500Weight = TextStyle(
     fontSize: 14.sp,
     fontWeight: FontWeight.w500,

@@ -15,10 +15,8 @@ class AuthLoading extends AuthState {}
 abstract class AuthState {}
 
 class IsNewUser extends AuthState {
-  final GoogleSignInAccount googleUser;
   final OAuthCredential credential;
   IsNewUser({
-    required this.googleUser,
     required this.credential,
   });
 }

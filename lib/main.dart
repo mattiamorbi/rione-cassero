@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:upper/firebase_options.dart';
 import 'package:upper/routing/app_router.dart';
 import 'package:upper/routing/routes.dart';
@@ -16,8 +15,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseFirestore.instance.settings =
-      const Settings(persistenceEnabled: true);
+  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
   await ScreenUtil.ensureScreenSize();
   FirebaseAuth.instance.authStateChanges().listen(
     (user) {
@@ -28,19 +26,8 @@ Future<void> main() async {
       }
     },
   );
-  await preloadSVGs(['assets/svgs/google_logo.svg']);
 
   runApp(MyApp(router: AppRouter()));
-}
-
-Future<void> preloadSVGs(List<String> paths) async {
-  for (final path in paths) {
-    final loader = SvgAssetLoader(path);
-    await svg.cache.putIfAbsent(
-      loader.cacheKey(null),
-      () => loader.loadBytes(null),
-    );
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -57,14 +44,15 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (_, child) {
         return MaterialApp(
-          title: 'Upper',
+          title: 'UPPER',
           theme: ThemeData(
             useMaterial3: true,
             textSelectionTheme: const TextSelectionThemeData(
               cursorColor: ColorsManager.mainBlue,
-              selectionColor: Color.fromARGB(255, 32, 90, 162),
+              selectionColor: ColorsManager.mainBlue,
               selectionHandleColor: ColorsManager.mainBlue,
             ),
+            colorSchemeSeed: ColorsManager.mainBlue,
           ),
           onGenerateRoute: router.generateRoute,
           debugShowCheckedModeBanner: false,

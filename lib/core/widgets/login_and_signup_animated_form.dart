@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:upper/helpers/app_regex.dart';
+import 'package:upper/helpers/date_time_helper.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/helpers/extensions.dart';
@@ -18,18 +18,16 @@ import 'package:upper/models/user.dart' as up;
 // ignore: must_be_immutable
 class EmailAndPassword extends StatefulWidget {
   final bool? isSignUpPage;
-  late GoogleSignInAccount? googleUser;
   late OAuthCredential? credential;
 
   EmailAndPassword({
     super.key,
     this.isSignUpPage,
-    this.googleUser,
     this.credential,
   });
 
   @override
-  State<EmailAndPassword> createState() => _EmailAndPasswordState(isSignUpPage ?? false);
+  State<EmailAndPassword> createState() => _EmailAndPasswordState();
 }
 
 class _EmailAndPasswordState extends State<EmailAndPassword> {
@@ -53,9 +51,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   final passwordFocusNode = FocusNode();
   final passwordConfirmationFocusNode = FocusNode();
 
-  final bool isSignup;
-
-  _EmailAndPasswordState(this.isSignup);
+  _EmailAndPasswordState();
 
   @override
   Widget build(BuildContext context) {
@@ -63,24 +59,24 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       key: formKey,
       child: Column(
         children: [
-          genericField(nameController, 'Nome', 'Inserisci un nome valido'),
-          genericField(surnameController, 'Cognome', 'Inserisci un cognome valido'),
           emailField(),
           passwordField(),
           Gap(18.h),
           passwordConfirmationField(),
           Gap(18.h),
+          genericField(nameController, 'Nome', 'Inserisci un nome valido'),
+          genericField(surnameController, 'Cognome', 'Inserisci un cognome valido'),
           genericField(birthplaceController, 'Luogo di nascita', 'Inserisci un luogo valido'),
-          genericField(birthdateController, 'Data di nascita', 'Inserisci un luogo valido'),
+          birthPlaceField(),
           genericField(addressController, 'Indirizzo', 'Inserisci un indirizzo valido'),
           genericField(cityController, 'Citta', 'Inserisci una citta valida'),
-          genericField(capController, 'CAP', 'Inserisci un CAP valido'),
+          capField(),
           genericField(telephoneController, 'Telefono', 'Inserisci un telefono valido'),
           forgetPasswordTextButton(),
           Gap(10.h),
           PasswordValidations(
             hasMinLength: hasMinLength,
-            isSignup: isSignup,
+            isSignup: widget.isSignUpPage ?? false,
           ),
           Gap(20.h),
           loginOrSignUpOrPasswordButton(context),
@@ -112,15 +108,13 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           hint: 'Email',
           validator: (value) {
             String email = (value ?? '').trim();
-
             emailController.text = email;
-
             if (email.isEmpty) {
-              return 'Please enter an email address';
+              return 'Inserisci un indirizzo email!';
             }
 
             if (!AppRegex.isEmailValid(email)) {
-              return 'Please enter a valid email address';
+              return 'Inserisci un indirizzo email valido!';
             }
           },
           controller: emailController,
@@ -128,6 +122,68 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         Gap(18.h),
       ],
     );
+  }
+
+  Widget capField() {
+    if (widget.isSignUpPage == true) {
+      return Column(
+        children: [
+          AppTextFormField(
+            hint: 'CAP',
+            validator: (value) {
+              String cap = (value ?? '').trim();
+              capController.text = cap;
+              var validCap = cap.isNotEmpty && cap.length == 5;
+              try {
+                int.parse(cap);
+                validCap &= true;
+              } on Exception {
+                // Nel caso di CAP non valido
+                validCap = false;
+              }
+              if (!validCap) {
+                return 'Inserisci un CAP valido!';
+              }
+            },
+            controller: capController,
+          ),
+          Gap(18.h),
+        ],
+      );
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
+  Widget birthPlaceField() {
+    if (widget.isSignUpPage == true) {
+      return Column(
+        children: [
+          AppTextFormField(
+            hint: 'Data di nascita (gg/mm/aaaa)',
+            validator: (value) {
+              String birthDate = (value ?? '').trim();
+              birthdateController.text = birthDate;
+              bool validDate = false;
+              try {
+                DateTimeHelper.getDateTime(birthDate);
+                validDate = true;
+              } on Exception {
+                // Formato data inserito non valido
+              }
+
+              if (birthDate.isEmpty || !validDate) {
+                return 'Inserisci un data di nascita valida valido!';
+              }
+            },
+            controller: birthdateController,
+          ),
+          Gap(18.h),
+        ],
+      );
+    } else {
+      return SizedBox.shrink();
+    }
   }
 
   Widget forgetPasswordTextButton() {
@@ -139,7 +195,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         child: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'forget password?',
+            'Password dimenticata?',
             style: TextStyles.font14Blue400Weight,
           ),
         ),
@@ -180,50 +236,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     if (widget.isSignUpPage == null) {
       return loginButton(context);
     }
-  }
-
-  Widget nameField() {
-    if (widget.isSignUpPage == true) {
-      return Column(
-        children: [
-          AppTextFormField(
-            hint: 'Name',
-            validator: (value) {
-              String name = (value ?? '').trim();
-              nameController.text = name;
-              if (name.isEmpty) {
-                return 'Please enter a valid name';
-              }
-            },
-            controller: nameController,
-          ),
-          Gap(18.h),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
-  Widget surnameField() {
-    if (widget.isSignUpPage == true) {
-      return Column(
-        children: [
-          AppTextFormField(
-            hint: 'Surname',
-            validator: (value) {
-              String surname = (value ?? '').trim();
-              surnameController.text = surname;
-              if (surname.isEmpty) {
-                return 'Please enter a valid surname';
-              }
-            },
-            controller: surnameController,
-          ),
-          Gap(18.h),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
   }
 
   Widget genericField(TextEditingController controller, String placeholder, String errorMessage) {
@@ -336,6 +348,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             cap: capController.text,
             city: cityController.text,
             telephone: telephoneController.text,
+            cardNumber: 0,
           );
           context.read<AuthCubit>().signUpWithEmail(
                 user,

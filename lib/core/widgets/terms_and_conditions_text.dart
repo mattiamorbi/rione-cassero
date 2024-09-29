@@ -13,15 +13,15 @@ class TermsAndConditionsText extends StatelessWidget {
       text: TextSpan(
         children: [
           TextSpan(
-            text: 'By logging, you agree to our',
+            text: 'Utilizzando UPPER, accetti le nostre',
             style: TextStyles.font11MediumLightShadeOfGray400Weight,
           ),
           TextSpan(
-            text: ' Terms & Conditions',
+            text: ' Termini e condizioni',
             style: TextStyles.font11DarkBlue500Weight,
           ),
           TextSpan(
-            text: ' and',
+            text: ' e',
             style: TextStyles.font11MediumLightShadeOfGray400Weight
                 .copyWith(height: 4.h),
           ),

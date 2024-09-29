@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:upper/models/role.dart';
 import 'package:upper/models/user.dart' as up;
 
 part 'auth_state.dart';
@@ -41,35 +41,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signInWithGoogle() async {
-    emit(AuthLoading());
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        emit(AuthError('Google Sign In Failed'));
-        return;
-      }
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      final UserCredential authResult = await _auth.signInWithCredential(credential);
-      if (authResult.additionalUserInfo!.isNewUser) {
-        // Delete the user account if it is a new user to Create it automatically in Next Screen
-        await _auth.currentUser!.delete();
-
-        emit(IsNewUser(googleUser: googleUser, credential: credential));
-      } else {
-        emit(UserSignIn());
-      }
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
-
   Future<void> signOut() async {
     emit(AuthLoading());
     await _auth.signOut();
@@ -82,7 +53,7 @@ class AuthCubit extends Cubit<AuthState> {
       await _auth.createUserWithEmailAndPassword(email: user.email, password: password);
       await _auth.currentUser!.updateDisplayName("${user.name} ${user.surname}");
       await _auth.currentUser!.sendEmailVerification();
-      await updateUserInfo(_auth.currentUser!.uid, user);
+      await updateUserInfo(user);
       await _auth.signOut();
       emit(UserSignupButNotVerified());
     } catch (e) {
@@ -90,8 +61,21 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> updateUserInfo(String uid, up.User user) async {
+  Future<void> updateUserInfo(up.User user) async {
     var users = FirebaseFirestore.instance.collection('users');
-    await users.doc(uid).set(user.toJson());
+    await users.doc(_auth.currentUser!.uid).set(user.toJson());
+  }
+
+  Future<up.User> getUser() async {
+    var users = FirebaseFirestore.instance.collection('users');
+    var doc = await users.doc(_auth.currentUser!.uid).get();
+    return up.User.fromJson(doc.data()!);
+  }
+
+  Future<String> getUserLevel() async {
+    var users = FirebaseFirestore.instance.collection('roles');
+    var doc = await users.doc(_auth.currentUser!.uid).get();
+    var data = doc.data();
+    return data == null ? "user" : Role.fromJson(data).name;
   }
 }

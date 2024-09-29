@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+
 import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/core/widgets/progress_indicator.dart' as pi;
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 context: context,
                 dialogType: DialogType.error,
                 animType: AnimType.rightSlide,
-                title: 'Error',
+                title: 'Errore',
                 desc: state.message,
               ).show();
             } else if (state is UserSignIn) {

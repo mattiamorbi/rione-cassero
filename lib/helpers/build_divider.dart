@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../theming/colors.dart';
+import 'package:upper/theming/colors.dart';
 
 class BuildDivider {
   static Widget buildDivider() {

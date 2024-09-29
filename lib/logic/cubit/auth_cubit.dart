@@ -12,27 +12,6 @@ class AuthCubit extends Cubit<AuthState> {
 
   AuthCubit() : super(AuthInitial());
 
-  Future<void> createAccountAndLinkItWithGoogleAccount(
-      String email,
-      String password,
-      GoogleSignInAccount googleUser,
-      OAuthCredential credential) async {
-    emit(AuthLoading());
-
-    try {
-      await _auth.createUserWithEmailAndPassword(
-        email: googleUser.email,
-        password: password,
-      );
-      await _auth.currentUser!.linkWithCredential(credential);
-      await _auth.currentUser!.updateDisplayName(googleUser.displayName);
-      await _auth.currentUser!.updatePhotoURL(googleUser.photoUrl);
-      emit(UserSingupAndLinkedWithGoogle());
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
-
   Future<void> resetPassword(String email) async {
     emit(AuthLoading());
     try {
@@ -54,7 +33,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(UserSignIn());
       } else {
         await _auth.signOut();
-        emit(AuthError('Email not verified. Please check your email.'));
+        emit(AuthError('Email non verificata. Controlla la tua email.'));
         emit(UserNotVerified());
       }
     } catch (e) {
@@ -71,15 +50,13 @@ class AuthCubit extends Cubit<AuthState> {
         return;
       }
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      final UserCredential authResult =
-          await _auth.signInWithCredential(credential);
+      final UserCredential authResult = await _auth.signInWithCredential(credential);
       if (authResult.additionalUserInfo!.isNewUser) {
         // Delete the user account if it is a new user to Create it automatically in Next Screen
         await _auth.currentUser!.delete();
@@ -99,28 +76,22 @@ class AuthCubit extends Cubit<AuthState> {
     emit(UserSignedOut());
   }
 
-  Future<void> signUpWithEmail(
-      String name, String surname, String email, String password) async {
+  Future<void> signUpWithEmail(up.User user, String password) async {
     emit(AuthLoading());
     try {
-      await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      await _auth.currentUser!.updateDisplayName("${name} ${surname}");
+      await _auth.createUserWithEmailAndPassword(email: user.email, password: password);
+      await _auth.currentUser!.updateDisplayName("${user.name} ${user.surname}");
       await _auth.currentUser!.sendEmailVerification();
-      await updateUserInfo(_auth.currentUser!.uid, name, surname);
+      await updateUserInfo(_auth.currentUser!.uid, user);
       await _auth.signOut();
-      emit(UserSingupButNotVerified());
+      emit(UserSignupButNotVerified());
     } catch (e) {
       emit(AuthError(e.toString()));
     }
   }
 
-  Future<void> updateUserInfo(
-    String uid,
-    String name,
-    String surname,
-  ) async {
+  Future<void> updateUserInfo(String uid, up.User user) async {
     var users = FirebaseFirestore.instance.collection('users');
-    users.doc(uid).set(up.User(name: name, surname: surname).toJson());
+    await users.doc(uid).set(user.toJson());
   }
 }

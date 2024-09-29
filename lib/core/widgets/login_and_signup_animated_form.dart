@@ -13,18 +13,17 @@ import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/password_validations.dart';
+import 'package:upper/models/user.dart' as up;
 
 // ignore: must_be_immutable
 class EmailAndPassword extends StatefulWidget {
   final bool? isSignUpPage;
-  final bool? isPasswordPage;
   late GoogleSignInAccount? googleUser;
   late OAuthCredential? credential;
 
   EmailAndPassword({
     super.key,
     this.isSignUpPage,
-    this.isPasswordPage,
     this.googleUser,
     this.credential,
   });
@@ -47,8 +46,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   TextEditingController capController = TextEditingController();
   TextEditingController cityController = TextEditingController();
   TextEditingController telephoneController = TextEditingController();
-  TextEditingController passwordConfirmationController =
-      TextEditingController();
+  TextEditingController passwordConfirmationController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -91,7 +89,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     );
   }
 
-
   @override
   void dispose() {
     super.dispose();
@@ -109,35 +106,32 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   }
 
   Widget emailField() {
-    if (widget.isPasswordPage == null) {
-      return Column(
-        children: [
-          AppTextFormField(
-            hint: 'Email',
-            validator: (value) {
-              String email = (value ?? '').trim();
+    return Column(
+      children: [
+        AppTextFormField(
+          hint: 'Email',
+          validator: (value) {
+            String email = (value ?? '').trim();
 
-              emailController.text = email;
+            emailController.text = email;
 
-              if (email.isEmpty) {
-                return 'Please enter an email address';
-              }
+            if (email.isEmpty) {
+              return 'Please enter an email address';
+            }
 
-              if (!AppRegex.isEmailValid(email)) {
-                return 'Please enter a valid email address';
-              }
-            },
-            controller: emailController,
-          ),
-          Gap(18.h),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
+            if (!AppRegex.isEmailValid(email)) {
+              return 'Please enter a valid email address';
+            }
+          },
+          controller: emailController,
+        ),
+        Gap(18.h),
+      ],
+    );
   }
 
   Widget forgetPasswordTextButton() {
-    if (widget.isSignUpPage == null && widget.isPasswordPage == null) {
+    if (widget.isSignUpPage == null) {
       return TextButton(
         onPressed: () {
           context.pushNamed(Routes.forgetScreen);
@@ -183,11 +177,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     if (widget.isSignUpPage == true) {
       return signUpButton(context);
     }
-    if (widget.isSignUpPage == null && widget.isPasswordPage == null) {
+    if (widget.isSignUpPage == null) {
       return loginButton(context);
-    }
-    if (widget.isPasswordPage == true) {
-      return passwordButton(context);
     }
   }
 
@@ -257,27 +248,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     return const SizedBox.shrink();
   }
 
-  AppTextButton passwordButton(BuildContext context) {
-    return AppTextButton(
-      buttonText: "Create Password",
-      textStyle: TextStyles.font16White600Weight,
-      onPressed: () async {
-        passwordFocusNode.unfocus();
-        passwordConfirmationFocusNode.unfocus();
-        if (formKey.currentState!.validate()) {
-          context.read<AuthCubit>().createAccountAndLinkItWithGoogleAccount(
-                nameController.text,
-                passwordController.text,
-                widget.googleUser!,
-                widget.credential!,
-              );
-        }
-      },
-    );
-  }
-
   Widget passwordConfirmationField() {
-    if (widget.isSignUpPage == true || widget.isPasswordPage == true) {
+    if (widget.isSignUpPage == true) {
       return AppTextFormField(
         focusNode: passwordConfirmationFocusNode,
         controller: passwordConfirmationController,
@@ -294,19 +266,15 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             });
           },
           child: Icon(
-            isObscureText
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
+            isObscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
           ),
         ),
         validator: (value) {
           if (value != passwordController.text) {
-            return 'Enter a matched passwords';
+            return 'Le password non corrispondono!';
           }
-          if (value == null ||
-              value.isEmpty ||
-              !AppRegex.isPasswordValid(value)) {
-            return 'Please enter a valid password';
+          if (value == null || value.isEmpty || !AppRegex.isPasswordValid(value)) {
+            return 'Inserisci una password valida!';
           }
         },
       );
@@ -331,16 +299,12 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           });
         },
         child: Icon(
-          isObscureText
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
+          isObscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
         ),
       ),
       validator: (value) {
-        if (value == null ||
-            value.isEmpty ||
-            !AppRegex.isPasswordValid(value)) {
-          return 'Please enter a valid password';
+        if (value == null || value.isEmpty || !AppRegex.isPasswordValid(value)) {
+          return 'Inserisci una password valida!';
         }
       },
     );
@@ -362,13 +326,21 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         passwordFocusNode.unfocus();
         passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
+          var user = up.User(
+            name: nameController.text,
+            surname: surnameController.text,
+            address: addressController.text,
+            birthplace: birthplaceController.text,
+            email: emailController.text,
+            birthdate: birthdateController.text,
+            cap: capController.text,
+            city: cityController.text,
+            telephone: telephoneController.text,
+          );
           context.read<AuthCubit>().signUpWithEmail(
-                nameController.text,
-                surnameController.text,
-                emailController.text,
+                user,
                 passwordController.text,
               );
-
         }
       },
     );

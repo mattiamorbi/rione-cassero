@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:upper/logic/cubit/auth_cubit.dart';
-import 'package:upper/screens/create_password/ui/create_password.dart';
 import 'package:upper/screens/forget/ui/forget_screen.dart';
 import 'package:upper/screens/home/ui/home_screen.dart';
 import 'package:upper/screens/login/ui/login_screen.dart';
@@ -33,20 +32,6 @@ class AppRouter {
             child: const HomeScreen(),
           ),
         );
-
-      case Routes.createPassword:
-        final arguments = settings.arguments;
-        if (arguments is List) {
-          return MaterialPageRoute(
-            builder: (_) => BlocProvider.value(
-              value: authCubit,
-              child: CreatePassword(
-                googleUser: arguments[0],
-                credential: arguments[1],
-              ),
-            ),
-          );
-        }
 
       case Routes.signupScreen:
         return MaterialPageRoute(

@@ -83,15 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 context: context,
                 dialogType: DialogType.info,
                 animType: AnimType.rightSlide,
-                title: 'Email Not Verified',
-                desc: 'Please check your email and verify your email.',
+                title: 'Email non verificata',
+                desc: 'Controlla la tua casella postale e verifica la tua email.',
               ).show();
-            } else if (state is IsNewUser) {
-              context.pushNamedAndRemoveUntil(
-                Routes.createPassword,
-                predicate: (route) => false,
-                arguments: [state.googleUser, state.credential],
-              );
             }
           },
           builder: (context, state) {

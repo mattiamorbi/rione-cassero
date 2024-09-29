@@ -2,12 +2,10 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:upper/core/widgets/already_have_account_text.dart';
 import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
 import 'package:upper/core/widgets/progress_indicator.dart' as pi;
-import 'package:upper/core/widgets/sign_in_with_google_text.dart';
 import 'package:upper/core/widgets/terms_and_conditions_text.dart';
 import 'package:upper/helpers/extensions.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
@@ -59,7 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         context: context,
                         dialogType: DialogType.error,
                         animType: AnimType.rightSlide,
-                        title: 'Error',
+                        title: 'Errore',
                         desc: state.message,
                       ).show();
                     } else if (state is UserSignIn) {
@@ -68,20 +66,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Routes.homeScreen,
                         predicate: (route) => false,
                       );
-                    } else if (state is IsNewUser) {
-                      context.pushNamedAndRemoveUntil(
-                        Routes.createPassword,
-                        predicate: (route) => false,
-                        arguments: [state.googleUser, state.credential],
-                      );
-                    } else if (state is UserSingupButNotVerified) {
+                    } else if (state is UserSignupButNotVerified) {
                       context.pop();
                       await AwesomeDialog(
                         context: context,
                         dialogType: DialogType.success,
                         animType: AnimType.rightSlide,
-                        title: 'Sign up Success',
-                        desc: 'Don\'t forget to verify your email check inbox.',
+                        title: 'Iscrizione avvenuta con successo!',
+                        desc: 'Non dimenticarti di controllare la tua casella di posta per verificare l\'email!',
                       ).show();
                       await Future.delayed(const Duration(seconds: 2));
                       if (!context.mounted) return;

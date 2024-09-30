@@ -2,19 +2,22 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_web_qrcode_scanner/flutter_web_qrcode_scanner.dart';
 import 'package:gap/gap.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-
-import 'package:upper/theming/styles.dart';
 import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
-import 'package:upper/theming/colors.dart';
+import 'package:upper/models/event.dart';
 import 'package:upper/models/user.dart' as up;
+import 'package:upper/theming/colors.dart';
+import 'package:upper/theming/styles.dart';
+import 'package:upper/screens/home/ui/event_tile.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,7 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
-          final bool connected = value.any((element) => element != ConnectivityResult.none);
+          final bool connected =
+          value.any((element) => element != ConnectivityResult.none);
           return connected ? _homePage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -97,7 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
           var jsonString = stringToBase64.decode(result);
           var json = jsonDecode(jsonString);
           var user = up.User.fromJson(json);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${user.name} ${user.surname}")));
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("${user.name} ${user.surname}")));
         },
         width: 200,
         height: 200,
@@ -105,9 +110,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
+
   Widget _eventsWidget() {
-    return Center(
-      child: Text("Gli eventi vanno qui!"),
+    return Column(
+      children: [
+        Text(
+          'Prossimi eventi',
+          textAlign: TextAlign.left,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Expanded(
+            child: ListView.builder(
+              itemCount: 3,
+              scrollDirection: Axis.vertical,
+              itemBuilder: (context, index) {
+
+
+                UpperEvent upperEvent = UpperEvent(title: 'Hallowewn Party', date: '31/10/2024', time: '23:00', place: 'Circolo al Canapo');
+                return EventTile(
+                  upperEvent: upperEvent,
+                );
+
+              },
+            )),
+      ],
     );
   }
 
@@ -122,7 +155,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             "Mostra questo QR per entrare!",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ColorsManager.mainBlue),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.mainBlue),
           ),
           SizedBox(
             width: 250,

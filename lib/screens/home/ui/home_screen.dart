@@ -29,6 +29,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late String qrData = "";
   late bool isAdmin = false;
+  List<UpperEvent> events = [];
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +45,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      floatingActionButton: Visibility(
+        visible: isAdmin,
+        child: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              //index = (index + 1) % customizations.length;
+            });
+          },
+          child: const Icon(Icons.add),
+        ),
+      ),
     );
   }
 
@@ -51,21 +63,29 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     BlocProvider.of<AuthCubit>(context);
-    loadQr();
-    loadUserLevel();
+    _loadQr();
+    _loadUserLevel();
+    _loadEvents();
   }
 
-  void loadQr() async {
+  void _loadQr() async {
     var user = await context.read<AuthCubit>().getUser();
     setState(() {
       qrData = user.getQrData();
     });
   }
 
-  void loadUserLevel() async {
+  void _loadUserLevel() async {
     var level = await context.read<AuthCubit>().getUserLevel();
     setState(() {
       isAdmin = level == "admin";
+    });
+  }
+
+  void _loadEvents() async {
+    var tmpEvents = await UpperEvent.getUpperEvents();
+    setState(() {
+      events = tmpEvents;
     });
   }
 
@@ -122,16 +142,14 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 20,
         ),
         Expanded(
-            child: ListView.builder(
-          itemCount: 3,
-          scrollDirection: Axis.vertical,
-          itemBuilder: (context, index) {
-            UpperEvent upperEvent = UpperEvent(title: 'Halloween Party', date: '31/10/2024', time: '23:00', place: 'Circolo al Canapo', imagePath: 'images/AvatarMaker.png');
-            return EventTile(
-              upperEvent: upperEvent,
-            );
-          },
-        )),
+          child: ListView.builder(
+            itemCount: events.length,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (context, index) => EventTile(
+              upperEvent: events[index],
+            ),
+          ),
+        ),
       ],
     );
   }

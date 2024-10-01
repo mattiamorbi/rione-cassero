@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:upper/helpers/date_time_helper.dart';
 
@@ -22,6 +23,22 @@ class UpperEvent {
     final storageRef = FirebaseStorage.instance.ref();
     final imageRef = storageRef.child(imagePath);
     return await imageRef.getDownloadURL();
+  }
+
+  static Future<List<UpperEvent>> getUpperEvents() async {
+    List<UpperEvent> events = [];
+
+    var eventsCollection = FirebaseFirestore.instance.collection("events");
+    await eventsCollection.get().then(
+      (querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          events.add(UpperEvent.fromJson(doc.data()));
+        }
+      },
+      onError: (e) => print("Error completing: $e"),
+    );
+
+    return events;
   }
 
   UpperEvent.fromJson(Map<String, dynamic> json)

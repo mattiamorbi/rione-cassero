@@ -13,7 +13,7 @@ import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/aes_helper.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
-import 'package:upper/models/event.dart';
+import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
 import 'package:upper/theming/colors.dart';
 import 'package:upper/theming/styles.dart';
@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
           itemCount: 3,
           scrollDirection: Axis.vertical,
           itemBuilder: (context, index) {
-            UpperEvent upperEvent = UpperEvent(title: 'Hallowewn Party', date: '31/10/2024', time: '23:00', place: 'Circolo al Canapo');
+            UpperEvent upperEvent = UpperEvent(title: 'Halloween Party', date: '31/10/2024', time: '23:00', place: 'Circolo al Canapo', imagePath: 'images/AvatarMaker.png');
             return EventTile(
               upperEvent: upperEvent,
             );

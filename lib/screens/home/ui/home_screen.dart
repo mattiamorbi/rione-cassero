@@ -12,12 +12,15 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/aes_helper.dart';
+import 'package:upper/helpers/extensions.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
+import 'package:upper/screens/login/ui/widgets/do_not_have_account.dart';
 import 'package:upper/theming/colors.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/screens/home/ui/event_tile.dart';
+import 'package:upper/routing/routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,9 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
         visible: isAdmin,
         child: FloatingActionButton(
           onPressed: () {
-            setState(() {
-              //index = (index + 1) % customizations.length;
-            });
+            context.pushNamed(Routes.newEventScreen);
+           // context.pushNamed(Routes.forgetScreen);
+           // Routes.newEventScreen;
+//            setState(() {
+//              Routes.Screen,
+//              //index = (index + 1) % customizations.length;
+//            });
           },
           child: const Icon(Icons.add),
         ),

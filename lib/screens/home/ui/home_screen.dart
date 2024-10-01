@@ -11,13 +11,13 @@ import 'package:gap/gap.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/no_internet.dart';
+import 'package:upper/helpers/aes_helper.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/models/event.dart';
 import 'package:upper/models/user.dart' as up;
 import 'package:upper/theming/colors.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/screens/home/ui/event_tile.dart';
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,8 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
-          final bool connected =
-          value.any((element) => element != ConnectivityResult.none);
+          final bool connected = value.any((element) => element != ConnectivityResult.none);
           return connected ? _homePage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -97,20 +96,16 @@ class _HomeScreenState extends State<HomeScreen> {
         stopOnFirstResult: true,
         //set false if you don't want to stop video preview on getting first result
         onGetResult: (result) {
-          Codec<String, String> stringToBase64 = utf8.fuse(base64);
-          var jsonString = stringToBase64.decode(result);
-          var json = jsonDecode(jsonString);
+          var decryptedData = AesHelper.decrypt(result);
+          var json = jsonDecode(decryptedData);
           var user = up.User.fromJson(json);
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("${user.name} ${user.surname}")));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${user.name} ${user.surname}")));
         },
         width: 200,
         height: 200,
       ),
     );
   }
-
-
 
   Widget _eventsWidget() {
     return Column(
@@ -128,18 +123,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Expanded(
             child: ListView.builder(
-              itemCount: 3,
-              scrollDirection: Axis.vertical,
-              itemBuilder: (context, index) {
-
-
-                UpperEvent upperEvent = UpperEvent(title: 'Hallowewn Party', date: '31/10/2024', time: '23:00', place: 'Circolo al Canapo');
-                return EventTile(
-                  upperEvent: upperEvent,
-                );
-
-              },
-            )),
+          itemCount: 3,
+          scrollDirection: Axis.vertical,
+          itemBuilder: (context, index) {
+            UpperEvent upperEvent = UpperEvent(title: 'Hallowewn Party', date: '31/10/2024', time: '23:00', place: 'Circolo al Canapo');
+            return EventTile(
+              upperEvent: upperEvent,
+            );
+          },
+        )),
       ],
     );
   }
@@ -155,10 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             "Mostra questo QR per entrare!",
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: ColorsManager.mainBlue),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ColorsManager.mainBlue),
           ),
           SizedBox(
             width: 250,

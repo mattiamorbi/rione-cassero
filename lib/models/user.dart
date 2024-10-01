@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:upper/helpers/aes_helper.dart';
+
 class User {
   final String name;
   final String surname;
@@ -25,11 +27,7 @@ class User {
     required this.cardNumber,
   });
 
-  String getQrData() {
-    // TODO: Aggiungere metodo di criptaggio dei dati scritti
-    Codec<String, String> stringToBase64 = utf8.fuse(base64);
-    return stringToBase64.encode(jsonEncode(this));
-  }
+  String getQrData() => AesHelper.encrypt(jsonEncode(this));
 
   User.fromJson(Map<String, dynamic> json)
       : this(

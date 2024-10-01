@@ -50,6 +50,8 @@ dependencies:
   flutter_web_qrcode_scanner: ^1.1.1
   pretty_qr_code: ^3.3.0
   toastification: ^2.3.0
+  encrypt: ^5.0.3
+  firebase_storage: ^12.3.2
 
 dev_dependencies:
   flutter_test:

@@ -53,12 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: FloatingActionButton(
           onPressed: () {
             context.pushNamed(Routes.newEventScreen);
-           // context.pushNamed(Routes.forgetScreen);
-           // Routes.newEventScreen;
-//            setState(() {
-//              Routes.Screen,
-//              //index = (index + 1) % customizations.length;
-//            });
           },
           child: const Icon(Icons.add),
         ),

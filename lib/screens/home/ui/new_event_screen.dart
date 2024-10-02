@@ -134,6 +134,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                     children: [
                       SizedBox(width: MediaQuery.sizeOf(context).width / 2),
                       FloatingActionButton(onPressed: _loadImage, child: Icon(Icons.image, color: Colors.black54,)),
+                      SizedBox(width: 20,),
                       FloatingActionButton(onPressed: _uploadToFirebase, child: Icon(Icons.add, color: Colors.black54,)),
                     ],
                   )

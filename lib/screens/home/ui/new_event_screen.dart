@@ -92,7 +92,9 @@ class _NewEventScreenState extends State<NewEventScreen> {
     } else {
       print("Problemi con l'immagine");
     }
+  }
 
+  void _uploadToFirebase() {
 
   }
 
@@ -131,7 +133,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
                   Row(
                     children: [
                       SizedBox(width: MediaQuery.sizeOf(context).width / 2),
-                      FloatingActionButton(onPressed: _loadImage, child: Icon(Icons.add, color: Colors.black54,)),
+                      FloatingActionButton(onPressed: _loadImage, child: Icon(Icons.image, color: Colors.black54,)),
+                      FloatingActionButton(onPressed: _uploadToFirebase, child: Icon(Icons.add, color: Colors.black54,)),
                     ],
                   )
                 ]),

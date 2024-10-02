@@ -167,7 +167,7 @@ class _EventTileState extends State<EventTile> {
           children: [
             Container(
               margin: EdgeInsets.only(left: 5, right: 5, top: 5, bottom: 5),
-              width: MediaQuery.sizeOf(context).width / 3,
+              width: 200,
               height: 200,
               decoration: BoxDecoration(
                 color: Colors.white,

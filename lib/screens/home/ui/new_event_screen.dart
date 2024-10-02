@@ -1,12 +1,16 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter_offline/flutter_offline.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/theming/colors.dart';
 
 import '../../../core/widgets/app_text_form_field.dart';
-
-
 
 class NewEventScreen extends StatefulWidget {
   const NewEventScreen({super.key});
@@ -20,7 +24,13 @@ class _NewEventScreenState extends State<NewEventScreen> {
   late bool isAdmin = false;
   List<UpperEvent> events = [];
 
+  File? _pickedImage;
+  Uint8List webImage = Uint8List(8);
+
   TextEditingController titleController = TextEditingController();
+  TextEditingController dateController = TextEditingController();
+  TextEditingController timeController = TextEditingController();
+  TextEditingController placeController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -51,35 +61,82 @@ class _NewEventScreenState extends State<NewEventScreen> {
     );
   }
 
+  Widget genericFieldEvent(TextEditingController controller, String placeholder,
+      String errorMessage) {
+    return AppTextFormField(
+      hint: placeholder,
+      validator: (value) {
+        String enteredValue = (value ?? '').trim();
+        titleController.text = enteredValue;
+        if (enteredValue.isEmpty) {
+          return errorMessage;
+        }
+      },
+      controller: controller,
+    );
+  }
+
+  Future<void> _loadImage() async {
+    final ImagePicker _picker = ImagePicker();
+    XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      var selected = File(image.path);
+      var f = await image.readAsBytes();
+
+      setState(() {
+        webImage = f;
+        _pickedImage = File('a');
+      });
+
+    } else {
+      print("Problemi con l'immagine");
+    }
+
+
+  }
+
   SafeArea _newEventScreen(BuildContext context) {
     return SafeArea(
       child: DefaultTabController(
         initialIndex: 1,
         length: isAdmin ? 3 : 2,
         child: Scaffold(
-          appBar: AppBar(
-            title: const Text("UPPER Event"),
-            //bottom: TabBar(tabs: _getTabBars()),
-          ),
-          body: Column(
-            children: [
-              Text("Aggiungi un nuovo evento"),
-              AppTextFormField(
-                hint: "Titolo",
-                validator: (value) {
-                  String enteredValue = (value ?? '').trim();
-                  titleController.text = enteredValue;
-                  if (enteredValue.isEmpty) {
-                    return 'Inserisci un titolo valido';
-                  }
-                },
-                controller: titleController,
+            appBar: AppBar(
+              title: const Text("UPPER - Nuovo evento"),
+              //bottom: TabBar(tabs: _getTabBars()),
+            ),
+            body: Padding(
+              padding: const EdgeInsets.only(
+                  top: 15.0, bottom: 15.0, left: 40.0, right: 40.0),
+              child: SingleChildScrollView(
+                child: Column(children: [
+                  Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Aggiungi un nuovo evento")),
+                  SizedBox(height: 20),
+                  genericFieldEvent(
+                      titleController, "Titolo", "Inserisci un titolo valido"),
+                  SizedBox(height: 20),
+                  genericFieldEvent(
+                      dateController, "Data", "Inserisci una data valida"),
+                  SizedBox(height: 20),
+                  genericFieldEvent(
+                      timeController, "Orario", "Inserisci un orario valido"),
+                  SizedBox(height: 20),
+                  genericFieldEvent(
+                      placeController, "Luogo", "Inserisci un luogo valido"),
+                  SizedBox(height: 20),
+                  Visibility(visible: _pickedImage != null, child: Image.memory(webImage,width: 200,height: 200,fit: BoxFit.fill ,)),
+                  Row(
+                    children: [
+                      SizedBox(width: MediaQuery.sizeOf(context).width / 2),
+                      FloatingActionButton(onPressed: _loadImage, child: Icon(Icons.add, color: Colors.black54,)),
+                    ],
+                  )
+                ]),
               ),
-            ]
-
-
-          )
-        ),
+            )),
       ),
     );
     // child: Padding(

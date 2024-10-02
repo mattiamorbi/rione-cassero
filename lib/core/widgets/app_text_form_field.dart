@@ -35,7 +35,11 @@ class AppTextFormField extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyles.font14Hint500Weight,
+        hintStyle: TextStyle(
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w600,
+          color: Colors.black38,
+        ),
         isDense: isDense ?? true,
         filled: true,
         fillColor: Colors.white,
@@ -71,7 +75,11 @@ class AppTextFormField extends StatelessWidget {
         suffixIcon: suffixIcon,
       ),
       obscureText: isObscureText ?? false,
-      style: TextStyles.font14DarkBlue500Weight,
+      style: TextStyle(
+        fontSize: 20.sp,
+        fontWeight: FontWeight.w600,
+        color: Colors.black,
+      ),
     );
   }
 }

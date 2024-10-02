@@ -66,6 +66,20 @@ class AuthCubit extends Cubit<AuthState> {
     await users.doc(_auth.currentUser!.uid).set(user.toJson());
   }
 
+  Future<void> joinEvent(String eventId) async {
+    var eventsParticipants = FirebaseFirestore.instance.collection('events_participants');
+    var eventParticipants = await eventsParticipants.doc(eventId).get();
+    var user = {'id': _auth.currentUser!.uid, 'presence': false};
+    var participants = {
+      'users': [user]
+    };
+    if (eventParticipants.exists) {
+      participants['users'] = eventParticipants.data()!['users'];
+      participants['users']!.add(user);
+    }
+    await eventsParticipants.doc(eventId).set(participants);
+  }
+
   Future<up.User> getUser() async {
     var users = FirebaseFirestore.instance.collection('users');
     var doc = await users.doc(_auth.currentUser!.uid).get();

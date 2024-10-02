@@ -1,16 +1,21 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:upper/helpers/date_time_helper.dart';
 
 class UpperEvent {
   final String title;
+  final String description;
   final String date;
   final String time;
   final String place;
   final String imagePath;
+  String? id;
 
   UpperEvent({
     required this.title,
+    required this.description,
     required this.date,
     required this.time,
     required this.place,
@@ -19,10 +24,10 @@ class UpperEvent {
 
   DateTime getDate() => DateTimeHelper.getDateTime(date);
 
-  Future<String> getEventImage() async {
+  Future<Uint8List?> getEventImage() async {
     final storageRef = FirebaseStorage.instance.ref();
     final imageRef = storageRef.child(imagePath);
-    return await imageRef.getDownloadURL();
+    return await imageRef.getData();
   }
 
   static Future<List<UpperEvent>> getUpperEvents() async {
@@ -32,7 +37,9 @@ class UpperEvent {
     await eventsCollection.get().then(
       (querySnapshot) {
         for (var doc in querySnapshot.docs) {
-          events.add(UpperEvent.fromJson(doc.data()));
+          var event = UpperEvent.fromJson(doc.data());
+          event.id = doc.id;
+          events.add(event);
         }
       },
       onError: (e) => print("Error completing: $e"),
@@ -44,6 +51,7 @@ class UpperEvent {
   UpperEvent.fromJson(Map<String, dynamic> json)
       : this(
           title: json['title']! as String,
+          description: json['description']! as String,
           date: json['date']! as String,
           time: json['time']! as String,
           place: json['place']! as String,
@@ -53,6 +61,7 @@ class UpperEvent {
   Map<String, Object?> toJson() {
     return {
       'title': title,
+      'description': description,
       'date': date,
       'time': time,
       'place': place,

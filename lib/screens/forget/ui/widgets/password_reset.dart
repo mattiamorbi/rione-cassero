@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
-import '../../../../../helpers/app_regex.dart';
-import '../../../../../theming/styles.dart';
-import '../../../../core/widgets/app_text_button.dart';
-import '../../../../core/widgets/app_text_form_field.dart';
-import '../../../../logic/cubit/auth_cubit.dart';
+import 'package:upper/helpers/app_regex.dart';
+import 'package:upper/theming/styles.dart';
+import 'package:upper/core/widgets/app_text_button.dart';
+import 'package:upper/core/widgets/app_text_form_field.dart';
+import 'package:upper/logic/cubit/auth_cubit.dart';
 
 class PasswordReset extends StatefulWidget {
   const PasswordReset({super.key});

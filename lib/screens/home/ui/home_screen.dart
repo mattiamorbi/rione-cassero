@@ -16,7 +16,6 @@ import 'package:upper/helpers/extensions.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
-import 'package:upper/screens/login/ui/widgets/do_not_have_account.dart';
 import 'package:upper/theming/colors.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/screens/home/ui/event_tile.dart';
@@ -148,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
             scrollDirection: Axis.vertical,
             itemBuilder: (context, index) => EventTile(
               upperEvent: events[index],
+              isAdmin: isAdmin
             ),
           ),
         ),

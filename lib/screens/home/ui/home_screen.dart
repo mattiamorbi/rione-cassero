@@ -33,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late bool isAdmin = false;
   List<UpperEvent> events = [];
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,14 +143,15 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 20,
         ),
         Expanded(
-          child: ListView.builder(
-            itemCount: events.length,
-            scrollDirection: Axis.vertical,
-            itemBuilder: (context, index) => EventTile(
-              upperEvent: events[index],
+          child: EventTile(
+              upperEvent: events,
               isAdmin: isAdmin
-            ),
           ),
+          //child: ListView.builder(
+          //  itemCount: events.length,
+          //  scrollDirection: Axis.vertical,
+          //  itemBuilder: (context, index) =>
+          //),
         ),
       ],
     );

@@ -54,6 +54,8 @@ dependencies:
   firebase_storage: ^12.3.2
   image_picker_for_web: ^3.0.5
   image_picker: ^1.1.2
+  scroll_snap_list: ^0.9.1
+  animated_floating_buttons: ^0.0.2
 
 dev_dependencies:
   flutter_test:

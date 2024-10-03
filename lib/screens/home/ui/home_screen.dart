@@ -1,9 +1,7 @@
 import 'dart:convert';
 
-import 'package:encrypt/encrypt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,10 +15,10 @@ import 'package:upper/helpers/extensions.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
+import 'package:upper/routing/routes.dart';
+import 'package:upper/screens/home/ui/event_tile.dart';
 import 'package:upper/theming/colors.dart';
 import 'package:upper/theming/styles.dart';
-import 'package:upper/screens/home/ui/event_tile.dart';
-import 'package:upper/routing/routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,13 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
   late bool isAdmin = false;
   List<UpperEvent> events = [];
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
-          final bool connected = value.any((element) => element != ConnectivityResult.none);
+          final bool connected =
+              value.any((element) => element != ConnectivityResult.none);
           return connected ? _homePage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -117,42 +115,50 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _qrCodeReaderWidget() {
-    return Center(
-      child: FlutterWebQrcodeScanner(
-        cameraDirection: CameraDirection.back,
-        stopOnFirstResult: true,
-        //set false if you don't want to stop video preview on getting first result
-        onGetResult: (result) {
-          var decryptedData = AesHelper.decrypt(result);
-          var json = jsonDecode(decryptedData);
-          var user = up.User.fromJson(json);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${user.name} ${user.surname}")));
-        },
-        width: 200,
-        height: 200,
-      ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 15,
+        ),
+        FlutterWebQrcodeScanner(
+          cameraDirection: CameraDirection.back,
+          stopOnFirstResult: true,
+          //set false if you don't want to stop video preview on getting first result
+          onGetResult: (result) {
+            var decryptedData = AesHelper.decrypt(result);
+            var json = jsonDecode(decryptedData);
+            var user = up.User.fromJson(json);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${user.name} ${user.surname}")));
+          },
+
+          width: MediaQuery.sizeOf(context).width - 20,
+          height: 100//MediaQuery.sizeOf(context).width - 20,
+        ),
+        FloatingActionButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(duration: Duration(seconds: 10), content: Text("DEBUG")));
+            },
+            child: Icon(Icons.add),
+        )],
     );
   }
 
   Widget _eventsWidget() {
     return Column(
       children: [
-       //Text(
-       //  'Prossimi eventi',
-       //  textAlign: TextAlign.left,
-       //  style: TextStyle(
-       //    fontWeight: FontWeight.bold,
-       //    fontSize: 24,
-       //  ),
-       //),
+        //Text(
+        //  'Prossimi eventi',
+        //  textAlign: TextAlign.left,
+        //  style: TextStyle(
+        //    fontWeight: FontWeight.bold,
+        //    fontSize: 24,
+        //  ),
+        //),
         const SizedBox(
           height: 10,
         ),
         Expanded(
-          child: EventTile(
-              upperEvent: events,
-              isAdmin: isAdmin
-          ),
+          child: EventTile(upperEvent: events, isAdmin: isAdmin),
           //child: ListView.builder(
           //  itemCount: events.length,
           //  scrollDirection: Axis.vertical,
@@ -174,7 +180,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             "Mostra questo QR per entrare!",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ColorsManager.mainBlue),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.mainBlue),
           ),
           SizedBox(
             width: 250,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:encrypt/encrypt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -64,9 +65,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     BlocProvider.of<AuthCubit>(context);
-    _loadQr();
     _loadUserLevel();
     _loadEvents();
+    _loadQr();
+    events.sort((a, b) {
+      DateTime dataA = DateTime.parse(a.date);
+      DateTime dataB = DateTime.parse(b.date);
+      return dataA.compareTo(dataB); // Ordinamento crescente
+    });
   }
 
   void _loadQr() async {
@@ -131,16 +137,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _eventsWidget() {
     return Column(
       children: [
-        Text(
-          'Prossimi eventi',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-        ),
+       //Text(
+       //  'Prossimi eventi',
+       //  textAlign: TextAlign.left,
+       //  style: TextStyle(
+       //    fontWeight: FontWeight.bold,
+       //    fontSize: 24,
+       //  ),
+       //),
         const SizedBox(
-          height: 20,
+          height: 10,
         ),
         Expanded(
           child: EventTile(

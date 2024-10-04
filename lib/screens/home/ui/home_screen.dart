@@ -47,15 +47,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: Visibility(
-        visible: isAdmin,
-        child: FloatingActionButton(
-          onPressed: () {
-            context.pushNamed(Routes.newEventScreen);
-          },
-          child: const Icon(Icons.add),
-        ),
-      ),
+//     floatingActionButton: Visibility(
+//       visible: isAdmin,
+//       child: FloatingActionButton(
+//         onPressed: () {
+//           context.pushNamed(Routes.newEventScreen);
+//         },
+//         child: const Icon(Icons.add),
+//       ),
+//     ),
     );
   }
 
@@ -66,11 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserLevel();
     _loadEvents();
     _loadQr();
-    events.sort((a, b) {
-      DateTime dataA = DateTime.parse(a.date);
-      DateTime dataB = DateTime.parse(b.date);
-      return dataA.compareTo(dataB); // Ordinamento crescente
-    });
   }
 
   void _loadQr() async {

@@ -331,8 +331,6 @@ class ScrollSnapListState extends State<ScrollSnapList> {
     return Container(
       padding: widget.padding,
       margin: widget.margin,
-      color: Colors.transparent,
-      height: 400,
       child: LayoutBuilder(
         builder: (BuildContext ctx, BoxConstraints constraint) {
           double _listPadding = calculateListPadding(constraint);

@@ -1,12 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_web_qrcode_scanner/flutter_web_qrcode_scanner.dart';
 import 'package:upper/helpers/extensions.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/routing/routes.dart';
 
 import '../../../core/widgets/scroll_snap_list.dart';
+import '../../../helpers/aes_helper.dart';
+import '../../../models/user.dart' as up;
 
 // ignore: must_be_immutable
 class EventTile extends StatefulWidget {
@@ -24,13 +29,15 @@ class _EventTileState extends State<EventTile> {
       []; // = Image(image: AssetImage("assets/images/loading.gif"));
   late bool visible = false;
 
+  bool _qrMode = false;
+
   List<UpperEvent> data = [];
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
 
   @override
   void initState() {
-    //super.initState();
+    super.initState();
 
     for (int i = 0; i < widget.upperEvent.length; i++) {
       image.add(Image(image: AssetImage("assets/images/loading.gif")));
@@ -45,6 +52,12 @@ class _EventTileState extends State<EventTile> {
   void _onItemFocus(int index) {
     setState(() {
       _focusedIndex = index;
+    });
+  }
+
+  void _enableQrMode() {
+    setState(() {
+      _qrMode = true;
     });
   }
 
@@ -90,7 +103,9 @@ class _EventTileState extends State<EventTile> {
                     child: Icon(Icons.person_add_alt_1)),
                 Visibility(
                   visible: widget.isAdmin,
-                  child: SizedBox(width: 10,),
+                  child: SizedBox(
+                    width: 10,
+                  ),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
@@ -101,7 +116,23 @@ class _EventTileState extends State<EventTile> {
                       label: Icon(Icons.edit),
                     ),
                   ),
-                )
+                ),
+                Visibility(
+                  visible: widget.isAdmin,
+                  child: SizedBox(
+                    width: 10,
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isAdmin,
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: ElevatedButton.icon(
+                      onPressed: _enableQrMode,
+                      label: Icon(Icons.qr_code),
+                    ),
+                  ),
+                ),
               ],
             )
           ],
@@ -141,30 +172,68 @@ class _EventTileState extends State<EventTile> {
     );
   }
 
+  Widget _qrCodeReaderWidget() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 15,
+        ),
+        Expanded(
+          child: FlutterWebQrcodeScanner(
+              cameraDirection: CameraDirection.back,
+              stopOnFirstResult: true,
+          
+              //set false if you don't want to stop video preview on getting first result
+              onGetResult: (result) {
+                var decryptedData = AesHelper.decrypt(result);
+                var json = jsonDecode(decryptedData);
+                var user = up.User.fromJson(json);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${user.name} ${user.surname}")));
+              },
+          
+              width: 100,
+              height: 100//MediaQuery.sizeOf(context).width - 20,
+          ),
+        ),
+        FloatingActionButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(duration: Duration(seconds: 10), content: Text("DEBUG")));
+          },
+          child: Icon(Icons.add),
+        )],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: <Widget>[
-          Expanded(
-            child: ScrollSnapList(
-              dynamicItemSize: true,
-              margin: EdgeInsets.symmetric(vertical: 10),
-              onItemFocus: _onItemFocus,
-              itemSize: 400,
-              itemBuilder: _buildListItem,
-              itemCount: data.length,
-              key: sslKey,
-              background: Colors.white,
-              padding: EdgeInsets.all(8.0),
-              dynamicItemOpacity: 0.2,
-              //listViewPadding: EdgeInsets.all(8.0),
+    if (!_qrMode) {
+      return Container(
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: ScrollSnapList(
+                dynamicItemSize: true,
+                margin: EdgeInsets.symmetric(vertical: 10),
+                onItemFocus: _onItemFocus,
+                itemSize: 400,
+                itemBuilder: _buildListItem,
+                itemCount: data.length,
+                key: sslKey,
+                background: Colors.white,
+                padding: EdgeInsets.all(8.0),
+                dynamicItemOpacity: 0.2,
+                //listViewPadding: EdgeInsets.all(8.0),
+              ),
             ),
-          ),
-          _buildItemDetail(),
-        ],
-      ),
-    );
+            _buildItemDetail(),
+          ],
+        ),
+      );
+    } else {
+      return Container(height: 400,width: 400,
+      child: _qrCodeReaderWidget() ,
+
+    );}
   }
 
   Future<void> _loadImage(int index) async {

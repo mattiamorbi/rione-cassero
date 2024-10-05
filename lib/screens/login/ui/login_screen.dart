@@ -27,9 +27,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(17, 17, 17, 1),
+          //image: DecorationImage(
+              //image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
         ),
         child: OfflineBuilder(
           connectivityBuilder: (context, value, child) {
@@ -94,6 +95,8 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Container(width: 160, height: 160, child: Image(image: AssetImage("assets/images/upper_2.png"))),
+                SizedBox(height: 20),
                 EmailAndPassword(),
                 Gap(20.h),
                 const DoNotHaveAccountText(),

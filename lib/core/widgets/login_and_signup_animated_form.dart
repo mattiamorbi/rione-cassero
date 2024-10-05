@@ -61,6 +61,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         children: [
           emailField(),
           passwordField(),
+          forgetPasswordTextButton(),
           Gap(18.h),
           passwordConfirmationField(),
           Gap(18.h),
@@ -72,7 +73,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           genericField(cityController, 'Citta', 'Inserisci una citta valida'),
           capField(),
           genericField(telephoneController, 'Telefono', 'Inserisci un telefono valido'),
-          forgetPasswordTextButton(),
+
           Gap(10.h),
           PasswordValidations(
             hasMinLength: hasMinLength,

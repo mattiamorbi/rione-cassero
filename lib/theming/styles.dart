@@ -46,6 +46,12 @@ class TextStyles {
     fontWeight: FontWeight.w500,
     color: ColorsManager.darkBlue,
   );
+  static TextStyle font14White500Weight = TextStyle(
+    fontSize: 14.sp,
+    fontWeight: FontWeight.w500,
+    color: Colors.white,
+  );
+
   static TextStyle font15DarkBlue500Weight = TextStyle(
     fontSize: 15.sp,
     fontWeight: FontWeight.w500,
@@ -56,10 +62,16 @@ class TextStyles {
     fontWeight: FontWeight.w500,
     color: ColorsManager.darkBlue,
   );
+
   static TextStyle font11DarkBlue400Weight = TextStyle(
     fontSize: 11.sp,
     fontWeight: FontWeight.w400,
     color: ColorsManager.darkBlue,
+  );
+  static TextStyle font11White400Weight = TextStyle(
+    fontSize: 11.sp,
+    fontWeight: FontWeight.w400,
+    color: Colors.white,
   );
   static TextStyle font11Blue600Weight = TextStyle(
     fontSize: 11.sp,

@@ -22,7 +22,7 @@ class AlreadyHaveAccountText extends StatelessWidget {
           children: [
             TextSpan(
               text: 'Hai già un account?',
-              style: TextStyles.font11DarkBlue400Weight,
+              style: TextStyles.font11White400Weight,
             ),
             TextSpan(
               text: ' Entra in UPPER',

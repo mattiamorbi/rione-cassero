@@ -74,23 +74,23 @@ class _EventTileState extends State<EventTile> {
             Text(
               data[_focusedIndex].title,
               style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-              ),
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             Text(
               "${data[_focusedIndex].date} - ${data[_focusedIndex].time}",
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             Text(
               data[_focusedIndex].place,
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             SizedBox(
               height: 10,
@@ -98,42 +98,84 @@ class _EventTileState extends State<EventTile> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
-                    onPressed: () => _joinEvent(_focusedIndex),
-                    child: Icon(Icons.person_add_alt_1)),
+                GestureDetector(
+                  child: Icon(
+                    Icons.person_add_alt_1,
+                    color: Colors.white,
+                  ),
+                  onTap: () => _joinEvent(_focusedIndex),
+                ),
+
                 Visibility(
                   visible: widget.isAdmin,
                   child: SizedBox(
-                    width: 10,
+                    width: 20,
                   ),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _editEvent(_focusedIndex),
-                      label: Icon(Icons.edit),
+                  child: GestureDetector(
+                    child: Icon(
+                      Icons.edit,
+                      color: Colors.orange,
                     ),
+                    onTap: () => _editEvent(_focusedIndex),
                   ),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
                   child: SizedBox(
-                    width: 10,
+                    width: 20,
                   ),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: ElevatedButton.icon(
-                      onPressed: _enableQrMode,
-                      label: Icon(Icons.qr_code),
+                  child: GestureDetector(
+                    child: Icon(
+                      Icons.qr_code,
+                      color: Colors.orange,
                     ),
+                    onTap: _enableQrMode,
                   ),
                 ),
               ],
+//              children: [
+//                ElevatedButton(
+//                    onPressed: () => _joinEvent(_focusedIndex),
+//                    child: Icon(Icons.person_add_alt_1)),
+//                Visibility(
+//                  visible: widget.isAdmin,
+//                  child: SizedBox(
+//                    width: 10,
+//                  ),
+//                ),
+//                Visibility(
+//                  visible: widget.isAdmin,
+//                  child: Align(
+//                    alignment: Alignment.bottomRight,
+//                    child: ElevatedButton.icon(
+//                      onPressed: () => _editEvent(_focusedIndex),
+//                      label: Icon(Icons.edit),
+//                    ),
+//                  ),
+//                ),
+//                Visibility(
+//                  visible: widget.isAdmin,
+//                  child: SizedBox(
+//                    width: 10,
+//                  ),
+//                ),
+//                Visibility(
+//                  visible: widget.isAdmin,
+//                  child: Align(
+//                    alignment: Alignment.bottomRight,
+//                    child: ElevatedButton.icon(
+//                      onPressed: _enableQrMode,
+//                      label: Icon(Icons.qr_code),
+//                    ),
+//                  ),
+//                ),
+//              ],
             )
           ],
         ),
@@ -182,25 +224,27 @@ class _EventTileState extends State<EventTile> {
           child: FlutterWebQrcodeScanner(
               cameraDirection: CameraDirection.back,
               stopOnFirstResult: true,
-          
+
               //set false if you don't want to stop video preview on getting first result
               onGetResult: (result) {
                 var decryptedData = AesHelper.decrypt(result);
                 var json = jsonDecode(decryptedData);
                 var user = up.User.fromJson(json);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${user.name} ${user.surname}")));
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("${user.name} ${user.surname}")));
               },
-          
               width: 100,
-              height: 100//MediaQuery.sizeOf(context).width - 20,
-          ),
+              height: 100 //MediaQuery.sizeOf(context).width - 20,
+              ),
         ),
         FloatingActionButton(
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(duration: Duration(seconds: 10), content: Text("DEBUG")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                duration: Duration(seconds: 10), content: Text("DEBUG")));
           },
           child: Icon(Icons.add),
-        )],
+        )
+      ],
     );
   }
 
@@ -221,7 +265,7 @@ class _EventTileState extends State<EventTile> {
                 key: sslKey,
                 background: Colors.white,
                 padding: EdgeInsets.all(8.0),
-                dynamicItemOpacity: 0.2,
+                //dynamicItemOpacity: 0.2,
                 //listViewPadding: EdgeInsets.all(8.0),
               ),
             ),
@@ -230,10 +274,12 @@ class _EventTileState extends State<EventTile> {
         ),
       );
     } else {
-      return Container(height: 400,width: 400,
-      child: _qrCodeReaderWidget() ,
-
-    );}
+      return Container(
+        height: 400,
+        width: 400,
+        child: _qrCodeReaderWidget(),
+      );
+    }
   }
 
   Future<void> _loadImage(int index) async {

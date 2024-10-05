@@ -55,56 +55,61 @@ class _LoginScreenState extends State<LoginScreen> {
     BlocProvider.of<AuthCubit>(context);
   }
 
-  SafeArea _loginPage(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(40.0),
-        child: BlocConsumer<AuthCubit, AuthState>(
-          buildWhen: (previous, current) => previous != current,
-          listenWhen: (previous, current) => previous != current,
-          listener: (context, state) async {
-            if (state is AuthLoading) {
-              pi.ProgressIndicator.showProgressIndicator(context);
-            } else if (state is AuthError) {
-              context.pop();
-              AwesomeDialog(
-                context: context,
-                dialogType: DialogType.error,
-                animType: AnimType.rightSlide,
-                title: 'Errore',
-                desc: state.message,
-              ).show();
-            } else if (state is UserSignIn) {
-              if (!context.mounted) return;
-              context.pushNamedAndRemoveUntil(
-                Routes.homeScreen,
-                predicate: (route) => false,
+  Widget _loginPage(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(minWidth: double.infinity,minHeight: double.infinity),
+      color: Color.fromRGBO(17, 17, 17, 1),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 10.0, right: 40, left: 40, bottom: 10),
+          child: BlocConsumer<AuthCubit, AuthState>(
+            buildWhen: (previous, current) => previous != current,
+            listenWhen: (previous, current) => previous != current,
+            listener: (context, state) async {
+              if (state is AuthLoading) {
+                pi.ProgressIndicator.showProgressIndicator(context);
+              } else if (state is AuthError) {
+                context.pop();
+                AwesomeDialog(
+                  context: context,
+                  dialogType: DialogType.error,
+                  animType: AnimType.rightSlide,
+                  title: 'Errore',
+                  desc: state.message,
+                ).show();
+              } else if (state is UserSignIn) {
+                if (!context.mounted) return;
+                context.pushNamedAndRemoveUntil(
+                  Routes.homeScreen,
+                  predicate: (route) => false,
+                );
+              } else if (state is UserNotVerified) {
+                AwesomeDialog(
+                  context: context,
+                  dialogType: DialogType.info,
+                  animType: AnimType.rightSlide,
+                  title: 'Email non verificata',
+                  desc: 'Controlla la tua casella postale e verifica la tua email.',
+                ).show();
+              }
+            },
+            builder: (context, state) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                //crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(width: 200, height: 200, child: Image(image: AssetImage("assets/images/upper_2.png"), fit: BoxFit.fitWidth ,)),
+                  SizedBox(height: 20),
+                  EmailAndPassword(),
+                  Gap(20.h),
+                  const DoNotHaveAccountText(),
+                  Gap(10.h),
+                  const TermsAndConditionsText(),
+                ],
               );
-            } else if (state is UserNotVerified) {
-              AwesomeDialog(
-                context: context,
-                dialogType: DialogType.info,
-                animType: AnimType.rightSlide,
-                title: 'Email non verificata',
-                desc: 'Controlla la tua casella postale e verifica la tua email.',
-              ).show();
-            }
-          },
-          builder: (context, state) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(width: 160, height: 160, child: Image(image: AssetImage("assets/images/upper_2.png"))),
-                SizedBox(height: 20),
-                EmailAndPassword(),
-                Gap(20.h),
-                const DoNotHaveAccountText(),
-                Gap(10.h),
-                const TermsAndConditionsText(),
-              ],
-            );
-          },
+            },
+          ),
         ),
       ),
     );

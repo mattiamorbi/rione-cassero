@@ -13,7 +13,7 @@ class PasswordValidations extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildValidationRow('At least 6 characters', hasMinLength);
+    return buildValidationRow('La tua password deve essere di almeno 6 caratteri', hasMinLength);
   }
 
   Widget buildValidationRow(String text, bool hasValidated) {
@@ -21,19 +21,19 @@ class PasswordValidations extends StatelessWidget {
         ? Row(
             children: [
               const CircleAvatar(
-                radius: 2.5,
-                backgroundColor: ColorsManager.gray,
+                radius: 3.5,
+                backgroundColor: Colors.white,
               ),
               Gap(6.w),
               Text(
                 text,
-                style: TextStyles.font14DarkBlue500Weight.copyWith(
+                style: TextStyles.font14White500Weight.copyWith(
                   decoration: hasValidated ? TextDecoration.lineThrough : null,
                   decorationColor: Colors.green,
                   decorationThickness: 2,
                   color: hasValidated
                       ? ColorsManager.gray
-                      : ColorsManager.darkBlue,
+                      : Colors.white,
                 ),
               )
             ],

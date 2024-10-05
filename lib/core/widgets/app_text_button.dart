@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:upper/theming/colors.dart';
 
 class AppTextButton extends StatelessWidget {
@@ -11,6 +10,7 @@ class AppTextButton extends StatelessWidget {
   final double? buttonWidth;
   final double? buttonHeight;
   final String buttonText;
+  final Icon? buttonIcon;
   final TextStyle textStyle;
   final VoidCallback onPressed;
 
@@ -23,11 +23,33 @@ class AppTextButton extends StatelessWidget {
       this.buttonWidth,
       this.buttonHeight,
       required this.buttonText,
+      this.buttonIcon,
       required this.textStyle,
       required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Container(
+        width: buttonWidth,
+        height: buttonHeight,
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(17, 17, 17, 1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Visibility(
+            visible: buttonText != "",
+            child: Text(buttonText ?? "",
+                style: TextStyle(color: Colors.white, fontSize: 20)),
+          ),
+          Visibility(visible: buttonIcon != null, child: Icon(buttonIcon?.icon ?? Icons.add, color: Colors.white,)),
+        ]),
+      ),
+      onTap: onPressed,
+    );
+
     return TextButton(
       onPressed: onPressed,
       style: ButtonStyle(

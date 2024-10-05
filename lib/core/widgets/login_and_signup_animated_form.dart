@@ -74,7 +74,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           capField(),
           genericField(telephoneController, 'Telefono', 'Inserisci un telefono valido'),
 
-          Gap(10.h),
+          Gap(5.h),
           PasswordValidations(
             hasMinLength: hasMinLength,
             isSignup: widget.isSignUpPage ?? false,
@@ -212,13 +212,21 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     setupPasswordControllerListener();
   }
 
-  AppTextButton loginButton(BuildContext context) {
-    return AppTextButton(
-      buttonText: "Entra in UPPER",
-      textStyle: TextStyles.font16White600Weight,
-      buttonWidth: 300,
-      buttonHeight: 70,
-      onPressed: () async {
+  Widget loginButton(BuildContext context) {
+
+    return GestureDetector(
+      child: Container(
+        width: 200,
+        height: 40,
+         decoration: BoxDecoration(
+       color: Color.fromRGBO(17, 17, 17, 1),
+       borderRadius: BorderRadius.circular(10),
+       border: Border.all(color: Colors.white, width: 2),
+         ),
+        child: Center(child: Text("Entra in UPPER", style: TextStyle(color: Colors.white, fontSize: 20))),
+
+      ),
+        onTap: () async {
         passwordFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
           context.read<AuthCubit>().signInWithEmail(
@@ -228,6 +236,24 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         }
       },
     );
+
+
+//    return AppTextButton(
+//      buttonText: "Entra in UPPER",
+//
+//      textStyle: TextStyles.font16White600Weight,
+//      buttonWidth: 300,
+//      buttonHeight: 70,
+//      onPressed: () async {
+//        passwordFocusNode.unfocus();
+//        if (formKey.currentState!.validate()) {
+//          context.read<AuthCubit>().signInWithEmail(
+//                emailController.text,
+//                passwordController.text,
+//              );
+//        }
+//      },
+//    );
   }
 
   loginOrSignUpOrPasswordButton(BuildContext context) {
@@ -331,11 +357,21 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     });
   }
 
-  AppTextButton signUpButton(BuildContext context) {
-    return AppTextButton(
-      buttonText: "Iscriviti",
-      textStyle: TextStyles.font16White600Weight,
-      onPressed: () async {
+  Widget signUpButton(BuildContext context) {
+
+    return GestureDetector(
+      child: Container(
+        width: 200,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(17, 17, 17, 1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+        child: Center(child: Text("Iscriviti", style: TextStyle(color: Colors.white, fontSize: 20))),
+
+      ),
+      onTap: () async {
         passwordFocusNode.unfocus();
         passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
@@ -357,6 +393,32 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
               );
         }
       },
-    );
+  );
+//    return AppTextButton(
+//      buttonText: "Iscriviti",
+//      textStyle: TextStyles.font16White600Weight,
+//      onPressed: () async {
+//        passwordFocusNode.unfocus();
+//        passwordConfirmationFocusNode.unfocus();
+//        if (formKey.currentState!.validate()) {
+//          var user = up.User(
+//            name: nameController.text,
+//            surname: surnameController.text,
+//            address: addressController.text,
+//            birthplace: birthplaceController.text,
+//            email: emailController.text,
+//            birthdate: birthdateController.text,
+//            cap: capController.text,
+//            city: cityController.text,
+//            telephone: telephoneController.text,
+//            cardNumber: 0,
+//          );
+//          context.read<AuthCubit>().signUpWithEmail(
+//                user,
+//                passwordController.text,
+//              );
+//        }
+//      },
+//    );
   }
 }

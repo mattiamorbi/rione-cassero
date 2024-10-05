@@ -91,21 +91,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _getTabBars() {
     var widgets = <Widget>[
-      Icon(Icons.calendar_month_rounded),
-      Icon(Icons.account_circle_outlined),
+      Icon(Icons.calendar_month_rounded, color: Colors.white),
+      Icon(Icons.account_circle_outlined, color: Colors.white),
     ];
-    if (isAdmin) {
-      widgets.insert(0, Icon(Icons.qr_code_2_outlined));
-    }
+    // if (isAdmin) {
+    //   widgets.insert(0, Icon(Icons.qr_code_2_outlined));
+    // }
     return widgets;
   }
 
   List<Widget> _tabBarViewWidgets() {
     var widgets = <Widget>[_eventsWidget(), _profileWidget()];
 
-    if (isAdmin) {
-      widgets.insert(0, _qrCodeReaderWidget());
-    }
+    //if (isAdmin) {
+    //  widgets.insert(0, _qrCodeReaderWidget());
+    //}
     return widgets;
   }
 
@@ -116,25 +116,26 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 15,
         ),
         FlutterWebQrcodeScanner(
-          cameraDirection: CameraDirection.back,
-          stopOnFirstResult: true,
-          //set false if you don't want to stop video preview on getting first result
-          onGetResult: (result) {
-            var decryptedData = AesHelper.decrypt(result);
-            var json = jsonDecode(decryptedData);
-            var user = up.User.fromJson(json);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${user.name} ${user.surname}")));
-          },
-
-          width: MediaQuery.sizeOf(context).width - 20,
-          height: 100//MediaQuery.sizeOf(context).width - 20,
-        ),
-        FloatingActionButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(duration: Duration(seconds: 10), content: Text("DEBUG")));
+            cameraDirection: CameraDirection.back,
+            stopOnFirstResult: true,
+            //set false if you don't want to stop video preview on getting first result
+            onGetResult: (result) {
+              var decryptedData = AesHelper.decrypt(result);
+              var json = jsonDecode(decryptedData);
+              var user = up.User.fromJson(json);
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("${user.name} ${user.surname}")));
             },
-            child: Icon(Icons.add),
-        )],
+            width: MediaQuery.sizeOf(context).width - 20,
+            height: 100 //MediaQuery.sizeOf(context).width - 20,
+            ),
+//        FloatingActionButton(
+//            onPressed: () {
+//              ScaffoldMessenger.of(context).showSnackBar(SnackBar(duration: Duration(seconds: 10), content: Text("DEBUG")));
+//            },
+//            child: Icon(Icons.add),
+        // )],
+      ],
     );
   }
 
@@ -169,32 +170,41 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Text(
-            FirebaseAuth.instance.currentUser!.displayName!,
-            style: TextStyles.font15DarkBlue500Weight.copyWith(fontSize: 30.sp),
+          Text(FirebaseAuth.instance.currentUser!.displayName!,
+              style: TextStyle(fontSize: 30, color: Colors.white)),
+          SizedBox(
+            height: 10,
           ),
           Text(
             "Mostra questo QR per entrare!",
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: ColorsManager.mainBlue),
+            style: TextStyle(fontSize: 16, color: Colors.white),
+          ),
+          SizedBox(
+            height: 20,
           ),
           SizedBox(
             width: 250,
             child: PrettyQrView.data(
-              data: qrData,
-            ),
+                data: qrData,
+                decoration: PrettyQrDecoration(
+                  background: Colors.white,
+                )),
           ),
-          Gap(8.h),
-          AppTextButton(
-            buttonText: 'Logout',
-            textStyle: TextStyles.font14White400Weight,
-            buttonWidth: 100,
-            buttonHeight: 50,
-            onPressed: () {
-              context.read<AuthCubit>().signOut();
-            },
+          Gap(30.h),
+          Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.bottomCenter,
+              child: AppTextButton(
+                buttonText: 'Logout',
+                textStyle: TextStyles.font14White400Weight,
+                buttonWidth: 100,
+                buttonHeight: 50,
+                onPressed: () {
+                  context.read<AuthCubit>().signOut();
+                  context.pushNamed(Routes.loginScreen);
+                },
+              ),
+            ),
           )
         ],
       ),
@@ -205,11 +215,27 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: DefaultTabController(
         initialIndex: 1,
-        length: isAdmin ? 3 : 2,
+        //length: isAdmin ? 3 : 2,
+        length: 2,
         child: Scaffold(
+          backgroundColor: Color.fromRGBO(17, 17, 17, 1),
           appBar: AppBar(
-            title: const Text("UPPER"),
-            bottom: TabBar(tabs: _getTabBars()),
+            backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+            title: Padding(
+              padding: const EdgeInsets.only(top: 40.0),
+              //child: Center(child: Container(width: 300, height: 100, child: Image(image: AssetImage("assets/images/upper_2.png"),fit: BoxFit.scaleDown,))),
+              child: Center(
+                  child: Image(
+                image: AssetImage("assets/images/upper_2.png"),
+                fit: BoxFit.cover,
+                height: 40,
+              )),
+            ),
+            bottom: TabBar(
+              tabs: _getTabBars(),
+              indicatorColor: Colors.white,
+              padding: EdgeInsets.only(bottom: 10),
+            ),
           ),
           body: TabBarView(children: _tabBarViewWidgets()),
         ),

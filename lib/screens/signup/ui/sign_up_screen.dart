@@ -25,24 +25,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(
-          image: DecorationImage(image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
+          color: Color.fromRGBO(17, 17, 17, 1),
+          //image: DecorationImage(image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(40),
+          padding: const EdgeInsets.only(top: 10.0, right: 40, left: 40, bottom: 10),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Iscriviti ad UPPER',
-                  style: TextStyles.font24Blue700Weight,
+                  'Partecipa ad UPPER',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                Gap(8.h),
+                Gap(2.h),
                 Text(
                   'Iscriviti ora per conoscere in anteprima i nostri eventi!',
                   style: TextStyles.font14White400Weight,
                 ),
-                Gap(8.h),
+                Gap(20.h),
                 BlocConsumer<AuthCubit, AuthState>(
                   buildWhen: (previous, current) => previous != current,
                   listenWhen: (previous, current) => previous != current,

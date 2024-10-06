@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:upper/helpers/date_time_helper.dart';
+import 'package:upper/models/user.dart';
 
 class UpperEvent {
   final String title;
@@ -66,6 +67,13 @@ class UpperEvent {
       'time': time,
       'place': place,
       'imagePath': imagePath,
+    };
+  }
+
+  Map<String, Object?> partecipantToJson(String userUID) {
+    return {
+      'id': userUID,
+      'presence': true,
     };
   }
 }

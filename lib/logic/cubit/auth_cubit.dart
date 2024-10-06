@@ -86,6 +86,10 @@ class AuthCubit extends Cubit<AuthState> {
     return up.User.fromJson(doc.data()!);
   }
 
+  Future<String> getUserID(User user) async {
+    return _auth.currentUser!.uid.toString();
+  }
+
   Future<String> getUserLevel() async {
     var users = FirebaseFirestore.instance.collection('roles');
     var doc = await users.doc(_auth.currentUser!.uid).get();

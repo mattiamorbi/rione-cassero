@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,7 +30,7 @@ class _EventTileState extends State<EventTile> {
       []; // = Image(image: AssetImage("assets/images/loading.gif"));
   late bool visible = false;
 
-  bool _qrMode = false;
+  int _qrMode = 0;
 
   List<UpperEvent> data = [];
   int _focusedIndex = 0;
@@ -57,7 +58,7 @@ class _EventTileState extends State<EventTile> {
 
   void _enableQrMode() {
     setState(() {
-      _qrMode = true;
+      _qrMode = 1;
     });
   }
 
@@ -93,7 +94,7 @@ class _EventTileState extends State<EventTile> {
                   color: Colors.white),
             ),
             SizedBox(
-              height: 10,
+              height: 25,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -105,7 +106,6 @@ class _EventTileState extends State<EventTile> {
                   ),
                   onTap: () => _joinEvent(_focusedIndex),
                 ),
-
                 Visibility(
                   visible: widget.isAdmin,
                   child: SizedBox(
@@ -214,43 +214,247 @@ class _EventTileState extends State<EventTile> {
     );
   }
 
+  int age_calc(String birth) {
+    // La stringa della data di nascita
+    String birthDateString = birth;
+
+    // Converte la stringa in DateTime
+    DateTime birthDate =
+        DateTime.parse(birthDateString.split('/').reversed.join('-'));
+
+    // Data corrente
+    DateTime today = DateTime.now();
+
+    // Calcola l'età in anni
+    int age = today.year - birthDate.year;
+
+    // Corregge l'età se il compleanno non è ancora passato quest'anno
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+
+    return age;
+  }
+
+  Future<void> _accepetUser(up.User user) async {
+
+  }
+
+  Widget joinEventButton(double bWidth, double bHeight, String text, Icon icon,
+      Color color, VoidCallback onPressed) {
+    int b = color.blue;
+    int r = color.red;
+    int g = color.green;
+    return GestureDetector(
+      child: Container(
+        width: bWidth,
+        height: bHeight,
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(r, g, b, 0.15),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color, width: 2),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Visibility(
+              visible: icon != null,
+              child: Icon(
+                icon?.icon ?? Icons.add,
+                color: color,
+              )),
+          SizedBox(
+            width: 15,
+          ),
+          Visibility(
+            visible: text != "",
+            child:
+                Text(text ?? "", style: TextStyle(color: color, fontSize: 20)),
+          ),
+        ]),
+      ),
+      onTap: onPressed,
+    );
+  }
+
   Widget _qrCodeReaderWidget() {
+    var user = up.User.new( // per debug
+        name: "Mattia",
+        surname: "Morbidelli",
+        address: "Via degli Oppi, 134",
+        birthdate: "15/07/2008",
+        birthplace: "Arezzo",
+        cap: "52043",
+        cardNumber: 0,
+        city: "Castglion Fiorentino",
+        email: "mattia.morbidelli@gmail.com",
+        telephone: "3496880713");
+    //DateDuration age = AgeCalculator.age(DateTime(DateTime.parse(user.birthdate) as int));
+    int age = age_calc(user.birthdate);
     return Column(
+
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
           height: 15,
         ),
-        Expanded(
-          child: FlutterWebQrcodeScanner(
-              cameraDirection: CameraDirection.back,
-              stopOnFirstResult: true,
+        Visibility(
+          visible: _qrMode == 1,
+          child: Expanded(
+            child: FlutterWebQrcodeScanner(
+                cameraDirection: CameraDirection.back,
+                stopOnFirstResult: true,
 
-              //set false if you don't want to stop video preview on getting first result
-              onGetResult: (result) {
-                var decryptedData = AesHelper.decrypt(result);
-                var json = jsonDecode(decryptedData);
-                var user = up.User.fromJson(json);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("${user.name} ${user.surname}")));
-              },
-              width: 100,
-              height: 100 //MediaQuery.sizeOf(context).width - 20,
-              ),
+                //set false if you don't want to stop video preview on getting first result
+                onGetResult: (result) {
+                  var decryptedData = AesHelper.decrypt(result);
+                  var json = jsonDecode(decryptedData);
+                  user = up.User.fromJson(json);
+                  //ScaffoldMessenger.of(context).showSnackBar(
+                  //    SnackBar(content: Text("${user.name} ${user.surname}")));
+                  setState(() {
+                    _qrMode = 2;
+                  });
+                },
+                width: 100,
+                height: 100 //MediaQuery.sizeOf(context).width - 20,
+                ),
+          ),
         ),
-        FloatingActionButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                duration: Duration(seconds: 10), content: Text("DEBUG")));
-          },
-          child: Icon(Icons.add),
-        )
+        Visibility(
+          visible: _qrMode == 1,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FloatingActionButton(
+                backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+                onPressed: () {
+                  setState(() {
+                    _qrMode = 0;
+                  });
+                },
+                child: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(
+                width: 15,
+              ),
+              FloatingActionButton(
+                backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+                onPressed: () {
+                  setState(() {
+                    _qrMode = 2;
+                  });
+                },
+                child: Icon(
+                  Icons.add,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Visibility(
+            visible: _qrMode == 2,
+            child: Container(
+              //padding: EdgeInsets.all(40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.upperEvent[_focusedIndex].title,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                        "NOME  ",
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                      Text(
+                        "${user.name} ${user.surname}",
+                        style: TextStyle(color: Colors.white, fontSize: 24),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                        "DATA DI NASCITA  ",
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                      Text(
+                        user.birthdate,
+                        style: TextStyle(color: Colors.white, fontSize: 24),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                        "ETA'  ",
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        textAlign: TextAlign.start,
+                        "${age} anni",
+                        style: TextStyle(
+                            color: age < 18 ? Colors.red : Colors.white,
+                            fontSize: 24),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 40,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      joinEventButton(
+                        170,
+                        50,
+                        "Rifiuta",
+                        Icon(Icons.close),
+                        Colors.red,
+                        () => setState(() {
+                          _qrMode = 1;
+                        }),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      joinEventButton(170, 50, "Accetta", Icon(Icons.add),
+                          Colors.green, () => _accepetUser(user)),
+                    ],
+                  )
+                ],
+              ),
+            ))
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_qrMode) {
+    if (_qrMode == 0) {
       return Container(
         child: Column(
           children: <Widget>[
@@ -259,7 +463,7 @@ class _EventTileState extends State<EventTile> {
                 dynamicItemSize: true,
                 margin: EdgeInsets.symmetric(vertical: 10),
                 onItemFocus: _onItemFocus,
-                itemSize: 400,
+                itemSize: 410,
                 itemBuilder: _buildListItem,
                 itemCount: data.length,
                 key: sslKey,
@@ -276,7 +480,8 @@ class _EventTileState extends State<EventTile> {
     } else {
       return Container(
         height: 400,
-        width: 400,
+        padding: EdgeInsets.only(bottom: 20),
+        width: MediaQuery.of(context).size.width - 20,
         child: _qrCodeReaderWidget(),
       );
     }

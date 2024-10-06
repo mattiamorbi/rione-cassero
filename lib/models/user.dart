@@ -29,6 +29,7 @@ class User {
 
   String getQrData() => AesHelper.encrypt(jsonEncode(this));
 
+
   User.fromJson(Map<String, dynamic> json)
       : this(
           name: json['name']! as String,

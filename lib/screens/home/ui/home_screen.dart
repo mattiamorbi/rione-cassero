@@ -126,8 +126,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("${user.name} ${user.surname}")));
             },
-            width: MediaQuery.sizeOf(context).width - 20,
-            height: 100 //MediaQuery.sizeOf(context).width - 20,
+            width: 500,
+            height: 500 //MediaQuery.sizeOf(context).width - 20,
             ),
 //        FloatingActionButton(
 //            onPressed: () {

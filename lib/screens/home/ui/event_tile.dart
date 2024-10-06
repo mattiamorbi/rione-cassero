@@ -303,7 +303,7 @@ class _EventTileState extends State<EventTile> {
           child: Expanded(
             child: FlutterWebQrcodeScanner(
                 cameraDirection: CameraDirection.back,
-                stopOnFirstResult: true,
+                stopOnFirstResult: false,
 
                 //set false if you don't want to stop video preview on getting first result
                 onGetResult: (result) {
@@ -316,8 +316,8 @@ class _EventTileState extends State<EventTile> {
                     _qrMode = 2;
                   });
                 },
-                width: 100,
-                height: 100 //MediaQuery.sizeOf(context).width - 20,
+                width: 400,
+                height: 400, //MediaQuery.sizeOf(context).width - 20,
                 ),
           ),
         ),

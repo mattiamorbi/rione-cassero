@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:upper/theming/colors.dart';
 
 class AppTextButton extends StatelessWidget {
   final double? borderRadius;
@@ -30,6 +28,7 @@ class AppTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: onPressed,
       child: Container(
         width: buttonWidth,
         height: buttonHeight,
@@ -41,41 +40,15 @@ class AppTextButton extends StatelessWidget {
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Visibility(
             visible: buttonText != "",
-            child: Text(buttonText ?? "",
-                style: TextStyle(color: Colors.white, fontSize: 20)),
+            child: Text(buttonText, style: TextStyle(color: Colors.white, fontSize: 20)),
           ),
-          Visibility(visible: buttonIcon != null, child: Icon(buttonIcon?.icon ?? Icons.add, color: Colors.white,)),
+          Visibility(
+              visible: buttonIcon != null,
+              child: Icon(
+                buttonIcon?.icon ?? Icons.add,
+                color: Colors.white,
+              )),
         ]),
-      ),
-      onTap: onPressed,
-    );
-
-    return TextButton(
-      onPressed: onPressed,
-      style: ButtonStyle(
-        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              borderRadius ?? 16,
-            ),
-          ),
-        ),
-        backgroundColor: WidgetStatePropertyAll(
-          backgroundColor ?? ColorsManager.mainBlue,
-        ),
-        padding: WidgetStateProperty.all<EdgeInsets>(
-          EdgeInsets.symmetric(
-            horizontal: horizontalPadding?.w ?? 12.w,
-            vertical: verticalPadding?.h ?? 14.h,
-          ),
-        ),
-        fixedSize: WidgetStateProperty.all(
-          Size(buttonWidth?.w ?? double.maxFinite, buttonHeight?.h ?? 52.h),
-        ),
-      ),
-      child: Text(
-        buttonText,
-        style: textStyle,
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:time_machine/time_machine.dart';
 import 'package:upper/helpers/aes_helper.dart';
+import 'package:upper/helpers/date_time_helper.dart';
 
 class User {
   final String? uid;
@@ -16,7 +18,7 @@ class User {
   final int cardNumber;
 
   User({
-    this.uid,
+    required this.uid,
     required this.name,
     required this.surname,
     required this.email,
@@ -33,7 +35,7 @@ class User {
 
   User.fromJson(Map<String, dynamic> json)
       : this(
-          //uid: json['uid']! as String,
+          uid: json['uid']! as String,
           name: json['name']! as String,
           surname: json['surname']! as String,
           email: json['email'] as String,
@@ -46,9 +48,16 @@ class User {
           cardNumber: json['cardNumber'] as int,
         );
 
+  int getAge() {
+    LocalDate a = LocalDate.today();
+    LocalDate b = LocalDate.dateTime(DateTimeHelper.getDateTime(birthdate));
+    Period diff = a.periodSince(b);
+    return diff.years;
+  }
+
   Map<String, Object?> toJson() {
     return {
-      //'uid': uid,
+      'uid': uid,
       'name': name,
       'surname': surname,
       'email': email,

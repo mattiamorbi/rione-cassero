@@ -10,7 +10,6 @@ import 'package:upper/routing/routes.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/helpers/extensions.dart';
 import 'package:upper/logic/cubit/auth_cubit.dart';
-import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/password_validations.dart';
 import 'package:upper/models/user.dart' as up;

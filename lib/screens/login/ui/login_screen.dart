@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.max,
                 //crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(width: 200, height: 200, child: Image(image: AssetImage("assets/images/upper_2.png"), fit: BoxFit.fitWidth ,)),
+                  SizedBox(width: 200, height: 200, child: Image(image: AssetImage("assets/images/upper_2.png"), fit: BoxFit.fitWidth ,)),
                   SizedBox(height: 20),
                   EmailAndPassword(),
                   Gap(20.h),

@@ -1,9 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:upper/helpers/date_time_helper.dart';
-import 'package:upper/models/user.dart';
 
 class UpperEvent {
   final String title;
@@ -43,7 +41,11 @@ class UpperEvent {
           events.add(event);
         }
       },
-      onError: (e) => print("Error completing: $e"),
+      onError: (e) {
+        if (kDebugMode) {
+          print("Error completing: $e");
+        }
+      },
     );
 
     return events;

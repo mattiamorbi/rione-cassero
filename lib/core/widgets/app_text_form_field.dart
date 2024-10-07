@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:upper/theming/colors.dart';
-import 'package:upper/theming/styles.dart';
 
 class AppTextFormField extends StatelessWidget {
   final String hint;

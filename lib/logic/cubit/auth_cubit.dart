@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:upper/models/participant_data.dart';
 import 'package:upper/models/role.dart';
 import 'package:upper/models/user.dart' as up;
 
@@ -66,18 +67,21 @@ class AuthCubit extends Cubit<AuthState> {
     await users.doc(_auth.currentUser!.uid).set(user.toJson());
   }
 
-  Future<void> joinEvent(String eventId) async {
-    var eventsParticipants = FirebaseFirestore.instance.collection('events_participants');
-    var eventParticipants = await eventsParticipants.doc(eventId).get();
-    var user = {'id': _auth.currentUser!.uid, 'presence': false};
-    var participants = {
-      'users': [user]
-    };
-    if (eventParticipants.exists) {
-      participants['users'] = eventParticipants.data()!['users'];
-      participants['users']!.add(user);
-    }
-    await eventsParticipants.doc(eventId).set(participants);
+  Future<void> joinEvent(String eventId, up.User? user) async {
+    var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
+    var participantData = ParticipantData(booked: false, presence: true);
+    await eventsParticipants.doc(_auth.currentUser!.uid).set(participantData.toJson());
+  }
+
+  Future<void> unJoinEvent(String eventId, up.User? user) async {
+    var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.doc(_auth.currentUser!.uid).delete();
+  }
+
+  Future<ParticipantData?> getParticipantData(String eventId, up.User? user) async {
+    var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
+    var doc = await eventsParticipants.doc(_auth.currentUser!.uid).get();
+    return ParticipantData.fromJson(doc.data());
   }
 
   Future<up.User> getUser() async {

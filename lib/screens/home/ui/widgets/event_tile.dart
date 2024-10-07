@@ -30,8 +30,21 @@ class EventTile extends StatefulWidget {
 class _EventTileState extends State<EventTile> {
   List<Image> image = [];
   late bool visible = false;
-  up.User? _user;
-  ParticipantData? _participantData;
+  up.User? _user = up.User.new(
+      uid: "0000",
+      telephone: "0000",
+      email: "debug@debug",
+      city: "debug",
+      cardNumber: 0,
+      cap: "debug",
+      birthplace: "debug",
+      birthdate: "10/10/1999",
+      address: "debug",
+      surname: "debug",
+      name: "debug"
+  );
+  ParticipantData? _participantData = ParticipantData(
+      booked: false, presence: false);
 
   int _qrMode = 0;
 
@@ -51,11 +64,18 @@ class _EventTileState extends State<EventTile> {
       data.add(widget.upperEvent[i]);
       _loadImage(i);
     }
+
+    _onItemFocus(0);
   }
 
-  void _onItemFocus(int index) {
+  Future<void> _onItemFocus(int index) async {
+    print(index);
+    //setState(() async {
+      _participantData = await context.read<AuthCubit>().getParticipantData(
+          widget.upperEvent[index].id!, _user);
+    //});
     setState(() {
-      _focusedIndex = index;
+      _qrMode = 0;
     });
   }
 
@@ -65,15 +85,23 @@ class _EventTileState extends State<EventTile> {
     });
   }
 
-  Future<void> _joinEvent(int index) async {
-    await context.read<AuthCubit>().joinEvent(widget.upperEvent[index].id!, _user);
+  Future<void> _toggleBookEvent(int index) async {
+    if (_participantData!.booked) {
+      await context.read<AuthCubit>().unbookEvent(
+          widget.upperEvent[index].id!, _user);
+    } else
+      await context.read<AuthCubit>().bookEvent(
+          widget.upperEvent[index].id!, _user);
+
+    _participantData = await _getParticipantData(index);
     setState(() {
-      _qrMode = 1;
+      _qrMode = 0;
     });
   }
 
-  Future<ParticipantData?> _getParticipantData(int index) async {
-    return await context.read<AuthCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
+  Future<ParticipantData> _getParticipantData(int index) async {
+    return await context.read<AuthCubit>().getParticipantData(
+        widget.upperEvent[index].id!, _user);
   }
 
   Widget _buildItemDetail() {
@@ -84,15 +112,21 @@ class _EventTileState extends State<EventTile> {
           children: [
             Text(
               data[_focusedIndex].title,
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             Text(
               "${data[_focusedIndex].date} - ${data[_focusedIndex].time}",
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             Text(
               data[_focusedIndex].place,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             SizedBox(
               height: 25,
@@ -102,10 +136,11 @@ class _EventTileState extends State<EventTile> {
               children: [
                 GestureDetector(
                   child: Icon(
-                    Icons.person_add_alt_1,
+                    _participantData!.booked ? Icons.person_remove_alt_1 : Icons
+                        .person_add_alt_1,
                     color: Colors.white,
                   ),
-                  onTap: () => _joinEvent(_focusedIndex),
+                  onTap: () => _toggleBookEvent(_focusedIndex),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
@@ -167,13 +202,15 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _acceptUser(int index) async {
-    await context.read<AuthCubit>().joinEvent(widget.upperEvent[index].id!, _user);
+    await context.read<AuthCubit>().joinEvent(
+        widget.upperEvent[index].id!, _user);
     setState(() {
       _qrMode = 1;
     });
   }
 
-  Widget joinEventButton(double bWidth, double bHeight, String text, Icon? icon, Color color, VoidCallback onPressed) {
+  Widget joinEventButton(double bWidth, double bHeight, String text, Icon? icon,
+      Color color, VoidCallback onPressed) {
     int b = color.blue;
     int r = color.red;
     int g = color.green;
@@ -225,10 +262,10 @@ class _EventTileState extends State<EventTile> {
               onGetResult: (result) async {
                 var decryptedData = AesHelper.decrypt(result);
                 var json = jsonDecode(decryptedData);
+                _user = up.User.fromJson(json);
                 _participantData = await _getParticipantData(_focusedIndex);
                 setState(() {
                   _qrMode = 2;
-                  _user = up.User.fromJson(json);
                 });
               },
               width: 400,
@@ -244,16 +281,17 @@ class _EventTileState extends State<EventTile> {
               FloatingActionButton(
                 backgroundColor: Color.fromRGBO(17, 17, 17, 1),
                 onPressed: () {
-                  setState(() {
-                    _qrMode = 0;
-                  });
+                  //setState(() {
+                  //  _qrMode = 0;
+                  //});
+                  _onItemFocus(_focusedIndex);
                 },
                 child: Icon(
                   Icons.arrow_back,
                   color: Colors.white,
                 ),
               ),
-              Gap(15.w),
+              //Gap(15.w),
             ],
           ),
         ),
@@ -268,12 +306,26 @@ class _EventTileState extends State<EventTile> {
                 ),
                 Gap(25.h),
                 Visibility(
-                  visible: _participantData == null ? false : _participantData!.presence,
+                  visible: _participantData == null ? false : _participantData!
+                      .presence,
                   child: Column(
                     children: [
                       Text(
                         "Già entrato",
                         style: TextStyle(color: Colors.red, fontSize: 36),
+                      ),
+                      Gap(25.h),
+                    ],
+                  ),
+                ),
+                Visibility(
+                  visible: _participantData == null ? false : _participantData!
+                      .booked & !_participantData!.presence,
+                  child: Column(
+                    children: [
+                      Text(
+                        "Prenotazione effettuata",
+                        style: TextStyle(color: Colors.green, fontSize: 36),
                       ),
                       Gap(25.h),
                     ],
@@ -321,7 +373,9 @@ class _EventTileState extends State<EventTile> {
                     Text(
                       textAlign: TextAlign.start,
                       "${_user!.getAge()} anni",
-                      style: TextStyle(color: _user!.getAge() < 18 ? Colors.red : Colors.white, fontSize: 24),
+                      style: TextStyle(
+                          color: _user!.getAge() < 18 ? Colors.red : Colors
+                              .white, fontSize: 24),
                     ),
                   ],
                 ),
@@ -335,9 +389,10 @@ class _EventTileState extends State<EventTile> {
                       "Rifiuta",
                       Icon(Icons.close),
                       Colors.red,
-                      () => setState(() {
-                        _qrMode = 1;
-                      }),
+                          () =>
+                          setState(() {
+                            _qrMode = 1;
+                          }),
                     ),
                     SizedBox(
                       width: 10,
@@ -348,7 +403,7 @@ class _EventTileState extends State<EventTile> {
                       "Accetta",
                       Icon(Icons.add),
                       Colors.green,
-                      () => _acceptUser(_focusedIndex),
+                          () => _acceptUser(_focusedIndex),
                     ),
                   ],
                 )
@@ -367,11 +422,19 @@ class _EventTileState extends State<EventTile> {
             child: ScrollSnapList(
               dynamicItemSize: true,
               margin: EdgeInsets.symmetric(vertical: 10),
-              onItemFocus: _onItemFocus,
+              onItemFocus: (index)  {
+                setState(() {
+                  _focusedIndex = index;
+                });
+              _onItemFocus(index);
+            },
+              //
+              // },
               itemSize: 410,
               itemBuilder: _buildListItem,
               itemCount: data.length,
               key: sslKey,
+              initialIndex: _focusedIndex as double,
               background: Colors.white,
               padding: EdgeInsets.all(8.0),
               //dynamicItemOpacity: 0.2,
@@ -385,7 +448,10 @@ class _EventTileState extends State<EventTile> {
       return Container(
         height: 400,
         padding: EdgeInsets.only(bottom: 20),
-        width: MediaQuery.of(context).size.width - 20,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width - 20,
         child: _qrCodeReaderWidget(),
       );
     }
@@ -409,6 +475,7 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _editEvent(int index) async {
-    context.pushNamed(Routes.editEventScreen, arguments: widget.upperEvent[index]);
+    context.pushNamed(
+        Routes.editEventScreen, arguments: widget.upperEvent[index]);
   }
 }

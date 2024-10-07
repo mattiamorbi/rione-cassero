@@ -1,5 +1,5 @@
 class ParticipantData {
-  final bool booked;
+  late final bool booked;
   final bool presence;
 
   ParticipantData({required this.booked, required this.presence});
@@ -8,8 +8,8 @@ class ParticipantData {
     if (json == null) return null;
 
     return ParticipantData(
-      booked: json['booked']! as bool,
-      presence: json['presence']! as bool,
+      booked: json['booked'] == null ? false : json['booked']! as bool,
+      presence: json['presence'] == null ? false : json['presence']! as bool,
     );
   }
 

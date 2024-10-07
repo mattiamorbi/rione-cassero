@@ -67,21 +67,43 @@ class AuthCubit extends Cubit<AuthState> {
     await users.doc(_auth.currentUser!.uid).set(user.toJson());
   }
 
-  Future<void> joinEvent(String eventId, up.User? user) async {
+  Future<void> bookEvent(String eventId, up.User? user) async {
+    ParticipantData? temp_data = await getParticipantData(eventId, user);
     var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
-    var participantData = ParticipantData(booked: false, presence: true);
-    await eventsParticipants.doc(_auth.currentUser!.uid).set(participantData.toJson());
+    await eventsParticipants.doc(_auth.currentUser!.uid).set(
+        {'booked': true, 'presence': temp_data?.presence});
+  }
+
+  Future<void> unbookEvent(String eventId, up.User? user) async {
+    ParticipantData? temp_data = await getParticipantData(eventId, user);
+    var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.doc(_auth.currentUser!.uid).set(
+        {'booked': false, 'presence': temp_data?.presence});
+  }
+
+
+
+  Future<void> joinEvent(String eventId, up.User? user) async {
+    ParticipantData? temp_data = await getParticipantData(eventId, user);
+    var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.doc(_auth.currentUser!.uid).set(
+        {'booked': temp_data?.booked, 'presence': true});
   }
 
   Future<void> unJoinEvent(String eventId, up.User? user) async {
+    ParticipantData? temp_data = await getParticipantData(eventId, user);
     var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants.doc(_auth.currentUser!.uid).delete();
+    await eventsParticipants.doc(_auth.currentUser!.uid).set(
+        {'booked': temp_data?.booked, 'presence': false});
   }
 
-  Future<ParticipantData?> getParticipantData(String eventId, up.User? user) async {
+  Future<ParticipantData> getParticipantData(String eventId, up.User? user) async {
     var eventsParticipants = FirebaseFirestore.instance.collection('events').doc(eventId).collection("participants");
     var doc = await eventsParticipants.doc(_auth.currentUser!.uid).get();
-    return ParticipantData.fromJson(doc.data());
+    print(doc.data());
+    ParticipantData? temp = ParticipantData.fromJson(doc.data());
+    temp ??= ParticipantData(booked: false, presence: false);
+    return temp;
   }
 
   Future<up.User> getUser() async {

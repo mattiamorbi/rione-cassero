@@ -1,4 +1,3 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,7 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
-          final bool connected = value.any((element) => element != ConnectivityResult.none);
+          final bool connected =
+              value.any((element) => element != ConnectivityResult.none);
           return connected ? _homePage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -98,16 +98,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _eventsWidget() {
-    return Column(
-      children: [
-        const SizedBox(
-          height: 10,
-        ),
-        Expanded(
-          child: EventTile(upperEvent: events, isAdmin: isAdmin),
-        ),
-      ],
-    );
+    if (events.isNotEmpty) {
+      return Column(
+        children: [
+          const SizedBox(
+            height: 10,
+          ),
+          Expanded(
+            child: EventTile(upperEvent: events, isAdmin: isAdmin),
+          ),
+        ],
+      );
+    } else {
+      return Container(
+          child: Center(
+        child: Image(image: AssetImage("assets/images/loading.gif")),
+      ));
+    }
   }
 
   Widget _profileWidget() {
@@ -115,7 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Text(FirebaseAuth.instance.currentUser!.displayName!, style: TextStyle(fontSize: 30, color: Colors.white)),
+          Text(FirebaseAuth.instance.currentUser!.displayName!,
+              style: TextStyle(fontSize: 30, color: Colors.white)),
           SizedBox(
             height: 10,
           ),
@@ -129,7 +137,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 260,
             height: 260,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
             child: Center(
               child: SizedBox(
                 width: 250,

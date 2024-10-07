@@ -28,7 +28,7 @@ class EventTile extends StatefulWidget {
 }
 
 class _EventTileState extends State<EventTile> {
-  List<Image> image = []; // = Image(image: AssetImage("assets/images/loading.gif"));
+  List<Image> image = [];
   late bool visible = false;
   up.User? _user;
   ParticipantData? _participantData;

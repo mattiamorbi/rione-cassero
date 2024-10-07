@@ -13,6 +13,7 @@ import 'package:upper/routing/routes.dart';
 import '../../../core/widgets/scroll_snap_list.dart';
 import '../../../helpers/aes_helper.dart';
 import '../../../models/user.dart' as up;
+import '../../../models/user.dart';
 
 // ignore: must_be_immutable
 class EventTile extends StatefulWidget {
@@ -31,6 +32,7 @@ class _EventTileState extends State<EventTile> {
   late bool visible = false;
 
   int _qrMode = 0;
+  late User scanned_user;
 
   List<UpperEvent> data = [];
   int _focusedIndex = 0;
@@ -277,6 +279,7 @@ class _EventTileState extends State<EventTile> {
   }
 
   Widget _qrCodeReaderWidget() {
+
     var user = up.User.new( // per debug
         name: "Mattia",
         surname: "Morbidelli",
@@ -287,9 +290,11 @@ class _EventTileState extends State<EventTile> {
         cardNumber: 0,
         city: "Castglion Fiorentino",
         email: "mattia.morbidelli@gmail.com",
-        telephone: "3496880713");
+        telephone: "3496880713", uid: "test");
+
     //DateDuration age = AgeCalculator.age(DateTime(DateTime.parse(user.birthdate) as int));
     int age = age_calc(user.birthdate);
+    scanned_user = user;
     return Column(
 
       mainAxisAlignment: MainAxisAlignment.center,
@@ -309,12 +314,13 @@ class _EventTileState extends State<EventTile> {
                 onGetResult: (result) {
                   var decryptedData = AesHelper.decrypt(result);
                   var json = jsonDecode(decryptedData);
-                  user = up.User.fromJson(json);
                   //ScaffoldMessenger.of(context).showSnackBar(
                   //    SnackBar(content: Text("${user.name} ${user.surname}")));
                   setState(() {
                     _qrMode = 2;
                   });
+
+                  scanned_user = up.User.fromJson(json);
                 },
                 width: 400,
                 height: 400, //MediaQuery.sizeOf(context).width - 20,
@@ -344,6 +350,7 @@ class _EventTileState extends State<EventTile> {
               FloatingActionButton(
                 backgroundColor: Color.fromRGBO(17, 17, 17, 1),
                 onPressed: () {
+                  scanned_user = user;
                   setState(() {
                     _qrMode = 2;
                   });
@@ -378,7 +385,7 @@ class _EventTileState extends State<EventTile> {
                         style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                       Text(
-                        "${user.name} ${user.surname}",
+                        "${scanned_user.name} ${scanned_user.surname}",
                         style: TextStyle(color: Colors.white, fontSize: 24),
                       ),
                     ],
@@ -394,7 +401,7 @@ class _EventTileState extends State<EventTile> {
                         style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                       Text(
-                        user.birthdate,
+                        scanned_user.birthdate,
                         style: TextStyle(color: Colors.white, fontSize: 24),
                       ),
                     ],

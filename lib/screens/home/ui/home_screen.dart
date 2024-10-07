@@ -182,13 +182,21 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(
             height: 20,
           ),
-          SizedBox(
-            width: 250,
-            child: PrettyQrView.data(
-                data: qrData,
-                decoration: PrettyQrDecoration(
-                  background: Colors.white,
-                )),
+          Container(
+            width: 260,
+            height: 260,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            child: Center(
+              child: SizedBox(
+                width: 250,
+                child: PrettyQrView.data(
+                    data: qrData,
+                    decoration: PrettyQrDecoration(
+                      background: Colors.white,
+                    )),
+              ),
+            ),
           ),
           Gap(30.h),
           Expanded(
@@ -225,11 +233,16 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.only(top: 40.0),
               //child: Center(child: Container(width: 300, height: 100, child: Image(image: AssetImage("assets/images/upper_2.png"),fit: BoxFit.scaleDown,))),
               child: Center(
-                  child: Image(
-                image: AssetImage("assets/images/upper_2.png"),
-                fit: BoxFit.cover,
-                height: 40,
-              )),
+                child: Text(
+                  "UPPER",
+                  style: TextStyle(color: Colors.white, fontSize: 25),
+                ),
+//                  child: Image(
+//                image: AssetImage("assets/images/upper_2.png"),
+//                fit: BoxFit.cover,
+//                height: 40,
+//              )),
+              ),
             ),
             bottom: TabBar(
               tabs: _getTabBars(),

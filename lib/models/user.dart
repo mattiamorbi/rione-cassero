@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:upper/helpers/aes_helper.dart';
 
 class User {
-  final String uid;
+  final String? uid;
   final String name;
   final String surname;
   final String email;
@@ -16,7 +16,7 @@ class User {
   final int cardNumber;
 
   User({
-    required this.uid,
+    this.uid,
     required this.name,
     required this.surname,
     required this.email,
@@ -31,10 +31,9 @@ class User {
 
   String getQrData() => AesHelper.encrypt(jsonEncode(this));
 
-
   User.fromJson(Map<String, dynamic> json)
       : this(
-        uid : json['uid']! as String,
+          //uid: json['uid']! as String,
           name: json['name']! as String,
           surname: json['surname']! as String,
           email: json['email'] as String,
@@ -49,7 +48,7 @@ class User {
 
   Map<String, Object?> toJson() {
     return {
-      'uid': uid,
+      //'uid': uid,
       'name': name,
       'surname': surname,
       'email': email,

@@ -386,6 +386,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             city: cityController.text,
             telephone: telephoneController.text,
             cardNumber: 0,
+            uid: "test"
           );
           context.read<AuthCubit>().signUpWithEmail(
                 user,

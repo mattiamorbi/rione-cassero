@@ -9,7 +9,7 @@ import 'package:upper/helpers/date_time_helper.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/auth_cubit.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/password_validations.dart';
 import 'package:upper/models/user.dart' as up;
@@ -72,7 +72,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           genericField(cityController, 'Citta', 'Inserisci una citta valida'),
           capField(),
           genericField(telephoneController, 'Telefono', 'Inserisci un telefono valido'),
-
           Gap(5.h),
           PasswordValidations(
             hasMinLength: hasMinLength,
@@ -208,34 +207,28 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   @override
   void initState() {
     super.initState();
-    setupPasswordControllerListener();
+    _setupPasswordControllerListener();
   }
 
   Widget loginButton(BuildContext context) {
-
     return GestureDetector(
       child: Container(
         width: 200,
         height: 40,
-         decoration: BoxDecoration(
-       color: Color.fromRGBO(17, 17, 17, 1),
-       borderRadius: BorderRadius.circular(10),
-       border: Border.all(color: Colors.white, width: 2),
-         ),
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(17, 17, 17, 1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white, width: 2),
+        ),
         child: Center(child: Text("Entra in UPPER", style: TextStyle(color: Colors.white, fontSize: 20))),
-
       ),
-        onTap: () async {
+      onTap: () async {
         passwordFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
-          context.read<AuthCubit>().signInWithEmail(
-                emailController.text,
-                passwordController.text,
-              );
+          context.read<AppCubit>().signInWithEmail(emailController.text, passwordController.text);
         }
       },
     );
-
 
 //    return AppTextButton(
 //      buttonText: "Entra in UPPER",
@@ -348,7 +341,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     );
   }
 
-  void setupPasswordControllerListener() {
+  void _setupPasswordControllerListener() {
     passwordController.addListener(() {
       setState(() {
         hasMinLength = AppRegex.isPasswordValid(passwordController.text);
@@ -357,7 +350,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   }
 
   Widget signUpButton(BuildContext context) {
-
     return GestureDetector(
       child: Container(
         width: 200,
@@ -368,57 +360,26 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           border: Border.all(color: Colors.white, width: 2),
         ),
         child: Center(child: Text("Iscriviti", style: TextStyle(color: Colors.white, fontSize: 20))),
-
       ),
       onTap: () async {
         passwordFocusNode.unfocus();
         passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
           var user = up.User(
-            name: nameController.text,
-            surname: surnameController.text,
-            address: addressController.text,
-            birthplace: birthplaceController.text,
-            email: emailController.text,
-            birthdate: birthdateController.text,
-            cap: capController.text,
-            city: cityController.text,
-            telephone: telephoneController.text,
-            cardNumber: 0,
-            uid: "test"
-          );
-          context.read<AuthCubit>().signUpWithEmail(
-                user,
-                passwordController.text,
-              );
+              name: nameController.text,
+              surname: surnameController.text,
+              address: addressController.text,
+              birthplace: birthplaceController.text,
+              email: emailController.text,
+              birthdate: birthdateController.text,
+              cap: capController.text,
+              city: cityController.text,
+              telephone: telephoneController.text,
+              cardNumber: 0,
+              uid: "test");
+          context.read<AppCubit>().signUpWithEmail(user, passwordController.text);
         }
       },
-  );
-//    return AppTextButton(
-//      buttonText: "Iscriviti",
-//      textStyle: TextStyles.font16White600Weight,
-//      onPressed: () async {
-//        passwordFocusNode.unfocus();
-//        passwordConfirmationFocusNode.unfocus();
-//        if (formKey.currentState!.validate()) {
-//          var user = up.User(
-//            name: nameController.text,
-//            surname: surnameController.text,
-//            address: addressController.text,
-//            birthplace: birthplaceController.text,
-//            email: emailController.text,
-//            birthdate: birthdateController.text,
-//            cap: capController.text,
-//            city: cityController.text,
-//            telephone: telephoneController.text,
-//            cardNumber: 0,
-//          );
-//          context.read<AuthCubit>().signUpWithEmail(
-//                user,
-//                passwordController.text,
-//              );
-//        }
-//      },
-//    );
+    );
   }
 }

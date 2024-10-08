@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:upper/helpers/date_time_helper.dart';
@@ -29,28 +28,6 @@ class UpperEvent {
     return await imageRef.getData();
   }
 
-  static Future<List<UpperEvent>> getUpperEvents() async {
-    List<UpperEvent> events = [];
-
-    var eventsCollection = FirebaseFirestore.instance.collection("events");
-    await eventsCollection.get().then(
-      (querySnapshot) {
-        for (var doc in querySnapshot.docs) {
-          var event = UpperEvent.fromJson(doc.data());
-          event.id = doc.id;
-          events.add(event);
-        }
-      },
-      onError: (e) {
-        if (kDebugMode) {
-          print("Error completing: $e");
-        }
-      },
-    );
-
-    return events;
-  }
-
   UpperEvent.fromJson(Map<String, dynamic> json)
       : this(
           title: json['title']! as String,
@@ -72,7 +49,7 @@ class UpperEvent {
     };
   }
 
-  Map<String, Object?> partecipantToJson(String userUID) {
+  Map<String, Object?> participantToJson(String userUID) {
     return {
       'id': userUID,
       'presence': true,

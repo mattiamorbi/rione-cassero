@@ -8,7 +8,7 @@ import 'package:flutter_web_qrcode_scanner/flutter_web_qrcode_scanner.dart';
 import 'package:gap/gap.dart';
 import 'package:scroll_snap_list/scroll_snap_list.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/auth_cubit.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/models/participant_data.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/routing/routes.dart';
@@ -30,21 +30,8 @@ class EventTile extends StatefulWidget {
 class _EventTileState extends State<EventTile> {
   List<Image> image = [];
   late bool visible = false;
-  up.User? _user = up.User.new(
-      uid: "0000",
-      telephone: "0000",
-      email: "debug@debug",
-      city: "debug",
-      cardNumber: 0,
-      cap: "debug",
-      birthplace: "debug",
-      birthdate: "10/10/1999",
-      address: "debug",
-      surname: "debug",
-      name: "debug"
-  );
-  ParticipantData? _participantData = ParticipantData(
-      booked: false, presence: false);
+  up.User? _user;
+  ParticipantData? _participantData;
 
   int _qrMode = 0;
 
@@ -69,10 +56,11 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _onItemFocus(int index) async {
-    print(index);
+    if (kDebugMode) {
+      print(index);
+    }
     //setState(() async {
-      _participantData = await context.read<AuthCubit>().getParticipantData(
-          widget.upperEvent[index].id!, _user);
+    _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
     //});
     setState(() {
       _qrMode = 0;
@@ -87,11 +75,10 @@ class _EventTileState extends State<EventTile> {
 
   Future<void> _toggleBookEvent(int index) async {
     if (_participantData!.booked) {
-      await context.read<AuthCubit>().unbookEvent(
-          widget.upperEvent[index].id!, _user);
-    } else
-      await context.read<AuthCubit>().bookEvent(
-          widget.upperEvent[index].id!, _user);
+      await context.read<AppCubit>().unBookEvent(widget.upperEvent[index].id!, _user);
+    } else {
+      await context.read<AppCubit>().bookEvent(widget.upperEvent[index].id!, _user);
+    }
 
     _participantData = await _getParticipantData(index);
     setState(() {
@@ -100,8 +87,7 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<ParticipantData> _getParticipantData(int index) async {
-    return await context.read<AuthCubit>().getParticipantData(
-        widget.upperEvent[index].id!, _user);
+    return await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
   }
 
   Widget _buildItemDetail() {
@@ -112,21 +98,15 @@ class _EventTileState extends State<EventTile> {
           children: [
             Text(
               data[_focusedIndex].title,
-              style: TextStyle(fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Text(
               "${data[_focusedIndex].date} - ${data[_focusedIndex].time}",
-              style: TextStyle(fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Text(
               data[_focusedIndex].place,
-              style: TextStyle(fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             SizedBox(
               height: 25,
@@ -136,8 +116,7 @@ class _EventTileState extends State<EventTile> {
               children: [
                 GestureDetector(
                   child: Icon(
-                    _participantData!.booked ? Icons.person_remove_alt_1 : Icons
-                        .person_add_alt_1,
+                    (_participantData?.booked ?? false) ? Icons.person_remove_alt_1 : Icons.person_add_alt_1,
                     color: Colors.white,
                   ),
                   onTap: () => _toggleBookEvent(_focusedIndex),
@@ -202,15 +181,13 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _acceptUser(int index) async {
-    await context.read<AuthCubit>().joinEvent(
-        widget.upperEvent[index].id!, _user);
+    await context.read<AppCubit>().joinEvent(widget.upperEvent[index].id!, _user);
     setState(() {
       _qrMode = 1;
     });
   }
 
-  Widget joinEventButton(double bWidth, double bHeight, String text, Icon? icon,
-      Color color, VoidCallback onPressed) {
+  Widget _joinEventButton(double bWidth, double bHeight, String text, Icon? icon, Color color, VoidCallback onPressed) {
     int b = color.blue;
     int r = color.red;
     int g = color.green;
@@ -306,8 +283,7 @@ class _EventTileState extends State<EventTile> {
                 ),
                 Gap(25.h),
                 Visibility(
-                  visible: _participantData == null ? false : _participantData!
-                      .presence,
+                  visible: _participantData == null ? false : _participantData!.presence,
                   child: Column(
                     children: [
                       Text(
@@ -319,8 +295,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: _participantData == null ? false : _participantData!
-                      .booked & !_participantData!.presence,
+                  visible: _participantData == null ? false : _participantData!.booked & !_participantData!.presence,
                   child: Column(
                     children: [
                       Text(
@@ -372,10 +347,8 @@ class _EventTileState extends State<EventTile> {
                     ),
                     Text(
                       textAlign: TextAlign.start,
-                      "${_user!.getAge()} anni",
-                      style: TextStyle(
-                          color: _user!.getAge() < 18 ? Colors.red : Colors
-                              .white, fontSize: 24),
+                      "${_user?.getAge()} anni",
+                      style: TextStyle(color: (_user?.getAge() ?? 0) < 18 ? Colors.red : Colors.white, fontSize: 24),
                     ),
                   ],
                 ),
@@ -383,27 +356,26 @@ class _EventTileState extends State<EventTile> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    joinEventButton(
+                    _joinEventButton(
                       170,
                       50,
                       "Rifiuta",
                       Icon(Icons.close),
                       Colors.red,
-                          () =>
-                          setState(() {
-                            _qrMode = 1;
-                          }),
+                      () => setState(() {
+                        _qrMode = 1;
+                      }),
                     ),
                     SizedBox(
                       width: 10,
                     ),
-                    joinEventButton(
+                    _joinEventButton(
                       170,
                       50,
                       "Accetta",
                       Icon(Icons.add),
                       Colors.green,
-                          () => _acceptUser(_focusedIndex),
+                      () => _acceptUser(_focusedIndex),
                     ),
                   ],
                 )
@@ -422,12 +394,12 @@ class _EventTileState extends State<EventTile> {
             child: ScrollSnapList(
               dynamicItemSize: true,
               margin: EdgeInsets.symmetric(vertical: 10),
-              onItemFocus: (index)  {
+              onItemFocus: (index) {
                 setState(() {
                   _focusedIndex = index;
                 });
-              _onItemFocus(index);
-            },
+                _onItemFocus(index);
+              },
               //
               // },
               itemSize: 410,
@@ -448,10 +420,7 @@ class _EventTileState extends State<EventTile> {
       return Container(
         height: 400,
         padding: EdgeInsets.only(bottom: 20),
-        width: MediaQuery
-            .of(context)
-            .size
-            .width - 20,
+        width: MediaQuery.of(context).size.width - 20,
         child: _qrCodeReaderWidget(),
       );
     }
@@ -475,7 +444,6 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _editEvent(int index) async {
-    context.pushNamed(
-        Routes.editEventScreen, arguments: widget.upperEvent[index]);
+    context.pushNamed(Routes.editEventScreen, arguments: widget.upperEvent[index]);
   }
 }

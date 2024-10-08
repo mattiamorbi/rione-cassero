@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 
-import 'package:upper/logic/cubit/auth_cubit.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/screens/forget/ui/forget_screen.dart';
 import 'package:upper/screens/home/ui/home_screen.dart';
@@ -11,10 +11,10 @@ import 'package:upper/screens/signup/ui/sign_up_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
-  late AuthCubit authCubit;
+  late AppCubit authCubit;
 
   AppRouter() {
-    authCubit = AuthCubit();
+    authCubit = AppCubit();
   }
 
   Route? generateRoute(RouteSettings settings) {

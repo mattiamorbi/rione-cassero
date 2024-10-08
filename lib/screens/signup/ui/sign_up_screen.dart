@@ -8,7 +8,7 @@ import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
 import 'package:upper/core/widgets/progress_indicator.dart' as pi;
 import 'package:upper/core/widgets/terms_and_conditions_text.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/auth_cubit.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/theming/styles.dart';
 
@@ -44,7 +44,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   style: TextStyles.font14White400Weight,
                 ),
                 Gap(20.h),
-                BlocConsumer<AuthCubit, AuthState>(
+                BlocConsumer<AppCubit, AppState>(
                   buildWhen: (previous, current) => previous != current,
                   listenWhen: (previous, current) => previous != current,
                   listener: (context, state) async {
@@ -108,6 +108,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<AuthCubit>(context);
+    BlocProvider.of<AppCubit>(context);
   }
 }

@@ -8,7 +8,7 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/auth_cubit.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/screens/home/ui/widgets/event_tile.dart';
@@ -32,8 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
-          final bool connected =
-              value.any((element) => element != ConnectivityResult.none);
+          final bool connected = value.any((element) => element != ConnectivityResult.none);
           return connected ? _homePage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -42,43 +41,34 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-//     floatingActionButton: Visibility(
-//       visible: isAdmin,
-//       child: FloatingActionButton(
-//         onPressed: () {
-//           context.pushNamed(Routes.newEventScreen);
-//         },
-//         child: const Icon(Icons.add),
-//       ),
-//     ),
     );
   }
 
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<AuthCubit>(context);
+    BlocProvider.of<AppCubit>(context);
     _loadUserLevel();
     _loadEvents();
     _loadQr();
   }
 
   void _loadQr() async {
-    var user = await context.read<AuthCubit>().getUser();
+    var user = await context.read<AppCubit>().getUser();
     setState(() {
       qrData = user.getQrData();
     });
   }
 
   void _loadUserLevel() async {
-    var level = await context.read<AuthCubit>().getUserLevel();
+    var level = await context.read<AppCubit>().getUserLevel();
     setState(() {
       isAdmin = level == "admin";
     });
   }
 
   void _loadEvents() async {
-    var tmpEvents = await UpperEvent.getUpperEvents();
+    var tmpEvents = await context.read<AppCubit>().getUpperEvents();
     setState(() {
       events = tmpEvents;
     });
@@ -110,10 +100,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       );
     } else {
-      return Container(
-          child: Center(
+      return Center(
         child: Image(image: AssetImage("assets/images/loading.gif")),
-      ));
+      );
     }
   }
 
@@ -122,8 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Text(FirebaseAuth.instance.currentUser!.displayName!,
-              style: TextStyle(fontSize: 30, color: Colors.white)),
+          Text(FirebaseAuth.instance.currentUser!.displayName!, style: TextStyle(fontSize: 30, color: Colors.white)),
           SizedBox(
             height: 10,
           ),
@@ -137,8 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 260,
             height: 260,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(5)),
             child: Center(
               child: SizedBox(
                 width: 250,
@@ -161,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 buttonWidth: 100,
                 buttonHeight: 50,
                 onPressed: () {
-                  context.read<AuthCubit>().signOut();
+                  context.read<AppCubit>().signOut();
                   context.pushNamed(Routes.loginScreen);
                 },
               ),

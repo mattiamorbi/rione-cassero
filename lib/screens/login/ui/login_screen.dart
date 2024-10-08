@@ -10,7 +10,7 @@ import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/core/widgets/progress_indicator.dart' as pi;
 import 'package:upper/core/widgets/terms_and_conditions_text.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/auth_cubit.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/screens/login/ui/widgets/do_not_have_account.dart';
 import 'package:upper/theming/colors.dart';
@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<AuthCubit>(context);
+    BlocProvider.of<AppCubit>(context);
   }
 
   Widget _loginPage(BuildContext context) {
@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(top: 10.0, right: 40, left: 40, bottom: 10),
-          child: BlocConsumer<AuthCubit, AuthState>(
+          child: BlocConsumer<AppCubit, AppState>(
             buildWhen: (previous, current) => previous != current,
             listenWhen: (previous, current) => previous != current,
             listener: (context, state) async {

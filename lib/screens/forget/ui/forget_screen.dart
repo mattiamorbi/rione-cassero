@@ -8,7 +8,7 @@ import 'package:gap/gap.dart';
 import 'package:upper/core/widgets/already_have_account_text.dart';
 import 'package:upper/core/widgets/progress_indicator.dart' as pi;
 import 'package:upper/core/widgets/terms_and_conditions_text.dart';
-import 'package:upper/logic/cubit/auth_cubit.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/theming/styles.dart';
 import 'package:upper/screens/forget/ui/widgets/password_reset.dart';
 
@@ -51,7 +51,7 @@ class _ForgetScreenState extends State<ForgetScreen> {
                         ),
                       ),
                       Gap(20.h),
-                      BlocConsumer<AuthCubit, AuthState>(
+                      BlocConsumer<AppCubit, AppState>(
                         listenWhen: (previous, current) => previous != current,
                         listener: (context, state) async {
                           if (state is AuthLoading) {
@@ -112,6 +112,6 @@ class _ForgetScreenState extends State<ForgetScreen> {
   void initState() {
     super.initState();
 
-    BlocProvider.of<AuthCubit>(context);
+    BlocProvider.of<AppCubit>(context);
   }
 }

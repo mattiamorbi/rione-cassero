@@ -156,7 +156,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Expanded(
-            child: filteredUsers.isEmpty
+            child: isUsersLoading 
+                ? Center(child: Text('Caricamento utenti in corso...')) : filteredUsers.isEmpty
                 ? Center(child: Text('Nessun utente trovato'))
                 : ListView.builder(
                     itemCount: filteredUsers.length,

@@ -139,4 +139,26 @@ class AppCubit extends Cubit<AppState> {
 
     return events;
   }
+
+    Future<List<up.User>> getUsers() async {
+    List<up.User> upper_users = [];
+
+    var eventsCollection = firebase.collection("users");
+    await eventsCollection.get().then(
+      (querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          var upper_user = up.User.fromJson(doc.data());
+          upper_user.id = doc.id;
+          upper_users.add(upper_user);
+        }
+      },
+      onError: (e) {
+        if (kDebugMode) {
+          print("Error completing: $e");
+        }
+      },
+    );
+
+    return upper_users;
+  }
 }

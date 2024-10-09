@@ -10,6 +10,7 @@ import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/extensions.dart';
 import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/models/upper_event.dart';
+import 'package:upper/models/user.dart' as up;
 import 'package:upper/routing/routes.dart';
 import 'package:upper/screens/home/ui/widgets/event_tile.dart';
 import 'package:upper/theming/colors.dart';
@@ -26,6 +27,11 @@ class _HomeScreenState extends State<HomeScreen> {
   late String qrData = "";
   late bool isAdmin = false;
   List<UpperEvent> events = [];
+  List<up.User> users = [];
+  bool isUsersLoading = true;
+  List<up.User> filteredUsers = [];  // Lista filtrata da visualizzare
+  TextEditingController searchController = TextEditingController();  // Controller per il campo di ricerca
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +57,20 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserLevel();
     _loadEvents();
     _loadQr();
+    if (isAdmin) _loadUsers();
   }
 
+  void _loadUsers() async {
+    setState(() {
+      isUsersLoading = true;
+    });
+    users = await context.read<AppCubit>().getUsers();
+    setState(() {
+      isUsersLoading = false;
+      filteredUsers = users;
+    });
+  }
+  
   void _loadQr() async {
     var user = await context.read<AppCubit>().getUser();
     setState(() {
@@ -79,11 +97,14 @@ class _HomeScreenState extends State<HomeScreen> {
       Icon(Icons.calendar_month_rounded, color: Colors.white),
       Icon(Icons.account_circle_outlined, color: Colors.white),
     ];
+
+    if (isAdmin) widgets.add(Icon(Icons.account_circle_outlined, color: Colors.orange));
     return widgets;
   }
 
   List<Widget> _tabBarViewWidgets() {
     var widgets = <Widget>[_eventsWidget(), _profileWidget()];
+    if (isAdmin)  widgets.add(_userManagementWidget());
     return widgets;
   }
 
@@ -104,6 +125,52 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Image(image: AssetImage("assets/images/loading.gif")),
       );
     }
+  }
+
+   // Funzione per filtrare la lista degli utenti in base al testo inserito
+  void filterUtenti(String query) {
+    List<up.Users> filtered = users.where((utente) {
+      String fullName = '${utente.nome.toLowerCase()} ${utente.cognome.toLowerCase()}';
+      return fullName.contains(query.toLowerCase());
+    }).toList();
+
+    setState(() {
+      filteredUsers = filtered;
+    });
+  }
+
+  Widget _userManagementWidget() {
+    return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              controller: searchController,
+              decoration: InputDecoration(
+                labelText: 'Cerca per nome o cognome',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                filterUtenti(value);  // Filtra la lista ogni volta che il testo cambia
+              },
+            ),
+          ),
+          Expanded(
+            child: filteredUsers.isEmpty
+                ? Center(child: Text('Nessun utente trovato'))
+                : ListView.builder(
+                    itemCount: filteredUsers.length,
+                    itemBuilder: (context, index) {
+                      final utente = filteredUsers[index];
+                      return ListTile(
+                        title: Text('${utente.nome} ${utente.cognome}'),
+                        subtitle: Text('UID: ${utente.uid}'),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      );
   }
 
   Widget _profileWidget() {
@@ -163,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: DefaultTabController(
         initialIndex: 1,
-        length: 2,
+        length: isAdmin ? 3 : 2,
         child: Scaffold(
           backgroundColor: Color.fromRGBO(17, 17, 17, 1),
           appBar: AppBar(

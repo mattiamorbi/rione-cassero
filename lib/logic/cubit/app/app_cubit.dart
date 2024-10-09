@@ -143,8 +143,8 @@ class AppCubit extends Cubit<AppState> {
     Future<List<up.User>> getUsers() async {
     List<up.User> upper_users = [];
 
-    var eventsCollection = firebase.collection("users");
-    await eventsCollection.get().then(
+    var usersCollection = firebase.collection("users");
+    await usersCollection.get().then(
       (querySnapshot) {
         for (var doc in querySnapshot.docs) {
           var upper_user = up.User.fromJson(doc.data());

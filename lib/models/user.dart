@@ -16,6 +16,7 @@ class User {
   final String city;
   final String telephone;
   final int cardNumber;
+  String? id;
 
   User({
     required this.uid,

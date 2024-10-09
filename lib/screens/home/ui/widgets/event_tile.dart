@@ -20,8 +20,9 @@ import 'package:upper/models/user.dart' as up;
 class EventTile extends StatefulWidget {
   List<UpperEvent> upperEvent;
   final bool isAdmin;
+  List<up.User> all_users;
 
-  EventTile({super.key, required this.upperEvent, required this.isAdmin});
+  EventTile({super.key, required this.upperEvent, required this.isAdmin, required this.all_users});
 
   @override
   State<EventTile> createState() => _EventTileState();
@@ -38,6 +39,9 @@ class _EventTileState extends State<EventTile> {
   List<UpperEvent> data = [];
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
+
+  List<up.User>? eventParticipantData = [];
+  List<up.User>? eventBookedData = [];
 
   @override
   void initState() {
@@ -62,6 +66,12 @@ class _EventTileState extends State<EventTile> {
     //setState(() async {
     _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
     //});
+    eventParticipantData?.clear();
+    eventParticipantData = await context.read<AppCubit>().getEventsParticipant(widget.upperEvent[index].id!, widget.all_users);
+
+    eventBookedData?.clear();
+    eventBookedData = await context.read<AppCubit>().getEventsBook(widget.upperEvent[index].id!, widget.all_users);
+
     setState(() {
       _qrMode = 0;
     });
@@ -107,6 +117,20 @@ class _EventTileState extends State<EventTile> {
             Text(
               data[_focusedIndex].place,
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            Visibility(
+              visible: widget.isAdmin,
+              child: Text(
+                "Prenotate  ${eventBookedData?.length}",
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
+              ),
+            ),
+            Visibility(
+              visible: widget.isAdmin,
+              child: Text(
+                "Entrate  ${eventParticipantData?.length}",
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
+              ),
             ),
             SizedBox(
               height: 25,
@@ -366,16 +390,22 @@ class _EventTileState extends State<EventTile> {
                         _qrMode = 1;
                       }),
                     ),
-                    SizedBox(
-                      width: 10,
+                    Visibility(
+                      visible: _participantData == null ? false : _participantData!.presence,
+                      child: SizedBox(
+                        width: 10,
+                      ),
                     ),
-                    _joinEventButton(
-                      170,
-                      50,
-                      "Accetta",
-                      Icon(Icons.add),
-                      Colors.green,
-                      () => _acceptUser(_focusedIndex),
+                    Visibility(
+                      visible: _participantData == null ? false : _participantData!.presence,
+                      child: _joinEventButton(
+                        170,
+                        50,
+                        "Accetta",
+                        Icon(Icons.add),
+                        Colors.green,
+                        () => _acceptUser(_focusedIndex),
+                      ),
                     ),
                   ],
                 )

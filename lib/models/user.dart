@@ -73,4 +73,35 @@ class User {
       'cardNumber': cardNumber,
     };
   }
+
+  // Metodo copyWith per creare copie modificate
+  User copyWith({
+    String? uid,
+    String? name,
+    String? surname,
+    String? email,
+    String? address,
+    String? birthdate,
+    String? birthplace,
+    String? cap,
+    String? city,
+    String? telephone,
+    int? cardNumber,
+    String? state,
+  }) {
+    return User(
+      uid: uid ?? this.uid,
+      name: name ?? this.name,
+      surname: surname ?? this.surname,
+      email: email ?? this.email,
+      address: address ?? this.address,
+      birthdate: birthdate ?? this.birthdate,
+      birthplace: birthplace ?? this.birthplace,
+      cap: cap ?? this.cap,
+      city: city ?? this.city,
+      telephone: telephone ?? this.telephone,
+      cardNumber: cardNumber ?? this.cardNumber,
+      state: state ?? this.state,
+    );
+  }
 }

@@ -451,13 +451,13 @@ class _EventTileState extends State<EventTile> {
                       }),
                     ),
                     Visibility(
-                      visible: !_participantData.presence,
+                      visible: !_scannedParticipantData.presence,
                       child: SizedBox(
                         width: 10,
                       ),
                     ),
                     Visibility(
-                      visible: !_participantData.presence,
+                      visible: !_scannedParticipantData.presence,
                       child: _joinEventButton(
                         170,
                         50,

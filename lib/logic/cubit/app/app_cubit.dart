@@ -90,7 +90,7 @@ class AppCubit extends Cubit<AppState> {
   Future<void> joinEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
     var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': tempData.booked, 'presence': true});
+    await eventsParticipants.doc(user!.uid).set({'booked': tempData.booked, 'presence': true});
   }
 
   Future<void> unJoinEvent(String eventId, up.User? user) async {

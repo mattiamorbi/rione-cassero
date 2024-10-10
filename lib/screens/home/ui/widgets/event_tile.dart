@@ -145,14 +145,14 @@ class _EventTileState extends State<EventTile> {
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Visibility(
-              visible: widget.isAdmin,
+              visible: widget.isAdmin & !data_loading,
               child: Text(
                 "Prenotate  ${eventBookedData?.length}",
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
               ),
             ),
             Visibility(
-              visible: widget.isAdmin,
+              visible: widget.isAdmin & !data_loading,
               child: Text(
                 "Entrate  ${eventParticipantData?.length}",
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),

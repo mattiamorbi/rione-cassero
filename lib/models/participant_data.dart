@@ -1,6 +1,6 @@
 class ParticipantData {
-  late final bool booked;
-  final bool presence;
+  late bool booked;
+  bool presence;
 
   ParticipantData({required this.booked, required this.presence});
 

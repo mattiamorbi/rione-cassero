@@ -118,7 +118,7 @@ class AppCubit extends Cubit<AppState> {
       String eventId, up.User? user) async {
     var eventsParticipants =
         firebase.collection('events').doc(eventId).collection("participants");
-    var doc = await eventsParticipants.doc(_auth.currentUser!.uid).get();
+    var doc = await eventsParticipants.doc(user?.uid!).get();
     return ParticipantData.fromJson(doc.data()) ??
         ParticipantData(booked: false, presence: false);
   }

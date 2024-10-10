@@ -31,6 +31,7 @@ class User {
     required this.city,
     required this.telephone,
     required this.cardNumber,
+    this.state
   });
 
   String getQrData() => AesHelper.encrypt(jsonEncode(this));

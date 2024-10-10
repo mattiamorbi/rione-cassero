@@ -5,4 +5,5 @@ class Routes {
   static const String homeScreen = "/homeScreen";
   static const String newEventScreen = "/newEventScreen";
   static const String editEventScreen = "/editEventScreen";
+  static const String viewParticipantsScreen = "/viewParticipantsScreen";
 }

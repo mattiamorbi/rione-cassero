@@ -34,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchController =
       TextEditingController(); // Controller per il campo di ricerca
 
+  late up.User logged_user;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _loadQr() async {
     var user = await context.read<AppCubit>().getUser();
+    logged_user = user;
     setState(() {
       qrData = user.getQrData();
     });
@@ -119,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 10,
           ),
           Expanded(
-            child: EventTile(upperEvent: events, isAdmin: isAdmin, all_users: users),
+            child: EventTile(upperEvent: events, isAdmin: isAdmin, all_users: users, logged_user: logged_user),
           ),
         ],
       );

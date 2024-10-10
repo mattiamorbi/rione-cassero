@@ -21,8 +21,9 @@ class EventTile extends StatefulWidget {
   List<UpperEvent> upperEvent;
   final bool isAdmin;
   List<up.User> all_users;
+  up.User logged_user;
 
-  EventTile({super.key, required this.upperEvent, required this.isAdmin, required this.all_users});
+  EventTile({super.key, required this.upperEvent, required this.isAdmin, required this.logged_user, required this.all_users});
 
   @override
   State<EventTile> createState() => _EventTileState();
@@ -32,7 +33,8 @@ class _EventTileState extends State<EventTile> {
   List<Image> image = [];
   late bool visible = false;
   up.User? _user;
-  ParticipantData? _participantData;
+  //late up.User _loggedUser;
+  ParticipantData _participantData = new ParticipantData(booked: false, presence: false);
 
   int _qrMode = 0;
 
@@ -52,6 +54,8 @@ class _EventTileState extends State<EventTile> {
       image.add(Image(image: AssetImage("assets/images/loading.gif")));
     }
 
+    //_loadLoggedUser();
+
     for (int i = 0; i < widget.upperEvent.length; i++) {
       data.add(widget.upperEvent[i]);
       _loadImage(i);
@@ -59,6 +63,10 @@ class _EventTileState extends State<EventTile> {
 
     _onItemFocus(0);
   }
+
+  //void _loadLoggedUser() async {
+  //  _loggedUser = await context.read<AppCubit>().getUser();
+  //}
 
   Future<void> _onItemFocus(int index) async {
     if (kDebugMode) {
@@ -70,12 +78,15 @@ class _EventTileState extends State<EventTile> {
       _qrMode = 0;
     });
 
-    _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
+    //print(_loggedUser.name);
+    _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, widget.logged_user);
+    print(_participantData.booked);
+    print(_participantData.presence);
 
     eventParticipantData?.clear();
     eventBookedData?.clear();
     
-    if (isAdmin == true) {
+    if (widget.isAdmin == true) {
       eventParticipantData = await context.read<AppCubit>().getEventsParticipant(widget.upperEvent[index].id!, widget.all_users);
       eventBookedData = await context.read<AppCubit>().getEventsBook(widget.upperEvent[index].id!, widget.all_users);
     }
@@ -92,20 +103,34 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _toggleBookEvent(int index) async {
-    ParticipantData? participantDatatemp;
+    late ParticipantData participantDatatemp;
+
+    //print(_loggedUser.uid);
+    print(_participantData.booked);
     
     setState(() {
-      _participantData!.booked = !_participantData!.booked;
+      _participantData.booked = !_participantData.booked;
+      _qrMode = 0;
     });
     
-    if (!_participantData!.booked) {
-      await context.read<AppCubit>().unBookEvent(widget.upperEvent[index].id!, _user);
+    if (!_participantData.booked) {
+      await context.read<AppCubit>().unBookEvent(widget.upperEvent[index].id!, widget.logged_user);
     } else {
-      await context.read<AppCubit>().bookEvent(widget.upperEvent[index].id!, _user);
+      await context.read<AppCubit>().bookEvent(widget.upperEvent[index].id!, widget.logged_user);
     }
 
     participantDatatemp = await _getParticipantData(index);
-    
+
+    print("ho riletto ${participantDatatemp.booked}");
+    print(eventBookedData);
+    if (participantDatatemp.booked) {
+      eventBookedData?.add(widget.logged_user);
+    } else {
+      for (int i = 0; i < eventBookedData!.length; i++) {
+        if (eventBookedData![i].uid == widget.logged_user.uid) eventBookedData?.remove(eventBookedData?.elementAt(i));
+      }
+    }
+    //print("ho riletto ${participantDatatemp.booked}");
     setState(() {
       _qrMode = 0;
       _participantData = participantDatatemp;
@@ -114,15 +139,9 @@ class _EventTileState extends State<EventTile> {
 
   Future<ParticipantData> _getParticipantData(int index) async {
     ParticipantData? participantDatatemp;
-    
-    setState(() {
-      data_loading = true;
-    });
-    participantDatatemp = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
 
-    setState(() {
-      data_loading = false;
-    });
+    participantDatatemp = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, widget.logged_user);
+
     return participantDatatemp;
   }
 
@@ -199,6 +218,22 @@ class _EventTileState extends State<EventTile> {
                     onTap: _enableQrMode,
                     child: Icon(
                       Icons.qr_code,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isAdmin,
+                  child: SizedBox(
+                    width: 20,
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isAdmin,
+                  child: GestureDetector(
+                    onTap: () => _viewParticipants(_focusedIndex),
+                    child: Icon(
+                      Icons.menu,
                       color: Colors.orange,
                     ),
                   ),
@@ -501,5 +536,9 @@ class _EventTileState extends State<EventTile> {
 
   Future<void> _editEvent(int index) async {
     context.pushNamed(Routes.editEventScreen, arguments: widget.upperEvent[index]);
+  }
+
+  Future<void> _viewParticipants(int index) async {
+    context.pushNamed(Routes.viewParticipantsScreen, arguments: widget.upperEvent[index]);
   }
 }

@@ -113,7 +113,17 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<ParticipantData> _getParticipantData(int index) async {
-    return await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
+    ParticipantData? participantDatatemp;
+    
+    setState(() {
+      data_loading = true;
+    });
+    participantDatatemp = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
+
+    setState(() {
+      data_loading = false;
+    });
+    return participantDatatemp;
   }
 
   Widget _buildItemDetail() {

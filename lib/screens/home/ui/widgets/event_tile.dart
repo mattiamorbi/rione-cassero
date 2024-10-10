@@ -42,6 +42,7 @@ class _EventTileState extends State<EventTile> {
 
   List<up.User>? eventParticipantData = [];
   List<up.User>? eventBookedData = [];
+  bool data_loading = true;
 
   @override
   void initState() {
@@ -63,16 +64,23 @@ class _EventTileState extends State<EventTile> {
     if (kDebugMode) {
       print(index);
     }
-    //setState(() async {
-    _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
-    //});
-    eventParticipantData?.clear();
-    eventParticipantData = await context.read<AppCubit>().getEventsParticipant(widget.upperEvent[index].id!, widget.all_users);
-
-    eventBookedData?.clear();
-    eventBookedData = await context.read<AppCubit>().getEventsBook(widget.upperEvent[index].id!, widget.all_users);
-
+    
     setState(() {
+      data_loading = true;
+      _qrMode = 0;
+    });
+
+    _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, _user);
+
+    eventParticipantData?.clear();
+    eventBookedData?.clear();
+    
+    if (isAdmin == true) {
+      eventParticipantData = await context.read<AppCubit>().getEventsParticipant(widget.upperEvent[index].id!, widget.all_users);
+      eventBookedData = await context.read<AppCubit>().getEventsBook(widget.upperEvent[index].id!, widget.all_users);
+    }
+    setState(() {
+      data_loading = false;
       _qrMode = 0;
     });
   }
@@ -84,15 +92,23 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _toggleBookEvent(int index) async {
-    if (_participantData!.booked) {
+    ParticipantData? participantDatatemp;
+    
+    setState(() {
+      _participantData!.booked = !_participantData!.booked;
+    });
+    
+    if (!_participantData!.booked) {
       await context.read<AppCubit>().unBookEvent(widget.upperEvent[index].id!, _user);
     } else {
       await context.read<AppCubit>().bookEvent(widget.upperEvent[index].id!, _user);
     }
 
-    _participantData = await _getParticipantData(index);
+    participantDatatemp = await _getParticipantData(index);
+    
     setState(() {
       _qrMode = 0;
+      _participantData = participantDatatemp;
     });
   }
 

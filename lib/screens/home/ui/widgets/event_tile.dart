@@ -119,7 +119,7 @@ class _EventTileState extends State<EventTile> {
       await context.read<AppCubit>().bookEvent(widget.upperEvents[index].id!, widget.loggedUser);
     }
 
-    var participantData = await _getParticipantData(index);
+    var participantData = await _getParticipantData(index, widget.loggedUser);
 
     if (kDebugMode) {
       print("ho riletto ${participantData.booked}");
@@ -139,8 +139,8 @@ class _EventTileState extends State<EventTile> {
     });
   }
 
-  Future<ParticipantData> _getParticipantData(int index) async {
-    return await context.read<AppCubit>().getParticipantData(widget.upperEvents[index].id!, widget.loggedUser);
+  Future<ParticipantData> _getParticipantData(int index, up.User user) async {
+    return await context.read<AppCubit>().getParticipantData(widget.upperEvents[index].id!, user);
   }
 
   Widget _buildItemDetail() {
@@ -324,7 +324,7 @@ class _EventTileState extends State<EventTile> {
                 var decryptedData = AesHelper.decrypt(result);
                 var json = jsonDecode(decryptedData);
                 _user = up.User.fromJson(json);
-                _scannedParticipantData = await _getParticipantData(_focusedIndex);
+                _scannedParticipantData = await _getParticipantData(_focusedIndex, _user!);
                 setState(() {
                   _qrMode = 2;
                 });
@@ -367,7 +367,7 @@ class _EventTileState extends State<EventTile> {
                 ),
                 Gap(25.h),
                 Visibility(
-                  visible: _scannedParticipantData.presence ? false : _scannedParticipantData.presence,
+                  visible: _scannedParticipantData.presence,
                   child: Column(
                     children: [
                       Text(
@@ -379,7 +379,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: _scannedParticipantData.booked ? false : _scannedParticipantData.booked & !_scannedParticipantData.presence,
+                  visible: _scannedParticipantData.booked & !_scannedParticipantData.presence,
                   child: Column(
                     children: [
                       Text(
@@ -451,13 +451,13 @@ class _EventTileState extends State<EventTile> {
                       }),
                     ),
                     Visibility(
-                      visible: _participantData.presence ? false : _participantData.presence,
+                      visible: !_participantData.presence,
                       child: SizedBox(
                         width: 10,
                       ),
                     ),
                     Visibility(
-                      visible: _participantData.presence ? false : _participantData.presence,
+                      visible: !_participantData.presence,
                       child: _joinEventButton(
                         170,
                         50,

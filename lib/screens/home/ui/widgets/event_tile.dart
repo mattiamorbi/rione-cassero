@@ -186,7 +186,7 @@ class _EventTileState extends State<EventTile> {
               children: [
                 GestureDetector(
                   child: Icon(
-                    (_participantData?.booked ?? false) ? Icons.person_remove_alt_1 : Icons.person_add_alt_1,
+                    (_participantData.booked == false) ? Icons.person_remove_alt_1 : Icons.person_add_alt_1,
                     color: Colors.white,
                   ),
                   onTap: () => _toggleBookEvent(_focusedIndex),
@@ -453,13 +453,13 @@ class _EventTileState extends State<EventTile> {
                       }),
                     ),
                     Visibility(
-                      visible: _participantData == null ? false : _participantData!.presence,
+                      visible: _participantData.presence  ? false : _participantData.presence,
                       child: SizedBox(
                         width: 10,
                       ),
                     ),
                     Visibility(
-                      visible: _participantData == null ? false : _participantData!.presence,
+                      visible: _participantData.presence ? false : _participantData.presence,
                       child: _joinEventButton(
                         170,
                         50,

@@ -35,6 +35,7 @@ class _EventTileState extends State<EventTile> {
   up.User? _user;
   //late up.User _loggedUser;
   ParticipantData _participantData = new ParticipantData(booked: false, presence: false);
+  ParticipantData _scannedparticipantData = new ParticipantData(booked: false, presence: false);
 
   int _qrMode = 0;
 
@@ -325,7 +326,7 @@ class _EventTileState extends State<EventTile> {
                 var decryptedData = AesHelper.decrypt(result);
                 var json = jsonDecode(decryptedData);
                 _user = up.User.fromJson(json);
-                _participantData = await _getParticipantData(_focusedIndex);
+                _scannedparticipantData = await _getParticipantData(_focusedIndex);
                 setState(() {
                   _qrMode = 2;
                 });
@@ -368,7 +369,7 @@ class _EventTileState extends State<EventTile> {
                 ),
                 Gap(25.h),
                 Visibility(
-                  visible: _participantData == null ? false : _participantData!.presence,
+                  visible: _scannedparticipantData.presence ? false : _scannedparticipantData.presence,
                   child: Column(
                     children: [
                       Text(
@@ -380,7 +381,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: _participantData == null ? false : _participantData!.booked & !_participantData!.presence,
+                  visible: _scannedparticipantData.booked ? false : _scannedparticipantData.booked & !_scannedparticipantData.presence,
                   child: Column(
                     children: [
                       Text(

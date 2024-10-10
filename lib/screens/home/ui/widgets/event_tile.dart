@@ -18,24 +18,24 @@ import 'package:upper/models/user.dart' as up;
 
 // ignore: must_be_immutable
 class EventTile extends StatefulWidget {
-  List<UpperEvent> upperEvent;
+  List<UpperEvent> upperEvents;
   final bool isAdmin;
-  List<up.User> all_users;
-  up.User logged_user;
+  final List<up.User> allUsers;
+  final up.User loggedUser;
 
-  EventTile({super.key, required this.upperEvent, required this.isAdmin, required this.logged_user, required this.all_users});
+  EventTile({super.key, required this.upperEvents, required this.isAdmin, required this.loggedUser, required this.allUsers});
 
   @override
   State<EventTile> createState() => _EventTileState();
 }
 
 class _EventTileState extends State<EventTile> {
-  List<Image> image = [];
-  late bool visible = false;
+  final List<Image> _image = [];
   up.User? _user;
+
   //late up.User _loggedUser;
-  ParticipantData _participantData = new ParticipantData(booked: false, presence: false);
-  ParticipantData _scannedparticipantData = new ParticipantData(booked: false, presence: false);
+  ParticipantData _participantData = ParticipantData(booked: false, presence: false);
+  ParticipantData _scannedParticipantData = ParticipantData(booked: false, presence: false);
 
   int _qrMode = 0;
 
@@ -43,22 +43,22 @@ class _EventTileState extends State<EventTile> {
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
 
-  List<up.User>? eventParticipantData = [];
-  List<up.User>? eventBookedData = [];
-  bool data_loading = true;
+  List<up.User>? _participantUsers = [];
+  List<up.User>? _bookedUsers = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
 
-    for (int i = 0; i < widget.upperEvent.length; i++) {
-      image.add(Image(image: AssetImage("assets/images/loading.gif")));
+    for (int i = 0; i < widget.upperEvents.length; i++) {
+      _image.add(Image(image: AssetImage("assets/images/loading.gif")));
     }
 
     //_loadLoggedUser();
 
-    for (int i = 0; i < widget.upperEvent.length; i++) {
-      data.add(widget.upperEvent[i]);
+    for (int i = 0; i < widget.upperEvents.length; i++) {
+      data.add(widget.upperEvents[i]);
       _loadImage(i);
     }
 
@@ -73,26 +73,27 @@ class _EventTileState extends State<EventTile> {
     if (kDebugMode) {
       print(index);
     }
-    
+
     setState(() {
-      data_loading = true;
+      _loading = true;
       _qrMode = 0;
     });
 
     //print(_loggedUser.name);
-    _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, widget.logged_user);
-    print(_participantData.booked);
-    print(_participantData.presence);
+    _participantData = await context.read<AppCubit>().getParticipantData(widget.upperEvents[index].id!, widget.loggedUser);
+    if (kDebugMode) {
+      print(_participantData.booked);
+      print(_participantData.presence);
+    }
+    _participantUsers?.clear();
+    _bookedUsers?.clear();
 
-    eventParticipantData?.clear();
-    eventBookedData?.clear();
-    
     if (widget.isAdmin == true) {
-      eventParticipantData = await context.read<AppCubit>().getEventsParticipant(widget.upperEvent[index].id!, widget.all_users);
-      eventBookedData = await context.read<AppCubit>().getEventsBook(widget.upperEvent[index].id!, widget.all_users);
+      _participantUsers = await context.read<AppCubit>().getEventsParticipant(widget.upperEvents[index].id!, widget.allUsers);
+      _bookedUsers = await context.read<AppCubit>().getEventsBook(widget.upperEvents[index].id!, widget.allUsers);
     }
     setState(() {
-      data_loading = false;
+      _loading = false;
       _qrMode = 0;
     });
   }
@@ -104,77 +105,74 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _toggleBookEvent(int index) async {
-    late ParticipantData participantDatatemp;
-
     //print(_loggedUser.uid);
     print(_participantData.booked);
-    
+
     setState(() {
       _participantData.booked = !_participantData.booked;
       _qrMode = 0;
     });
-    
+
     if (!_participantData.booked) {
-      await context.read<AppCubit>().unBookEvent(widget.upperEvent[index].id!, widget.logged_user);
+      await context.read<AppCubit>().unBookEvent(widget.upperEvents[index].id!, widget.loggedUser);
     } else {
-      await context.read<AppCubit>().bookEvent(widget.upperEvent[index].id!, widget.logged_user);
+      await context.read<AppCubit>().bookEvent(widget.upperEvents[index].id!, widget.loggedUser);
     }
 
-    participantDatatemp = await _getParticipantData(index);
+    var participantData = await _getParticipantData(index);
 
-    print("ho riletto ${participantDatatemp.booked}");
-    print(eventBookedData);
-    if (participantDatatemp.booked) {
-      eventBookedData?.add(widget.logged_user);
+    if (kDebugMode) {
+      print("ho riletto ${participantData.booked}");
+      print(_bookedUsers);
+    }
+    if (participantData.booked) {
+      _bookedUsers?.add(widget.loggedUser);
     } else {
-      for (int i = 0; i < eventBookedData!.length; i++) {
-        if (eventBookedData![i].uid == widget.logged_user.uid) eventBookedData?.remove(eventBookedData?.elementAt(i));
+      for (int i = 0; i < _bookedUsers!.length; i++) {
+        if (_bookedUsers![i].uid == widget.loggedUser.uid) _bookedUsers?.remove(_bookedUsers?.elementAt(i));
       }
     }
     //print("ho riletto ${participantDatatemp.booked}");
     setState(() {
       _qrMode = 0;
-      _participantData = participantDatatemp;
+      _participantData = participantData;
     });
   }
 
   Future<ParticipantData> _getParticipantData(int index) async {
-    ParticipantData? participantDatatemp;
-
-    participantDatatemp = await context.read<AppCubit>().getParticipantData(widget.upperEvent[index].id!, widget.logged_user);
-
-    return participantDatatemp;
+    return await context.read<AppCubit>().getParticipantData(widget.upperEvents[index].id!, widget.loggedUser);
   }
 
   Widget _buildItemDetail() {
     if (data.length > _focusedIndex) {
+      var currentEvent = data[_focusedIndex];
       return SizedBox(
         height: 150,
         child: Column(
           children: [
             Text(
-              data[_focusedIndex].title,
+              currentEvent.title,
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Text(
-              "${data[_focusedIndex].date} - ${data[_focusedIndex].time}",
+              "${currentEvent.date} - ${currentEvent.time}",
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Text(
-              data[_focusedIndex].place,
+              currentEvent.place,
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Visibility(
-              visible: widget.isAdmin & !data_loading,
+              visible: widget.isAdmin & !_loading,
               child: Text(
-                "Prenotate  ${eventBookedData?.length}",
+                "Prenotate  ${_bookedUsers?.length}",
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
               ),
             ),
             Visibility(
-              visible: widget.isAdmin & !data_loading,
+              visible: widget.isAdmin & !_loading,
               child: Text(
-                "Entrate  ${eventParticipantData?.length}",
+                "Entrate  ${_participantUsers?.length}",
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
               ),
             ),
@@ -186,7 +184,7 @@ class _EventTileState extends State<EventTile> {
               children: [
                 GestureDetector(
                   child: Icon(
-                    (_participantData.booked == false) ? Icons.person_remove_alt_1 : Icons.person_add_alt_1,
+                    (_participantData.booked) ? Icons.person_remove_alt_1 : Icons.person_add_alt_1,
                     color: Colors.white,
                   ),
                   onTap: () => _toggleBookEvent(_focusedIndex),
@@ -261,13 +259,13 @@ class _EventTileState extends State<EventTile> {
         onTap: () {
           sslKey.currentState!.focusToItem(index);
         },
-        child: Image(image: image[index].image),
+        child: Image(image: _image[index].image),
       ),
     );
   }
 
   Future<void> _acceptUser(int index) async {
-    await context.read<AppCubit>().joinEvent(widget.upperEvent[index].id!, _user);
+    await context.read<AppCubit>().joinEvent(widget.upperEvents[index].id!, _user);
     setState(() {
       _qrMode = 1;
     });
@@ -326,7 +324,7 @@ class _EventTileState extends State<EventTile> {
                 var decryptedData = AesHelper.decrypt(result);
                 var json = jsonDecode(decryptedData);
                 _user = up.User.fromJson(json);
-                _scannedparticipantData = await _getParticipantData(_focusedIndex);
+                _scannedParticipantData = await _getParticipantData(_focusedIndex);
                 setState(() {
                   _qrMode = 2;
                 });
@@ -364,12 +362,12 @@ class _EventTileState extends State<EventTile> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  widget.upperEvent[_focusedIndex].title,
+                  widget.upperEvents[_focusedIndex].title,
                   style: TextStyle(color: Colors.white),
                 ),
                 Gap(25.h),
                 Visibility(
-                  visible: _scannedparticipantData.presence ? false : _scannedparticipantData.presence,
+                  visible: _scannedParticipantData.presence ? false : _scannedParticipantData.presence,
                   child: Column(
                     children: [
                       Text(
@@ -381,7 +379,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: _scannedparticipantData.booked ? false : _scannedparticipantData.booked & !_scannedparticipantData.presence,
+                  visible: _scannedParticipantData.booked ? false : _scannedParticipantData.booked & !_scannedParticipantData.presence,
                   child: Column(
                     children: [
                       Text(
@@ -453,7 +451,7 @@ class _EventTileState extends State<EventTile> {
                       }),
                     ),
                     Visibility(
-                      visible: _participantData.presence  ? false : _participantData.presence,
+                      visible: _participantData.presence ? false : _participantData.presence,
                       child: SizedBox(
                         width: 10,
                       ),
@@ -520,26 +518,31 @@ class _EventTileState extends State<EventTile> {
 
   Future<void> _loadImage(int index) async {
     try {
-      final imageData = await widget.upperEvent[index].getEventImage();
+      final imageData = await widget.upperEvents[index].getEventImage();
       if (imageData != null) {
         setState(() {
-          image[index] = Image.memory(imageData);
-          visible = true;
+          _image[index] = Image.memory(imageData);
         });
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error loading image: $e');
-        visible = false;
       }
     }
   }
 
   Future<void> _editEvent(int index) async {
-    context.pushNamed(Routes.editEventScreen, arguments: widget.upperEvent[index]);
+    context.pushNamed(Routes.editEventScreen, arguments: widget.upperEvents[index]);
   }
 
   Future<void> _viewParticipants(int index) async {
-    context.pushNamed(Routes.viewParticipantsScreen, arguments: widget.upperEvent[index]);
+    context.pushNamed(
+      Routes.viewParticipantsScreen,
+      arguments: {
+        'upperEvent': widget.upperEvents[index],
+        'bookedUsers': _bookedUsers,
+        'participantsUsers': _participantUsers,
+      },
+    );
   }
 }

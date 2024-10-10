@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:upper/logic/cubit/app/app_cubit.dart';
 
 import 'package:upper/models/upper_event.dart';
+import 'package:upper/models/user.dart' as up;
 import 'package:upper/screens/forget/ui/forget_screen.dart';
+import 'package:upper/screens/home/ui/event_participants_screen.dart';
 import 'package:upper/screens/home/ui/home_screen.dart';
 import 'package:upper/screens/home/ui/new_event_screen.dart';
 import 'package:upper/screens/login/ui/login_screen.dart';
@@ -67,6 +69,20 @@ class AppRouter {
             value: authCubit,
             child: NewEventScreen(
               upperEvent: settings.arguments as UpperEvent,
+            ),
+          ),
+        );
+
+      case Routes.viewParticipantsScreen:
+        var map = settings.arguments as Map<String, Object?>;
+
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: authCubit,
+            child: EventParticipantScreen(
+              upperEvent: map['upperEvent'] as UpperEvent,
+              bookedUsers: map['bookedUsers'] as List<up.User>,
+              participantsUsers: map['participantsUsers'] as List<up.User>,
             ),
           ),
         );

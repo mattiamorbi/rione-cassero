@@ -25,24 +25,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late String qrData = "";
-  late bool isAdmin = false;
-  List<UpperEvent> events = [];
-  List<up.User> users = [];
-  bool isUsersLoading = true;
-  List<up.User> filteredUsers = []; // Lista filtrata da visualizzare
-  TextEditingController searchController =
-      TextEditingController(); // Controller per il campo di ricerca
+  late String _qrData = "";
+  late bool _isAdmin = false;
+  List<UpperEvent> _events = [];
+  List<up.User> _users = [];
+  bool _isUsersLoading = true;
+  List<up.User> _filteredUsers = []; // Lista filtrata da visualizzare
+  final TextEditingController _searchController = TextEditingController(); // Controller per il campo di ricerca
 
-  late up.User logged_user;
+  late up.User _loggedUser;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
-          final bool connected =
-              value.any((element) => element != ConnectivityResult.none);
+          final bool connected = value.any((element) => element != ConnectivityResult.none);
           return connected ? _homePage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -65,35 +63,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _loadUsers() async {
     setState(() {
-      isUsersLoading = true;
+      _isUsersLoading = true;
     });
-    users = await context.read<AppCubit>().getUsers();
+    _users = await context.read<AppCubit>().getUsers();
     setState(() {
-      isUsersLoading = false;
-      filteredUsers = users;
+      _isUsersLoading = false;
+      _filteredUsers = _users;
     });
   }
 
   void _loadQr() async {
     var user = await context.read<AppCubit>().getUser();
-    logged_user = user;
+    _loggedUser = user;
     setState(() {
-      qrData = user.getQrData();
+      _qrData = user.getQrData();
     });
   }
 
   void _loadUserLevel() async {
     var level = await context.read<AppCubit>().getUserLevel();
     setState(() {
-      isAdmin = level == "admin";
+      _isAdmin = level == "admin";
     });
-    if (isAdmin) _loadUsers();
+    if (_isAdmin) _loadUsers();
   }
 
   void _loadEvents() async {
     var tmpEvents = await context.read<AppCubit>().getUpperEvents();
     setState(() {
-      events = tmpEvents;
+      _events = tmpEvents;
     });
   }
 
@@ -103,26 +101,27 @@ class _HomeScreenState extends State<HomeScreen> {
       Icon(Icons.account_circle_outlined, color: Colors.white),
     ];
 
-    if (isAdmin)
+    if (_isAdmin) {
       widgets.add(Icon(Icons.verified_user_outlined, color: Colors.orange));
+    }
     return widgets;
   }
 
   List<Widget> _tabBarViewWidgets() {
     var widgets = <Widget>[_eventsWidget(), _profileWidget()];
-    if (isAdmin) widgets.add(_userManagementWidget());
+    if (_isAdmin) widgets.add(_userManagementWidget());
     return widgets;
   }
 
   Widget _eventsWidget() {
-    if (events.isNotEmpty) {
+    if (_events.isNotEmpty) {
       return Column(
         children: [
           const SizedBox(
             height: 10,
           ),
           Expanded(
-            child: EventTile(upperEvent: events, isAdmin: isAdmin, all_users: users, logged_user: logged_user),
+            child: EventTile(upperEvents: _events, isAdmin: _isAdmin, allUsers: _users, loggedUser: _loggedUser),
           ),
         ],
       );
@@ -134,15 +133,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Funzione per filtrare la lista degli utenti in base al testo inserito
-  void filterUtenti(String query) {
-    List<up.User> filtered = users.where((utente) {
-      String fullName =
-          '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
+  void _filterUsers(String query) {
+    List<up.User> filtered = _users.where((utente) {
+      String fullName = '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
       return fullName.contains(query.toLowerCase());
     }).toList();
 
     setState(() {
-      filteredUsers = filtered;
+      _filteredUsers = filtered;
     });
   }
 
@@ -157,27 +155,29 @@ class _HomeScreenState extends State<HomeScreen> {
               child: AppTextFormField(
                 hint: "Cerca",
                 validator: (value) {},
-                controller: searchController,
+                controller: _searchController,
                 isObscureText: false,
                 suffixIcon: Icon(
                   Icons.search,
                   color: Colors.black38,
                 ),
                 onChanged: (value) {
-                  filterUtenti(value);
+                  _filterUsers(value);
                 },
               ),
             ),
           ),
           Expanded(
-            child: isUsersLoading
+            child: _isUsersLoading
                 ? Center(child: Text('Caricamento utenti in corso...'))
-                : filteredUsers.isEmpty
-                    ? Center(child: Text('Nessun utente trovato'))
+                : _filteredUsers.isEmpty
+                    ? Center(
+                        child: Text('Nessun utente trovato'),
+                      )
                     : ListView.builder(
-                        itemCount: filteredUsers.length,
+                        itemCount: _filteredUsers.length,
                         itemBuilder: (context, index) {
-                          final utente = filteredUsers[index];
+                          final user = _filteredUsers[index];
                           return ListTile(
                             tileColor: Colors.white,
                             textColor: Colors.black,
@@ -198,9 +198,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Icon(Icons.delete, color: Colors.red),
                               onTap: () {},
                             ),
-                            title: Text('${utente.name} ${utente.surname}'),
-                            subtitle: Text(
-                                'Email: ${utente.email}\nData di nascita: ${utente.birthdate}'),
+                            title: Text('${user.name} ${user.surname}'),
+                            subtitle: Text('Email: ${user.email}\nData di nascita: ${user.birthdate}'),
                           );
                         },
                       ),
@@ -215,8 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Text(FirebaseAuth.instance.currentUser!.displayName!,
-              style: TextStyle(fontSize: 30, color: Colors.white)),
+          Text(FirebaseAuth.instance.currentUser!.displayName!, style: TextStyle(fontSize: 30, color: Colors.white)),
           SizedBox(
             height: 10,
           ),
@@ -230,13 +228,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 260,
             height: 260,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(5)),
             child: Center(
               child: SizedBox(
                 width: 250,
                 child: PrettyQrView.data(
-                  data: qrData,
+                  data: _qrData,
                   decoration: const PrettyQrDecoration(
                     background: Colors.white,
                   ),
@@ -269,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: DefaultTabController(
         initialIndex: 1,
-        length: isAdmin ? 3 : 2,
+        length: _isAdmin ? 3 : 2,
         child: Scaffold(
           backgroundColor: Color.fromRGBO(17, 17, 17, 1),
           appBar: AppBar(

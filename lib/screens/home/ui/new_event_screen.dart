@@ -28,21 +28,21 @@ class _NewEventScreenState extends State<NewEventScreen> {
   XFile? _pickedImage;
   Uint8List _webImage = Uint8List(0);
 
-  TextEditingController titleController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
-  TextEditingController dateController = TextEditingController();
-  TextEditingController timeController = TextEditingController();
-  TextEditingController placeController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
+  final TextEditingController _placeController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     if (widget.upperEvent != null) {
-      titleController.text = widget.upperEvent!.title;
-      descriptionController.text = widget.upperEvent!.description;
-      dateController.text = widget.upperEvent!.date;
-      timeController.text = widget.upperEvent!.time;
-      placeController.text = widget.upperEvent!.place;
+      _titleController.text = widget.upperEvent!.title;
+      _descriptionController.text = widget.upperEvent!.description;
+      _dateController.text = widget.upperEvent!.date;
+      _timeController.text = widget.upperEvent!.time;
+      _placeController.text = widget.upperEvent!.place;
       _loadEventImage();
     }
   }
@@ -119,11 +119,11 @@ class _NewEventScreenState extends State<NewEventScreen> {
     }
     var events = FirebaseFirestore.instance.collection('events');
     var upperEvent = UpperEvent(
-        title: titleController.text,
-        description: descriptionController.text,
-        date: dateController.text,
-        time: timeController.text,
-        place: placeController.text,
+        title: _titleController.text,
+        description: _descriptionController.text,
+        date: _dateController.text,
+        time: _timeController.text,
+        place: _placeController.text,
         imagePath: _pickedImage == null
             ? widget.upperEvent!.imagePath
             : "images/${_pickedImage!.name}");
@@ -160,18 +160,18 @@ class _NewEventScreenState extends State<NewEventScreen> {
                   child: Text("Aggiungi un nuovo evento")),
               Gap(20.w),
               genericField(
-                  titleController, "Titolo", "Inserisci un titolo valido"),
+                  _titleController, "Titolo", "Inserisci un titolo valido"),
               Gap(20.w),
-              genericField(descriptionController, "Descrizione",
+              genericField(_descriptionController, "Descrizione",
                   "Inserisci una descrizione valida"),
               Gap(20.w),
-              genericField(dateController, "Data", "Inserisci una data valida"),
+              genericField(_dateController, "Data", "Inserisci una data valida"),
               Gap(20.w),
               genericField(
-                  timeController, "Orario", "Inserisci un orario valido"),
+                  _timeController, "Orario", "Inserisci un orario valido"),
               Gap(20.w),
               genericField(
-                  placeController, "Luogo", "Inserisci un luogo valido"),
+                  _placeController, "Luogo", "Inserisci un luogo valido"),
               Gap(20.w),
               Visibility(
                 visible: _webImage.length > 1,
@@ -210,10 +210,10 @@ class _NewEventScreenState extends State<NewEventScreen> {
   @override
   void dispose() {
     super.dispose();
-    titleController.dispose();
-    descriptionController.dispose();
-    dateController.dispose();
-    timeController.dispose();
-    placeController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _dateController.dispose();
+    _timeController.dispose();
+    _placeController.dispose();
   }
 }

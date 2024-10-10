@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:upper/models/participant_data.dart';
@@ -56,10 +55,8 @@ class AppCubit extends Cubit<AppState> {
   Future<void> signUpWithEmail(up.User user, String password) async {
     emit(AuthLoading());
     try {
-      await _auth.createUserWithEmailAndPassword(
-          email: user.email, password: password);
-      await _auth.currentUser!
-          .updateDisplayName("${user.name} ${user.surname}");
+      await _auth.createUserWithEmailAndPassword(email: user.email, password: password);
+      await _auth.currentUser!.updateDisplayName("${user.name} ${user.surname}");
       await _auth.currentUser!.sendEmailVerification();
       await updateUserInfo(user);
       await _auth.signOut();
@@ -80,53 +77,40 @@ class AppCubit extends Cubit<AppState> {
 
   Future<void> bookEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants
-        .doc(_auth.currentUser!.uid)
-        .set({'booked': true, 'presence': tempData.presence});
+    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': true, 'presence': tempData.presence});
   }
 
   Future<void> unBookEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants
-        .doc(_auth.currentUser!.uid)
-        .set({'booked': false, 'presence': tempData.presence});
+    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': false, 'presence': tempData.presence});
   }
 
   Future<void> joinEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants
-        .doc(_auth.currentUser!.uid)
-        .set({'booked': tempData.booked, 'presence': true});
+    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': tempData.booked, 'presence': true});
   }
 
   Future<void> unJoinEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants
-        .doc(_auth.currentUser!.uid)
-        .set({'booked': tempData.booked, 'presence': false});
+    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': tempData.booked, 'presence': false});
   }
 
-  Future<ParticipantData> getParticipantData(
-      String eventId, up.User? user) async {
-    var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+  Future<ParticipantData> getParticipantData(String eventId, up.User? user) async {
+    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
     var doc = await eventsParticipants.doc(user?.uid!).get();
-    return ParticipantData.fromJson(doc.data()) ??
-        ParticipantData(booked: false, presence: false);
+    return ParticipantData.fromJson(doc.data()) ?? ParticipantData(booked: false, presence: false);
   }
 
   Future<up.User> getUser() async {
     var users = firebase.collection('users');
     var doc = await users.doc(_auth.currentUser!.uid).get();
-    print(doc.data());
+    if (kDebugMode) {
+      print(doc.data());
+    }
     return up.User.fromJson(doc.data()!);
   }
 
@@ -166,10 +150,12 @@ class AppCubit extends Cubit<AppState> {
     await usersCollection.get().then(
       (querySnapshot) {
         for (var doc in querySnapshot.docs) {
-          print(doc.data());
+          if (kDebugMode) {
+            print(doc.data());
+          }
           var user = up.User.fromJson(doc.data());
           user.id = doc.id;
-          users.add(user as up.User);
+          users.add(user);
         }
       },
       onError: (e) {
@@ -182,23 +168,21 @@ class AppCubit extends Cubit<AppState> {
     return users;
   }
 
-  Future<List<up.User>?> getEventsParticipant(String eventId, List<up.User> all_users) async {
+  Future<List<up.User>?> getEventsParticipant(String eventId, List<up.User> allUsers) async {
     List<up.User> participantList = [];
 
-    var eventsParticipants =
-    firebase.collection('events').doc(eventId).collection("participants");
-   await eventsParticipants.get().then(
-        (querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        var data = ParticipantData.fromJson(doc.data());
-        if (data?.presence! == true) {
-          for (var us in all_users) {
-            if (us.id == doc.id) participantList.add(us);
+    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants.get().then(
+      (querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          var data = ParticipantData.fromJson(doc.data());
+          if (data?.presence == true) {
+            for (var us in allUsers) {
+              if (us.id == doc.id) participantList.add(us);
+            }
           }
         }
-
-      }
-    },
+      },
       onError: (e) {
         if (kDebugMode) {
           print("Error completing: $e");
@@ -212,18 +196,16 @@ class AppCubit extends Cubit<AppState> {
   Future<List<up.User>?> getEventsBook(String eventId, List<up.User> all_users) async {
     List<up.User> participantList = [];
 
-    var eventsParticipants =
-    firebase.collection('events').doc(eventId).collection("participants");
+    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants.get().then(
-          (querySnapshot) {
+      (querySnapshot) {
         for (var doc in querySnapshot.docs) {
           var data = ParticipantData.fromJson(doc.data());
-          if (data?.booked! == true) {
+          if (data?.booked == true) {
             for (var us in all_users) {
               if (us.id == doc.id) participantList.add(us);
             }
           }
-
         }
       },
       onError: (e) {
@@ -236,5 +218,3 @@ class AppCubit extends Cubit<AppState> {
     return participantList;
   }
 }
-
-

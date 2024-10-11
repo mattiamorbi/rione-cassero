@@ -349,6 +349,11 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     });
   }
 
+  String capitalize(String s) {
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
   Widget signUpButton(BuildContext context) {
     return GestureDetector(
       child: Container(
@@ -366,17 +371,17 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
           var user = up.User(
-              name: nameController.text,
-              surname: surnameController.text,
-              address: addressController.text,
-              birthplace: birthplaceController.text,
+              name: capitalize(nameController.text),
+              surname: capitalize(surnameController.text),
+              address: capitalize(addressController.text),
+              birthplace: capitalize(birthplaceController.text),
               email: emailController.text,
               birthdate: birthdateController.text,
               cap: capController.text,
-              city: cityController.text,
+              city: capitalize(cityController.text),
               telephone: telephoneController.text,
               cardNumber: 0,
-              uid: "test");
+          );//uid: "test");
           context.read<AppCubit>().signUpWithEmail(user, passwordController.text);
         }
       },

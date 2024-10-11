@@ -31,7 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<up.User> _users = [];
   bool _isUsersLoading = true;
   List<up.User> _filteredUsers = []; // Lista filtrata da visualizzare
-  final TextEditingController _searchController = TextEditingController(); // Controller per il campo di ricerca
+  final TextEditingController _searchController =
+      TextEditingController(); // Controller per il campo di ricerca
 
   late up.User _loggedUser;
 
@@ -40,7 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
-          final bool connected = value.any((element) => element != ConnectivityResult.none);
+          final bool connected =
+              value.any((element) => element != ConnectivityResult.none);
           return connected ? _homePage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -121,7 +123,11 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 10,
           ),
           Expanded(
-            child: EventTile(upperEvents: _events, isAdmin: _isAdmin, allUsers: _users, loggedUser: _loggedUser),
+            child: EventTile(
+                upperEvents: _events,
+                isAdmin: _isAdmin,
+                allUsers: _users,
+                loggedUser: _loggedUser),
           ),
         ],
       );
@@ -135,7 +141,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // Funzione per filtrare la lista degli utenti in base al testo inserito
   void _filterUsers(String query) {
     List<up.User> filtered = _users.where((utente) {
-      String fullName = '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
+      String fullName =
+          '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
       return fullName.contains(query.toLowerCase());
     }).toList();
 
@@ -191,15 +198,42 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             leading: Icon(
-                              Icons.person_outline,
-                              color: Colors.black,
+                              user.isAdmin! ? Icons.settings_accessibility : Icons.person_outline,
+                              color: user.isAdmin! ? Colors.orange : Colors.black,
                             ),
-                            trailing: GestureDetector(
-                              child: Icon(Icons.delete, color: Colors.red),
-                              onTap: () {},
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (String result) {
+                                switch (result) {
+                                  case 'reimposta_password':
+                                    _resetPassword(user);
+                                    break;
+                                  case 'rendi_amministratore':
+                                    _userToAdmin(user);
+                                    break;
+                                  case 'elimina_account':
+                                    _deleteAccount(user);
+                                    break;
+                                }
+                              },
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'reimposta_password',
+                                  child: Text('Reimposta password'),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'rendi_amministratore',
+                                  child:  user.isAdmin! ? Text('Rendi utente') : Text('Rendi amministratore'),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'elimina_account',
+                                  child: Text('Elimina account'),
+                                ),
+                              ],
                             ),
                             title: Text('${user.name} ${user.surname}'),
-                            subtitle: Text('Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                            subtitle: Text(
+                                'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
                           );
                         },
                       ),
@@ -209,12 +243,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _resetPassword(up.User _user) async {
+    await context.read<AppCubit>().resetPassword(_user.email);
+  }
+
+  void _userToAdmin(up.User _user) async {
+    if (!_user.isAdmin!) {
+      await context.read<AppCubit>().setUserLevel(_user, "admin");
+      _user.isAdmin = true;
+    }
+    else {
+      await context.read<AppCubit>().setUserLevel(_user, "user");
+      _user.isAdmin = false;
+    }
+
+    setState(() { // giusto per aggiornare la lista
+      _isUsersLoading = false;
+    });
+  }
+
+  void _deleteAccount(up.User _user) async {
+    // questa funzione deve cancellare un account
+
+    setState(() { // giusto per aggiornare la lista
+      _isUsersLoading = false;
+    });
+  }
+
   Widget _profileWidget() {
     return Padding(
       padding: EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Text(FirebaseAuth.instance.currentUser!.displayName!, style: TextStyle(fontSize: 30, color: Colors.white)),
+          Text(FirebaseAuth.instance.currentUser!.displayName!,
+              style: TextStyle(fontSize: 30, color: Colors.white)),
           SizedBox(
             height: 10,
           ),
@@ -228,7 +290,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 260,
             height: 260,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
             child: Center(
               child: SizedBox(
                 width: 250,

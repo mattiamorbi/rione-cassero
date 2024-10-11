@@ -5,7 +5,7 @@ import 'package:upper/helpers/aes_helper.dart';
 import 'package:upper/helpers/date_time_helper.dart';
 
 class User {
-  final String? uid;
+  String? uid;
   final String name;
   final String surname;
   final String email;
@@ -18,9 +18,10 @@ class User {
   final int cardNumber;
   String? id;
   String? state;
+  bool? isAdmin;
 
   User({
-    required this.uid,
+    this.uid,
     required this.name,
     required this.surname,
     required this.email,

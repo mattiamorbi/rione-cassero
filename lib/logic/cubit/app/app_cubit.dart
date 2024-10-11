@@ -58,6 +58,7 @@ class AppCubit extends Cubit<AppState> {
       await _auth.createUserWithEmailAndPassword(email: user.email, password: password);
       await _auth.currentUser!.updateDisplayName("${user.name} ${user.surname}");
       await _auth.currentUser!.sendEmailVerification();
+      user.uid = _auth.currentUser!.uid;
       await updateUserInfo(user);
       await _auth.signOut();
       emit(UserSignupButNotVerified());
@@ -121,6 +122,23 @@ class AppCubit extends Cubit<AppState> {
     return data == null ? "user" : Role.fromJson(data).name;
   }
 
+  Future<String> getUserLevelFromUser(up.User _user) async {
+    var users = firebase.collection('roles');
+    var doc = await users.doc(_user.uid).get();
+    var data = doc.data();
+    print("Livello letto per ${_user.name} : ${data}");
+    return data == null ? "user" : Role.fromJson(data).name;
+  }
+
+
+  Future<void> setUserLevel(up.User _user, String role) async {
+    var users = firebase.collection('roles');
+    await users.doc(_user.uid!).set({'name':role});
+  }
+
+
+
+
   Future<List<UpperEvent>> getUpperEvents() async {
     List<UpperEvent> events = [];
 
@@ -148,13 +166,16 @@ class AppCubit extends Cubit<AppState> {
 
     var usersCollection = firebase.collection("users");
     await usersCollection.get().then(
-      (querySnapshot) {
+      (querySnapshot) async {
         for (var doc in querySnapshot.docs) {
           if (kDebugMode) {
             print(doc.data());
           }
           var user = up.User.fromJson(doc.data());
           user.id = doc.id;
+          var user_level = await getUserLevelFromUser(user);
+          if (user_level.contains("admin")) user.isAdmin = true;
+          else user.isAdmin = false;
           users.add(user);
         }
       },

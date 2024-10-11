@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/models/upper_event.dart';
@@ -9,7 +10,11 @@ class EventParticipantScreen extends StatefulWidget {
   List<up.User> bookedUsers = [];
   List<up.User> participantsUsers = [];
 
-  EventParticipantScreen({super.key, required this.upperEvent, required this.bookedUsers, required this.participantsUsers});
+  EventParticipantScreen(
+      {super.key,
+      required this.upperEvent,
+      required this.bookedUsers,
+      required this.participantsUsers});
 
   @override
   State<EventParticipantScreen> createState() => _EventParticipantScreenState();
@@ -28,8 +33,10 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
     _totalJoinEvent = _createJoinList();
     _filteredUsers = _totalJoinEvent;
 
-    print(_totalJoinEvent.length);
-    print(_filteredUsers.length);
+    if (kDebugMode) {
+      print(_totalJoinEvent.length);
+      print(_filteredUsers.length);
+    }
 
     _isUsersLoading = false;
   }
@@ -37,7 +44,7 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
   List<up.User> _createJoinList() {
     // Creiamo una mappa per gestire l'unione
     Map<String, up.User> userMap = {};
-    print(widget.bookedUsers.length);
+    if (kDebugMode) print(widget.bookedUsers.length);
     // Aggiungo prima i prenotati
     for (var us in widget.bookedUsers) {
       //userMap[us.uid!]?.state = 'booked';
@@ -47,10 +54,10 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
     // Poi aggiungo i partecipanti, sovrascrivendo se già esiste
     for (var us in widget.participantsUsers) {
       userMap[us.uid!] = us.copyWith(state: 'joined');
-     // userMap[us.uid!]?.state = 'joined';
+      // userMap[us.uid!]?.state = 'joined';
     }
 
-    print( "user map ${userMap.length}");
+    if (kDebugMode) print("user map ${userMap.length}");
 
     // Converto la mappa in una lista finale
     return userMap.values.toList();
@@ -59,7 +66,8 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
   // Funzione per filtrare la lista degli utenti in base al testo inserito
   void filterUsers(String query) {
     List<up.User> filtered = _totalJoinEvent.where((utente) {
-      String fullName = '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
+      String fullName =
+          '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
       return fullName.contains(query.toLowerCase());
     }).toList();
 
@@ -75,6 +83,9 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
         backgroundColor: Color.fromRGBO(17, 17, 17, 1),
         appBar: AppBar(
           title: const Text("Ingressi"),
+          foregroundColor: Colors.white,
+          backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+          titleTextStyle: TextStyle(color: Colors.white),
         ),
         body: Container(
           padding: EdgeInsets.only(left: 10, right: 10),
@@ -98,7 +109,10 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                   ),
                 ),
               ),
-              Text("Partecipanti: ${_totalJoinEvent.length}", style: TextStyle(color: Colors.white),),
+              Text(
+                "Partecipanti: ${widget.participantsUsers.length}",
+                style: TextStyle(color: Colors.white),
+              ),
               Expanded(
                 child: _isUsersLoading
                     ? Center(child: Text('Caricamento utenti in corso...'))
@@ -133,7 +147,8 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                                   onTap: () {},
                                 ),
                                 title: Text('${user.name} ${user.surname}'),
-                                subtitle: Text('Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                subtitle: Text(
+                                    'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
                               );
                             },
                           ),

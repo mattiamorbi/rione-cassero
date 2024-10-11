@@ -27,6 +27,7 @@ class AppTextFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       focusNode: focusNode,
+
       validator: (value) {
         return validator(value);
       },
@@ -35,7 +36,7 @@ class AppTextFormField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(
-          fontSize: 20.sp,
+          fontSize: 30.sp,
           fontWeight: FontWeight.w600,
           color: Colors.black38,
         ),
@@ -75,7 +76,7 @@ class AppTextFormField extends StatelessWidget {
       ),
       obscureText: isObscureText ?? false,
       style: TextStyle(
-        fontSize: 20.sp,
+        fontSize: 30.sp,
         fontWeight: FontWeight.w600,
         color: Colors.black,
       ),

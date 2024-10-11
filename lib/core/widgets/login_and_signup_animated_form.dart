@@ -58,14 +58,14 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       key: formKey,
       child: Column(
         children: [
+          genericField(nameController, 'Nome', 'Inserisci un nome valido'),
+          genericField(surnameController, 'Cognome', 'Inserisci un cognome valido'),
           emailField(),
           passwordField(),
           forgetPasswordTextButton(),
           Gap(18.h),
           passwordConfirmationField(),
           Gap(18.h),
-          genericField(nameController, 'Nome', 'Inserisci un nome valido'),
-          genericField(surnameController, 'Cognome', 'Inserisci un cognome valido'),
           genericField(birthplaceController, 'Luogo di nascita', 'Inserisci un luogo valido'),
           birthPlaceField(),
           genericField(addressController, 'Indirizzo', 'Inserisci un indirizzo valido'),

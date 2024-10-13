@@ -172,7 +172,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
               }
 
               if (birthDate.isEmpty || !validDate) {
-                return 'Inserisci un data di nascita valida valido!';
+                return 'Inserisci un data di nascita valida';
               }
             },
             controller: birthdateController,

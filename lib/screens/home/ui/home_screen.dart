@@ -188,6 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           return ListTile(
                             tileColor: Colors.white,
                             textColor: Colors.black,
+                            onTap: () => _showUser(user),
                             subtitleTextStyle: TextStyle(
                               fontSize: 12,
                               color: Colors.black38,
@@ -198,12 +199,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             leading: Icon(
-                              user.isAdmin! ? Icons.settings_accessibility : Icons.person_outline,
-                              color: user.isAdmin! ? Colors.orange : Colors.black,
+                              user.isAdmin! ? Icons.settings_accessibility : user.cardNumber != 0 ? Icons.person_pin : Icons.person_outline,
+                              color: user.isAdmin! ? Colors.orange : user.cardNumber != 0 ? Colors.green : Colors.black,
                             ),
                             trailing: PopupMenuButton<String>(
                               onSelected: (String result) {
                                 switch (result) {
+                                  case 'show_user':
+                                    _showUser(user);
+                                    break;
                                   case 'reimposta_password':
                                     _resetPassword(user);
                                     break;
@@ -218,6 +222,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (BuildContext context) =>
                                   <PopupMenuEntry<String>>[
                                 const PopupMenuItem<String>(
+                                  value: 'show_user',
+                                  child: Text('Visualizza'),
+                                ),const PopupMenuItem<String>(
                                   value: 'reimposta_password',
                                   child: Text('Reimposta password'),
                                 ),
@@ -245,6 +252,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _resetPassword(up.User _user) async {
     await context.read<AppCubit>().resetPassword(_user.email);
+  }
+
+  void _showUser(up.User _user) async {
+    context.pushNamed(
+      Routes.viewUserPage,
+      arguments: {
+        'user': _user,
+      },
+    );
   }
 
   void _userToAdmin(up.User _user) async {

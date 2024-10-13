@@ -6,4 +6,5 @@ class Routes {
   static const String newEventScreen = "/newEventScreen";
   static const String editEventScreen = "/editEventScreen";
   static const String viewParticipantsScreen = "/viewParticipantsScreen";
+  static const String viewUserPage = "/viewUserPage";
 }

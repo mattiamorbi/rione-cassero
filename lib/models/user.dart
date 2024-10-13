@@ -15,7 +15,7 @@ class User {
   final String cap;
   final String city;
   final String telephone;
-  final int cardNumber;
+  int cardNumber;
   String? id;
   String? state;
   bool? isAdmin;

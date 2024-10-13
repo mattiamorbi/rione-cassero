@@ -8,6 +8,7 @@ import 'package:upper/screens/forget/ui/forget_screen.dart';
 import 'package:upper/screens/home/ui/event_participants_screen.dart';
 import 'package:upper/screens/home/ui/home_screen.dart';
 import 'package:upper/screens/home/ui/new_event_screen.dart';
+import 'package:upper/screens/home/ui/user_page.dart';
 import 'package:upper/screens/login/ui/login_screen.dart';
 import 'package:upper/screens/signup/ui/sign_up_screen.dart';
 import 'routes.dart';
@@ -83,6 +84,17 @@ class AppRouter {
               upperEvent: map['upperEvent'] as UpperEvent,
               bookedUsers: map['bookedUsers'] as List<up.User>,
               participantsUsers: map['participantsUsers'] as List<up.User>,
+            ),
+          ),
+        );
+
+      case Routes.viewUserPage:
+        var map = settings.arguments as Map<String, Object?>;
+
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: authCubit,
+            child: UserPage(user: map['user'] as up.User,
             ),
           ),
         );

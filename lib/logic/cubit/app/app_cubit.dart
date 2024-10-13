@@ -73,7 +73,7 @@ class AppCubit extends Cubit<AppState> {
 
   Future<void> updateUserInfo(up.User user) async {
     var users = firebase.collection('users');
-    await users.doc(_auth.currentUser!.uid).set(user.toJson());
+    await users.doc(user.uid).set(user.toJson());
   }
 
   Future<void> bookEvent(String eventId, up.User? user) async {

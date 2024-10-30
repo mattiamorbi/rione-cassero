@@ -34,7 +34,9 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: authCubit,
-            child: const HomeScreen(),
+            child: HomeScreen(
+              tab_index: settings.arguments == null ? 1 : settings.arguments as int,
+            ),
           ),
         );
 

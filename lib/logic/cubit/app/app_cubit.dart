@@ -148,6 +148,7 @@ class AppCubit extends Cubit<AppState> {
         for (var doc in querySnapshot.docs) {
           var event = UpperEvent.fromJson(doc.data());
           event.id = doc.id;
+          //print(doc.id);
           events.add(event);
         }
       },

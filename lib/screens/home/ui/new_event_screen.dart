@@ -45,6 +45,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
       _placeController.text = widget.upperEvent!.place;
       _loadEventImage();
     }
+    //print(widget.upperEvent!.id);
   }
 
   void _loadEventImage() async {
@@ -105,10 +106,12 @@ class _NewEventScreenState extends State<NewEventScreen> {
   }
 
   Future<void> _uploadToFirebase() async {
-    //this.build(context);
-    context.pushNamed(Routes.homeScreen);
+    //
+    //
+    //build(context);
+    //
     final storageRef = FirebaseStorage.instance.ref();
-    final imageRef = storageRef.child("images/${_pickedImage!.name}");
+    final imageRef = _pickedImage == null ? storageRef.child(widget.upperEvent!.imagePath) : storageRef.child("images/${_pickedImage!.name}");
 
     try {
       await imageRef.putData(_webImage);
@@ -131,24 +134,37 @@ class _NewEventScreenState extends State<NewEventScreen> {
     try {
       if (widget.upperEvent != null) {
         var id = widget.upperEvent!.id;
+        print("Event id! ${widget.upperEvent!.id}");
+        await events.doc(id).set(upperEvent.toJson());
         widget.upperEvent = upperEvent;
-        await events.doc(id).set(widget.upperEvent!.toJson());
+        print("fatto");
       } else {
         await events.doc().set(upperEvent.toJson());
       }
-      //context.pushNamed(Routes.homeScreen);
+      context.pushNamed(Routes.homeScreen, arguments: 0);
     } on Exception catch (e) {
       if (kDebugMode) {
         print("Error while saving event! $e");
       }
     }
+
+   // context.pushNamedAndRemoveUntil(
+   //   Routes.homeScreen,
+   //   predicate: (route) => false,
+   // );
+
+    //context.pushNamed(Routes.homeScreen);
   }
 
   Widget _newEventScreen(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Color.fromRGBO(17, 17, 17, 1),
         appBar: AppBar(
+          backgroundColor: Color.fromRGBO(17, 17, 17, 1),
           title: const Text("UPPER - Nuovo evento"),
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
+          foregroundColor: Colors.white,
         ),
         body: Padding(
           padding: const EdgeInsets.only(
@@ -157,7 +173,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
             child: Column(children: [
               Align(
                   alignment: Alignment.centerLeft,
-                  child: Text("Aggiungi un nuovo evento")),
+                  child: Text(widget.upperEvent == null ? "Aggiungi un nuovo evento" : "Modifica evento", style: TextStyle(fontSize: 15, color: Colors.white),)),
               Gap(20.w),
               genericField(
                   _titleController, "Titolo", "Inserisci un titolo valido"),
@@ -175,28 +191,41 @@ class _NewEventScreenState extends State<NewEventScreen> {
               Gap(20.w),
               Visibility(
                 visible: _webImage.length > 1,
-                child: Image.memory(
-                  _webImage,
-                  fit: BoxFit.fill,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  child: Image.memory(
+                    _webImage,
+                    fit: BoxFit.fill,
+                  ),
                 ),
               ),
+              Gap(25.h),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(width: MediaQuery.sizeOf(context).width / 2),
-                  FloatingActionButton(
-                    onPressed: _loadImage,
-                    child: Icon(
-                      Icons.image,
-                    ),
+                  GestureDetector(
+                    child: Container(
+                        width: 50,
+                        height: 50,
+                        child: Icon(
+                          Icons.image,
+                          color: Colors.white,
+                        )),
+                    onTap: _loadImage
                   ),
                   SizedBox(
                     width: 20,
                   ),
-                  FloatingActionButton(
-                    onPressed: _uploadToFirebase,
-                    child: Icon(
-                      Icons.save,
-                    ),
+                  GestureDetector(
+                      child: Container(
+                          width: 50,
+                          height: 50,
+                          child: Icon(
+                            Icons.save,
+                            color: Colors.white,
+                          )),
+                      onTap: _uploadToFirebase
                   ),
                 ],
               )

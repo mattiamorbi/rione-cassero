@@ -298,7 +298,7 @@ class _EventTileState extends State<EventTile> {
         child: Stack(children: [
           Center(child: Image(image: _image[index].image)),
           Visibility(
-            visible: _participantData.booked && index == _focusedIndex,
+            visible: _participantData.booked && index == _focusedIndex && _loading == false,
             child: Container(
               padding: EdgeInsets.all(5),
               decoration: BoxDecoration(

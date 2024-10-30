@@ -5,7 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/no_internet.dart';
+import 'package:upper/helpers/extensions.dart';
 import 'package:upper/models/user.dart' as up;
+import 'package:upper/screens/home/ui/home_screen.dart';
 import 'package:upper/theming/colors.dart';
 
 import '../../../logic/cubit/app/app_cubit.dart';
@@ -274,7 +276,7 @@ class _UserScreenState extends State<UserPage> {
     await context.read<AppCubit>().updateUserInfo(_user);
     setState(() {
       editCardNumber = false;
-      // qui ci sarebbe da aggiornare le icone della lista nella pagina precedente
+      context.pop();
     });
   }
 

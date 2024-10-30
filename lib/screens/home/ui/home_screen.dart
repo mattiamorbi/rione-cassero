@@ -18,7 +18,8 @@ import 'package:upper/theming/colors.dart';
 import 'package:upper/theming/styles.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  int? tab_index;
+  HomeScreen({super.key, this.tab_index});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -255,12 +256,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showUser(up.User _user) async {
-    context.pushNamed(
+    await context.pushNamed(
       Routes.viewUserPage,
       arguments: {
         'user': _user,
       },
     );
+    setState(() {});
   }
 
   void _userToAdmin(up.User _user) async {
@@ -344,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
   SafeArea _homePage(BuildContext context) {
     return SafeArea(
       child: DefaultTabController(
-        initialIndex: 1,
+        initialIndex: widget.tab_index ?? 1,
         length: _isAdmin ? 3 : 2,
         child: Scaffold(
           backgroundColor: Color.fromRGBO(17, 17, 17, 1),

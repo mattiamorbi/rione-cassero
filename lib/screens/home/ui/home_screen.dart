@@ -19,6 +19,7 @@ import 'package:upper/theming/styles.dart';
 
 class HomeScreen extends StatefulWidget {
   int? tab_index;
+
   HomeScreen({super.key, this.tab_index});
 
   @override
@@ -36,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       TextEditingController(); // Controller per il campo di ricerca
 
   late up.User _loggedUser;
+  bool _isEventsLoading = true;
 
   @override
   Widget build(BuildContext context) {
@@ -92,9 +94,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadEvents() async {
-    var tmpEvents = await context.read<AppCubit>().getUpperEvents();
     setState(() {
-      _events = tmpEvents;
+      _isEventsLoading = true;
+    });
+    var tmpEvents = await context.read<AppCubit>().getUpperEvents();
+    _events = tmpEvents;
+    _events.sort((a, b) => a.getDate().compareTo(b.getDate()));
+
+    setState(() {
+      _isEventsLoading = false;
     });
   }
 
@@ -117,19 +125,54 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _eventsWidget() {
-    if (_events.isNotEmpty) {
+    if (!_isEventsLoading && !_isUsersLoading) {
+      //if (_events.isNotEmpty) {
       return Column(
         children: [
           const SizedBox(
             height: 10,
           ),
-          Expanded(
-            child: EventTile(
-                upperEvents: _events,
-                isAdmin: _isAdmin,
-                allUsers: _users,
-                loggedUser: _loggedUser),
+          Visibility(
+            visible: _events.isNotEmpty,
+            child: Expanded(
+              child: EventTile(
+                  upperEvents: _events,
+                  isAdmin: _isAdmin,
+                  allUsers: _users,
+                  loggedUser: _loggedUser),
+            ),
           ),
+          Visibility(
+            visible: _events.isEmpty,
+            child: Expanded(
+                child: Center(
+                    child: Text(
+              "Nessun evento in programma",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  color: Colors.white),
+            ))),
+          ),
+//           Visibility(
+//             visible: _isAdmin ,
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.end,
+//               children: [
+//                 GestureDetector(
+//                   child: Padding(
+//                     padding: const EdgeInsets.only(bottom: 20, right: 20),
+//                     child: Icon(Icons.add, size: 30, color: Colors.orange,),
+//                   ),
+//                   onTap: () async {
+//                     await context.pushNamed(Routes.newEventScreen,
+//                         arguments: null);
+//                     setState(() {});
+//                   },
+//                 )
+//                ],
+//              ),
+//            ),
         ],
       );
     } else {
@@ -200,8 +243,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             leading: Icon(
-                              user.isAdmin! ? Icons.settings_accessibility : user.cardNumber != 0 ? Icons.person_pin : Icons.person_outline,
-                              color: user.isAdmin! ? Colors.orange : user.cardNumber != 0 ? Colors.green : Colors.black,
+                              user.isAdmin!
+                                  ? Icons.settings_accessibility
+                                  : user.cardNumber != 0
+                                      ? Icons.person_pin
+                                      : Icons.person_outline,
+                              color: user.isAdmin!
+                                  ? Colors.orange
+                                  : user.cardNumber != 0
+                                      ? Colors.green
+                                      : Colors.black,
                             ),
                             trailing: PopupMenuButton<String>(
                               onSelected: (String result) {
@@ -225,13 +276,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const PopupMenuItem<String>(
                                   value: 'show_user',
                                   child: Text('Visualizza'),
-                                ),const PopupMenuItem<String>(
+                                ),
+                                const PopupMenuItem<String>(
                                   value: 'reimposta_password',
                                   child: Text('Reimposta password'),
                                 ),
                                 PopupMenuItem<String>(
                                   value: 'rendi_amministratore',
-                                  child:  user.isAdmin! ? Text('Rendi utente') : Text('Rendi amministratore'),
+                                  child: user.isAdmin!
+                                      ? Text('Rendi utente')
+                                      : Text('Rendi amministratore'),
                                 ),
                                 const PopupMenuItem<String>(
                                   value: 'elimina_account',
@@ -269,13 +323,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!_user.isAdmin!) {
       await context.read<AppCubit>().setUserLevel(_user, "admin");
       _user.isAdmin = true;
-    }
-    else {
+    } else {
       await context.read<AppCubit>().setUserLevel(_user, "user");
       _user.isAdmin = false;
     }
 
-    setState(() { // giusto per aggiornare la lista
+    setState(() {
+      // giusto per aggiornare la lista
       _isUsersLoading = false;
     });
   }
@@ -283,7 +337,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _deleteAccount(up.User _user) async {
     // questa funzione deve cancellare un account
 
-    setState(() { // giusto per aggiornare la lista
+    setState(() {
+      // giusto per aggiornare la lista
       _isUsersLoading = false;
     });
   }

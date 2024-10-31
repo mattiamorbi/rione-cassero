@@ -18,6 +18,7 @@ class UpperEvent {
     required this.time,
     required this.place,
     required this.imagePath,
+    this.id,
   });
 
   DateTime getDate() => DateTimeHelper.getDateTime(date);

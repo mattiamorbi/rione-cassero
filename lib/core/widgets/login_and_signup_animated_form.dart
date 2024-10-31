@@ -161,19 +161,33 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           AppTextFormField(
             hint: 'Data di nascita (gg/mm/aaaa)',
             validator: (value) {
-              String birthDate = (value ?? '').trim();
-              birthdateController.text = birthDate;
-              bool validDate = false;
-              try {
-                DateTimeHelper.getDateTime(birthDate);
-                validDate = true;
-              } on Exception {
-                // Formato data inserito non valido
+              if (value == null || value.isEmpty) {
+                return 'Inserisci una data';
               }
 
-              if (birthDate.isEmpty || !validDate) {
-                return 'Inserisci un data di nascita valida';
+              // Controllo che sia nel formato gg/mm/aaaa usando regex
+              final RegExp dateRegex = RegExp(r'^(\d{2})\/(\d{2})\/(\d{4})$');
+              if (!dateRegex.hasMatch(value)) {
+                return 'Formato data non valido. Usa gg/mm/aaaa';
               }
+
+              // Estrai giorno, mese e anno
+              final Match? match = dateRegex.firstMatch(value);
+              final int day = int.parse(match!.group(1)!);
+              final int month = int.parse(match.group(2)!);
+              final int year = int.parse(match.group(3)!);
+
+              // Usa DateTime per validare
+              try {
+                final parsedDate = DateTime(year, month, day);
+                if (parsedDate.day != day || parsedDate.month != month || parsedDate.year != year) {
+                  return 'Data non valida';
+                }
+              } catch (e) {
+                return 'Data non valida';
+              }
+
+              return null; // Data valida
             },
             controller: birthdateController,
           ),

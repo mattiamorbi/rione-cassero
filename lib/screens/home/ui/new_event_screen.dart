@@ -12,6 +12,7 @@ import 'package:upper/helpers/extensions.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/theming/colors.dart';
 
+import '../../../helpers/date_time_helper.dart';
 import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
@@ -27,12 +28,15 @@ class NewEventScreen extends StatefulWidget {
 class _NewEventScreenState extends State<NewEventScreen> {
   XFile? _pickedImage;
   Uint8List _webImage = Uint8List(0);
+  bool _noImage = false;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _placeController = TextEditingController();
+
+  final formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -73,6 +77,42 @@ class _NewEventScreenState extends State<NewEventScreen> {
     );
   }
 
+  Widget dataField() {
+    return AppTextFormField(
+      hint: 'Data (gg/mm/aaaa)',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Inserisci una data';
+        }
+
+        // Controllo che sia nel formato gg/mm/aaaa usando regex
+        final RegExp dateRegex = RegExp(r'^(\d{2})\/(\d{2})\/(\d{4})$');
+        if (!dateRegex.hasMatch(value)) {
+          return 'Formato data non valido. Usa gg/mm/aaaa';
+        }
+
+        // Estrai giorno, mese e anno
+        final Match? match = dateRegex.firstMatch(value);
+        final int day = int.parse(match!.group(1)!);
+        final int month = int.parse(match.group(2)!);
+        final int year = int.parse(match.group(3)!);
+
+        // Usa DateTime per validare
+        try {
+          final parsedDate = DateTime(year, month, day);
+          if (parsedDate.day != day || parsedDate.month != month || parsedDate.year != year) {
+            return 'Data non valida';
+          }
+        } catch (e) {
+          return 'Data non valida';
+        }
+
+        return null; // Data valida
+      },
+      controller: _dateController,
+    );
+  }
+
   Widget genericField(TextEditingController controller, String placeholder,
       String errorMessage) {
     return AppTextFormField(
@@ -97,6 +137,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
       var f = await image.readAsBytes();
       setState(() {
         _webImage = f;
+        _noImage = false;
       });
     } else {
       if (kDebugMode) {
@@ -106,54 +147,83 @@ class _NewEventScreenState extends State<NewEventScreen> {
   }
 
   Future<void> _uploadToFirebase() async {
-    //
-    //
-    //build(context);
-    //
-    final storageRef = FirebaseStorage.instance.ref();
-    final imageRef = _pickedImage == null ? storageRef.child(widget.upperEvent!.imagePath) : storageRef.child("images/${_pickedImage!.name}");
+    if (formKey.currentState!.validate()) {
+      final storageRef = FirebaseStorage.instance.ref();
+      var events = FirebaseFirestore.instance.collection('events');
 
-    try {
-      await imageRef.putData(_webImage);
-    } on FirebaseException catch (e) {
-      if (kDebugMode) {
-        print("Errore durante il caricamento dell'immagine! $e");
-      }
-    }
-    var events = FirebaseFirestore.instance.collection('events');
-    var upperEvent = UpperEvent(
-        title: _titleController.text,
-        description: _descriptionController.text,
-        date: _dateController.text,
-        time: _timeController.text,
-        place: _placeController.text,
-        imagePath: _pickedImage == null
-            ? widget.upperEvent!.imagePath
-            : "images/${_pickedImage!.name}");
+      if (widget.upperEvent == null) {
+        final storageRef = FirebaseStorage.instance.ref();
 
-    try {
-      if (widget.upperEvent != null) {
+        if (_pickedImage == null) {
+          setState(() {
+            _noImage = true;
+          });
+          return;
+        } else {
+          final imageRef = storageRef.child("images/${_pickedImage!.name}");
+          try {
+            await imageRef.putData(_webImage);
+          } on FirebaseException catch (e) {
+            if (kDebugMode) {
+              print("Errore durante il caricamento dell'immagine! $e");
+            }
+          }
+
+          var newUpperEvent = UpperEvent(
+              title: _titleController.text,
+              description: _descriptionController.text,
+              date: _dateController.text,
+              time: _timeController.text,
+              place: _placeController.text,
+              imagePath: "images/${_pickedImage!.name}");
+
+          try {
+            await events.doc().set(newUpperEvent.toJson());
+          } on Exception catch (e) {
+            if (kDebugMode) {
+              print("Error while saving event! $e");
+            }
+          }
+        }
+      } else {
+        final imageRef = _pickedImage == null
+            ? storageRef.child(widget.upperEvent!.imagePath)
+            : storageRef.child("images/${_pickedImage!.name}");
+
+        try {
+          if (_pickedImage != null) await imageRef.putData(_webImage);
+        } on FirebaseException catch (e) {
+          if (kDebugMode) {
+            print("Errore durante il caricamento dell'immagine! $e");
+          }
+        }
         var id = widget.upperEvent!.id;
-        print("Event id! ${widget.upperEvent!.id}");
-        await events.doc(id).set(upperEvent.toJson());
+        var upperEvent = UpperEvent(
+            title: _titleController.text,
+            description: _descriptionController.text,
+            date: _dateController.text,
+            time: _timeController.text,
+            place: _placeController.text,
+            id: id,
+            imagePath: _pickedImage == null
+                ? widget.upperEvent!.imagePath
+                : "images/${_pickedImage!.name}");
+
+        try {
+          await events.doc(id).set(upperEvent.toJson());
+        } on Exception catch (e) {
+          if (kDebugMode) {
+            print("Error while saving event! $e");
+          }
+        }
         widget.upperEvent = upperEvent;
         print("fatto");
-      } else {
-        await events.doc().set(upperEvent.toJson());
       }
+
       context.pushNamed(Routes.homeScreen, arguments: 0);
-    } on Exception catch (e) {
-      if (kDebugMode) {
-        print("Error while saving event! $e");
-      }
     }
 
-   // context.pushNamedAndRemoveUntil(
-   //   Routes.homeScreen,
-   //   predicate: (route) => false,
-   // );
 
-    //context.pushNamed(Routes.homeScreen);
   }
 
   Widget _newEventScreen(BuildContext context) {
@@ -161,11 +231,14 @@ class _NewEventScreenState extends State<NewEventScreen> {
       child: Scaffold(
         backgroundColor: Color.fromRGBO(17, 17, 17, 1),
         appBar: AppBar(
-          backgroundColor: Color.fromRGBO(17, 17, 17, 1),
-          title: const Text("UPPER - Nuovo evento"),
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
-          foregroundColor: Colors.white,
-        ),
+            backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+            foregroundColor: Colors.white,
+            title: Text(
+              widget.upperEvent == null
+                  ? "UPPER - Nuovo evento"
+                  : "UPPER - Modifica evento",
+              style: TextStyle(fontSize: 24, color: Colors.white),
+            )),
         body: Padding(
           padding: const EdgeInsets.only(
               top: 15.0, bottom: 15.0, left: 40.0, right: 40.0),
@@ -173,22 +246,37 @@ class _NewEventScreenState extends State<NewEventScreen> {
             child: Column(children: [
               Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(widget.upperEvent == null ? "Aggiungi un nuovo evento" : "Modifica evento", style: TextStyle(fontSize: 15, color: Colors.white),)),
-              Gap(20.w),
-              genericField(
-                  _titleController, "Titolo", "Inserisci un titolo valido"),
-              Gap(20.w),
-              genericField(_descriptionController, "Descrizione",
-                  "Inserisci una descrizione valida"),
-              Gap(20.w),
-              genericField(_dateController, "Data", "Inserisci una data valida"),
-              Gap(20.w),
-              genericField(
-                  _timeController, "Orario", "Inserisci un orario valido"),
-              Gap(20.w),
-              genericField(
-                  _placeController, "Luogo", "Inserisci un luogo valido"),
-              Gap(20.w),
+                  child: Text(
+                    widget.upperEvent == null
+                        ? "Aggiungi un nuovo evento"
+                        : "Modifica evento",
+                    style: TextStyle(fontSize: 15, color: Colors.white),
+                  )),
+              Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                    Gap(20.w),
+                    genericField(_titleController, "Titolo",
+                        "Inserisci un titolo valido"),
+                    Gap(20.w),
+                    genericField(_descriptionController, "Descrizione",
+                        "Inserisci una descrizione valida"),
+                    Gap(20.w),
+                    //genericField(
+                    //    _dateController, "Data", "Inserisci una data valida"),
+                    dataField(),
+                    Gap(20.w),
+                    genericField(_timeController, "Orario",
+                        "Inserisci un orario valido"),
+                    Gap(20.w),
+                    genericField(
+                        _placeController, "Luogo", "Inserisci un luogo valido"),
+                    Gap(20.w),
+                  ],
+                ),
+
+              ),
               Visibility(
                 visible: _webImage.length > 1,
                 child: Container(
@@ -205,27 +293,26 @@ class _NewEventScreenState extends State<NewEventScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    child: Container(
-                        width: 50,
-                        height: 50,
-                        child: Icon(
-                          Icons.image,
-                          color: Colors.white,
-                        )),
-                    onTap: _loadImage
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  GestureDetector(
                       child: Container(
                           width: 50,
                           height: 50,
                           child: Icon(
-                            Icons.save,
-                            color: Colors.white,
+                            Icons.image,
+                            color: _noImage == true ? Colors.red : Colors.white,
                           )),
-                      onTap: _uploadToFirebase
+                      onTap: _loadImage),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  GestureDetector(
+                    child: Container(
+                        width: 50,
+                        height: 50,
+                        child: Icon(
+                          Icons.save,
+                          color: Colors.white,
+                        )),
+                    onTap: _uploadToFirebase,
                   ),
                 ],
               )

@@ -104,6 +104,10 @@ class _EventTileState extends State<EventTile> {
           .read<AppCubit>()
           .getEventsBook(widget.upperEvents[index].id!, widget.allUsers);
     }
+
+    DateTime oggi = DateTime.now();
+    DateTime domani = DateTime.now();
+
     setState(() {
       _loading = false;
       _qrMode = 0;
@@ -232,7 +236,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin,
+                  visible: widget.isAdmin & !_loading,
                   child: GestureDetector(
                     child: Icon(
                       Icons.edit,
@@ -248,7 +252,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin,
+                  visible: widget.isAdmin & !_loading,
                   child: GestureDetector(
                     onTap: _enableQrMode,
                     child: Icon(
@@ -264,13 +268,33 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin,
+                  visible: widget.isAdmin & !_loading,
                   child: GestureDetector(
                     onTap: () => _viewParticipants(_focusedIndex),
                     child: Icon(
                       Icons.menu,
                       color: Colors.orange,
                     ),
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isAdmin,
+                  child: SizedBox(
+                    width: 20,
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isAdmin & !_loading,
+                  child: GestureDetector(
+                    child: Icon(
+                      Icons.add,
+                      color: Colors.orange,
+                    ),
+                    onTap: () async {
+                      await context.pushNamed(Routes.newEventScreen,
+                          arguments: null);
+                      setState(() {});
+                    },
                   ),
                 ),
               ],
@@ -298,7 +322,9 @@ class _EventTileState extends State<EventTile> {
         child: Stack(children: [
           Center(child: Image(image: _image[index].image)),
           Visibility(
-            visible: _participantData.booked && index == _focusedIndex && _loading == false,
+            visible: _participantData.booked &&
+                index == _focusedIndex &&
+                _loading == false,
             child: Container(
               padding: EdgeInsets.all(5),
               decoration: BoxDecoration(
@@ -307,7 +333,10 @@ class _EventTileState extends State<EventTile> {
               ),
               child: Text(
                 "PRENOTATO",
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -593,8 +622,11 @@ class _EventTileState extends State<EventTile> {
   }
 
   Future<void> _editEvent(int index) async {
-    context.pushNamed(Routes.editEventScreen,
+    await context.pushNamed(Routes.editEventScreen,
         arguments: widget.upperEvents[index]);
+    setState(() {
+
+    });
   }
 
   Future<void> _viewParticipants(int index) async {

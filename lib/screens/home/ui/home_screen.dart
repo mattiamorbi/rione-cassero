@@ -91,6 +91,20 @@ class _HomeScreenState extends State<HomeScreen> {
       _isAdmin = level == "admin";
     });
     if (_isAdmin) _loadUsers();
+    else setState(() {
+      _isUsersLoading = false;
+    });
+  }
+
+  // Funzione per convertire una stringa dd/mm/yyyy in DateTime
+  DateTime convertiStringaAData(String dataString) {
+    List<String> partiData =
+        dataString.split('/'); // Divide la stringa in giorno, mese e anno
+    int giorno = int.parse(partiData[0]); // Prende il giorno
+    int mese = int.parse(partiData[1]); // Prende il mese
+    int anno = int.parse(partiData[2]); // Prende l'anno
+
+    return DateTime(anno, mese, giorno); // Crea un oggetto DateTime
   }
 
   void _loadEvents() async {
@@ -98,8 +112,42 @@ class _HomeScreenState extends State<HomeScreen> {
       _isEventsLoading = true;
     });
     var tmpEvents = await context.read<AppCubit>().getUpperEvents();
-    _events = tmpEvents;
-    _events.sort((a, b) => a.getDate().compareTo(b.getDate()));
+
+    print(tmpEvents.length);
+
+    if (_isAdmin == false) {
+      // mostro solo eventi futuri
+      for (UpperEvent event in tmpEvents) {
+        event.checkTodayDate();
+        DateTime eDate =
+            convertiStringaAData(event.date).add(Duration(days: 1));
+        if (eDate.isAfter(DateTime.now()) || event.isToday!) {
+          _events.add(event);
+        }
+      }
+    } else
+      _events = tmpEvents;
+
+    print(_events.length);
+
+    if (_events.length > 1) {
+      _events.sort((a, b) => a.getDate().compareTo(b.getDate()));
+    }
+
+    // se un evento ha la da di oggi lo metto in prima fila
+    if (_events.length > 1) {
+      for (UpperEvent event in _events) {
+        event.checkTodayDate();
+        if (event.isToday!) {
+          int index_today = _events.indexOf(event);
+          UpperEvent temp = _events[0];
+          _events[0] = _events[index_today];
+          _events[index_today] = temp;
+        }
+      }
+    }
+
+    print(_events.length);
 
     setState(() {
       _isEventsLoading = false;
@@ -125,6 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _eventsWidget() {
+    print(_isEventsLoading);
+    print(_isUsersLoading);
     if (!_isEventsLoading && !_isUsersLoading) {
       //if (_events.isNotEmpty) {
       return Column(
@@ -182,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Funzione per filtrare la lista degli utenti in base al testo inserito
+// Funzione per filtrare la lista degli utenti in base al testo inserito
   void _filterUsers(String query) {
     List<up.User> filtered = _users.where((utente) {
       String fullName =

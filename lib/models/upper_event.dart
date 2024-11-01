@@ -10,6 +10,7 @@ class UpperEvent {
   final String place;
   final String imagePath;
   String? id;
+  bool? isToday;
 
   UpperEvent({
     required this.title,
@@ -19,9 +20,19 @@ class UpperEvent {
     required this.place,
     required this.imagePath,
     this.id,
+    this.isToday,
   });
 
   DateTime getDate() => DateTimeHelper.getDateTime(date);
+
+  void checkTodayDate() {
+    DateTime oggi = DateTime(DateTime.now().year,DateTime.now().month, DateTime.now().day) ;
+    DateTime ieri = DateTime(DateTime.now().subtract(Duration(days: 1)).year,DateTime.now().subtract(Duration(days: 1)).month, DateTime.now().subtract(Duration(days: 1)).day) ;
+
+    if (this.getDate().isAtSameMomentAs(oggi) || this.getDate().isAtSameMomentAs(ieri)) {
+      this.isToday = true;
+    } else this.isToday = false;
+  }
 
   Future<Uint8List?> getEventImage() async {
     final storageRef = FirebaseStorage.instance.ref();

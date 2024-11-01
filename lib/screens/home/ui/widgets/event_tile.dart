@@ -252,7 +252,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin & !_loading,
+                  visible: widget.isAdmin & !_loading & currentEvent.isToday!,
                   child: GestureDetector(
                     onTap: _enableQrMode,
                     child: Icon(
@@ -262,7 +262,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin,
+                  visible: widget.isAdmin & !_loading & currentEvent.isToday!,
                   child: SizedBox(
                     width: 20,
                   ),

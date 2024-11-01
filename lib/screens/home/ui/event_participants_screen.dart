@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
+import 'package:upper/helpers/extensions.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
+
+import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
 class EventParticipantScreen extends StatefulWidget {
@@ -134,6 +137,7 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                                   side: BorderSide(width: 2),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
+                                onTap: () => _showUser(user),
                                 leading: Icon(
                                   Icons.person_outline,
                                   color: user.state == 'booked'
@@ -142,10 +146,11 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                                           ? Colors.green
                                           : Colors.black,
                                 ),
-                                trailing: GestureDetector(
-                                  child: Icon(Icons.delete, color: Colors.red),
-                                  onTap: () {},
-                                ),
+
+                                //trailing: GestureDetector(
+                                //  child: Icon(Icons.delete, color: Colors.red),
+                                //  onTap: () {},
+                                //),
                                 title: Text('${user.name} ${user.surname}'),
                                 subtitle: Text(
                                     'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
@@ -158,6 +163,16 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
         ),
       ),
     );
+  }
+
+  void _showUser(up.User _user) async {
+    await context.pushNamed(
+      Routes.viewUserPage,
+      arguments: {
+        'user': _user,
+      },
+    );
+    setState(() {});
   }
 
   @override

@@ -12,6 +12,8 @@ import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/routing/routes.dart';
 import 'package:upper/theming/styles.dart';
 
+import '../../../helpers/server_date.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -20,6 +22,8 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  DateTime? _currentDateTime;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,6 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       children: [
                         EmailAndPassword(
                           isSignUpPage: true,
+                          currentDate: _currentDateTime,
                         ),
                         Gap(10.h),
                         const TermsAndConditionsText(),
@@ -109,5 +114,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void initState() {
     super.initState();
     BlocProvider.of<AppCubit>(context);
+    if (_currentDateTime == null) _loadServerDate();
+  }
+
+  void _loadServerDate() async {
+    await fetchCurrentDateTime().then((dateTime) {
+      setState(() {
+        _currentDateTime = dateTime;
+        print(_currentDateTime.toString());
+      });
+    });
   }
 }

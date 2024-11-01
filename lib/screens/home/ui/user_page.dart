@@ -7,9 +7,9 @@ import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/extensions.dart';
 import 'package:upper/models/user.dart' as up;
-import 'package:upper/screens/home/ui/home_screen.dart';
 import 'package:upper/theming/colors.dart';
 
+import '../../../helpers/date_time_helper.dart';
 import '../../../logic/cubit/app/app_cubit.dart';
 
 // ignore: must_be_immutable
@@ -110,6 +110,18 @@ class _UserScreenState extends State<UserPage> {
 
   Widget _newUserPage(BuildContext context) {
     int age = widget.user.getAge();
+    DateTime? signUpDate;
+    try {
+      signUpDate = DateTimeHelper.getDateTime(widget.user.signUpDate);
+    } catch (e) {}
+    try {
+      signUpDate = DateTime.parse(widget.user.signUpDate);
+    } catch (e) {}
+
+    if (signUpDate == null) {
+      signUpDate = DateTime(2024, 1, 1);
+    }
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Color.fromRGBO(17, 17, 17, 1),
@@ -205,6 +217,20 @@ class _UserScreenState extends State<UserPage> {
                   ),
                   Text(
                     "${widget.user.telephone}",
+                    style: TextStyle(color: Colors.white, fontSize: 24),
+                  ),
+                ],
+              ),
+              Gap(25.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "DATA ISCRIZIONE   ",
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  Text(
+                    "${signUpDate.day}/${signUpDate.month}/${signUpDate.year} ${signUpDate.hour}:${signUpDate.minute}",
                     style: TextStyle(color: Colors.white, fontSize: 24),
                   ),
                 ],

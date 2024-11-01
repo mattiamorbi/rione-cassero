@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late up.User _loggedUser;
   bool _isEventsLoading = true;
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

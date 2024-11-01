@@ -14,14 +14,18 @@ import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/password_validations.dart';
 import 'package:upper/models/user.dart' as up;
 
+import '../../helpers/server_date.dart';
+
 // ignore: must_be_immutable
 class EmailAndPassword extends StatefulWidget {
   final bool? isSignUpPage;
   late OAuthCredential? credential;
+  DateTime? currentDate;
 
   EmailAndPassword({
     super.key,
     this.isSignUpPage,
+    this.currentDate,
     this.credential,
   });
 
@@ -54,34 +58,47 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Column(
-        children: [
-          genericField(nameController, 'Nome', 'Inserisci un nome valido'),
-          genericField(surnameController, 'Cognome', 'Inserisci un cognome valido'),
-          emailField(),
-          passwordField(),
-          forgetPasswordTextButton(),
-          Gap(18.h),
-          passwordConfirmationField(),
-          Gap(18.h),
-          genericField(birthplaceController, 'Luogo di nascita', 'Inserisci un luogo valido'),
-          birthPlaceField(),
-          genericField(addressController, 'Indirizzo', 'Inserisci un indirizzo valido'),
-          genericField(cityController, 'Citta', 'Inserisci una citta valida'),
-          capField(),
-          genericField(telephoneController, 'Telefono', 'Inserisci un telefono valido'),
-          Gap(5.h),
-          PasswordValidations(
-            hasMinLength: hasMinLength,
-            isSignup: widget.isSignUpPage ?? false,
-          ),
-          Gap(20.h),
-          loginOrSignUpOrPasswordButton(context),
-        ],
-      ),
-    );
+    if (widget.currentDate != null || widget.isSignUpPage == false || widget.isSignUpPage == null) {
+      return Form(
+        key: formKey,
+        child: Column(
+          children: [
+            genericField(nameController, 'Nome', 'Inserisci un nome valido'),
+            genericField(
+                surnameController, 'Cognome', 'Inserisci un cognome valido'),
+            emailField(),
+            passwordField(),
+            forgetPasswordTextButton(),
+            Gap(18.h),
+            passwordConfirmationField(),
+            Gap(18.h),
+            genericField(birthplaceController, 'Luogo di nascita',
+                'Inserisci un luogo valido'),
+            birthPlaceField(),
+            genericField(addressController, 'Indirizzo',
+                'Inserisci un indirizzo valido'),
+            genericField(cityController, 'Citta', 'Inserisci una citta valida'),
+            capField(),
+            genericField(telephoneController, 'Telefono',
+                'Inserisci un telefono valido'),
+            Gap(5.h),
+            PasswordValidations(
+              hasMinLength: hasMinLength,
+              isSignup: widget.isSignUpPage ?? false,
+            ),
+            Gap(20.h),
+            loginOrSignUpOrPasswordButton(context),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        height: 500,
+        child: Center(
+          child: Image(image: AssetImage("assets/images/loading.gif")),
+        ),
+      );
+    }
   }
 
   @override
@@ -222,6 +239,18 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   void initState() {
     super.initState();
     _setupPasswordControllerListener();
+
+    if (widget.currentDate == null) _loadServerDate();
+
+  }
+
+  void _loadServerDate() async {
+    await fetchCurrentDateTime().then((dateTime) {
+      setState(() {
+        widget.currentDate = dateTime;
+        print(widget.currentDate.toString());
+      });
+    });
   }
 
   Widget loginButton(BuildContext context) {
@@ -394,6 +423,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
               cap: capController.text,
               city: capitalize(cityController.text),
               telephone: telephoneController.text,
+              signUpDate: widget.currentDate.toString(),
               cardNumber: 0,
           );//uid: "test");
           context.read<AppCubit>().signUpWithEmail(user, passwordController.text);

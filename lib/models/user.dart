@@ -15,6 +15,7 @@ class User {
   final String cap;
   final String city;
   final String telephone;
+  final String signUpDate;
   int cardNumber;
   String? id;
   String? state;
@@ -32,6 +33,7 @@ class User {
     required this.city,
     required this.telephone,
     required this.cardNumber,
+    required this.signUpDate,
     this.state
   });
 
@@ -50,6 +52,7 @@ class User {
           city: json['city'] as String,
           telephone: json['telephone'] as String,
           cardNumber: json['cardNumber'] as int,
+          signUpDate: json['signUpDate'] as String,
         );
 
   int getAge() {
@@ -72,6 +75,7 @@ class User {
       'city': city,
       'telephone': telephone,
       'cardNumber': cardNumber,
+      'signUpDate': signUpDate
     };
   }
 
@@ -88,6 +92,7 @@ class User {
     String? city,
     String? telephone,
     int? cardNumber,
+    String? signUpDate,
     String? state,
   }) {
     return User(
@@ -103,6 +108,7 @@ class User {
       telephone: telephone ?? this.telephone,
       cardNumber: cardNumber ?? this.cardNumber,
       state: state ?? this.state,
+      signUpDate: signUpDate ?? this.signUpDate,
     );
   }
 }

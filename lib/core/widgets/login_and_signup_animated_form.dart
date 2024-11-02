@@ -3,16 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-
-import 'package:upper/helpers/app_regex.dart';
-import 'package:upper/helpers/date_time_helper.dart';
-import 'package:upper/routing/routes.dart';
-import 'package:upper/theming/styles.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/password_validations.dart';
+import 'package:upper/helpers/app_regex.dart';
+import 'package:upper/helpers/extensions.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/models/user.dart' as up;
+import 'package:upper/routing/routes.dart';
+import 'package:upper/theming/styles.dart';
 
 import '../../helpers/server_date.dart';
 
@@ -25,7 +23,6 @@ class EmailAndPassword extends StatefulWidget {
   EmailAndPassword({
     super.key,
     this.isSignUpPage,
-    this.currentDate,
     this.credential,
   });
 
@@ -47,7 +44,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   TextEditingController capController = TextEditingController();
   TextEditingController cityController = TextEditingController();
   TextEditingController telephoneController = TextEditingController();
-  TextEditingController passwordConfirmationController = TextEditingController();
+  TextEditingController passwordConfirmationController =
+      TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -58,47 +56,38 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.currentDate != null || widget.isSignUpPage == false || widget.isSignUpPage == null) {
-      return Form(
-        key: formKey,
-        child: Column(
-          children: [
-            genericField(nameController, 'Nome', 'Inserisci un nome valido'),
-            genericField(
-                surnameController, 'Cognome', 'Inserisci un cognome valido'),
-            emailField(),
-            passwordField(),
-            forgetPasswordTextButton(),
-            Gap(18.h),
-            passwordConfirmationField(),
-            Gap(18.h),
-            genericField(birthplaceController, 'Luogo di nascita',
-                'Inserisci un luogo valido'),
-            birthPlaceField(),
-            genericField(addressController, 'Indirizzo',
-                'Inserisci un indirizzo valido'),
-            genericField(cityController, 'Citta', 'Inserisci una citta valida'),
-            capField(),
-            genericField(telephoneController, 'Telefono',
-                'Inserisci un telefono valido'),
-            Gap(5.h),
-            PasswordValidations(
-              hasMinLength: hasMinLength,
-              isSignup: widget.isSignUpPage ?? false,
-            ),
-            Gap(20.h),
-            loginOrSignUpOrPasswordButton(context),
-          ],
-        ),
-      );
-    } else {
-      return Container(
-        height: 500,
-        child: Center(
-          child: Image(image: AssetImage("assets/images/loading.gif")),
-        ),
-      );
-    }
+    return Form(
+      key: formKey,
+      child: Column(
+        children: [
+          genericField(nameController, 'Nome', 'Inserisci un nome valido'),
+          genericField(
+              surnameController, 'Cognome', 'Inserisci un cognome valido'),
+          emailField(),
+          passwordField(),
+          forgetPasswordTextButton(),
+          Gap(18.h),
+          passwordConfirmationField(),
+          Gap(18.h),
+          genericField(birthplaceController, 'Luogo di nascita',
+              'Inserisci un luogo valido'),
+          birthPlaceField(),
+          genericField(
+              addressController, 'Indirizzo', 'Inserisci un indirizzo valido'),
+          genericField(cityController, 'Citta', 'Inserisci una citta valida'),
+          capField(),
+          genericField(
+              telephoneController, 'Telefono', 'Inserisci un telefono valido'),
+          Gap(5.h),
+          PasswordValidations(
+            hasMinLength: hasMinLength,
+            isSignup: widget.isSignUpPage ?? false,
+          ),
+          Gap(20.h),
+          loginOrSignUpOrPasswordButton(context),
+        ],
+      ),
+    );
   }
 
   @override
@@ -197,7 +186,9 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
               // Usa DateTime per validare
               try {
                 final parsedDate = DateTime(year, month, day);
-                if (parsedDate.day != day || parsedDate.month != month || parsedDate.year != year) {
+                if (parsedDate.day != day ||
+                    parsedDate.month != month ||
+                    parsedDate.year != year) {
                   return 'Data non valida';
                 }
               } catch (e) {
@@ -241,14 +232,12 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     _setupPasswordControllerListener();
 
     if (widget.currentDate == null) _loadServerDate();
-
   }
 
   void _loadServerDate() async {
     await fetchCurrentDateTime().then((dateTime) {
       setState(() {
         widget.currentDate = dateTime;
-        print(widget.currentDate.toString());
       });
     });
   }
@@ -263,12 +252,16 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.white, width: 2),
         ),
-        child: Center(child: Text("Entra in UPPER", style: TextStyle(color: Colors.white, fontSize: 20))),
+        child: Center(
+            child: Text("Entra in UPPER",
+                style: TextStyle(color: Colors.white, fontSize: 20))),
       ),
       onTap: () async {
         passwordFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
-          context.read<AppCubit>().signInWithEmail(emailController.text, passwordController.text);
+          context
+              .read<AppCubit>()
+              .signInWithEmail(emailController.text, passwordController.text);
         }
       },
     );
@@ -292,15 +285,19 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   }
 
   loginOrSignUpOrPasswordButton(BuildContext context) {
-    if (widget.isSignUpPage == true) {
+    if (widget.isSignUpPage == true && widget.currentDate != null) {
       return signUpButton(context);
+    }
+    if (widget.isSignUpPage == true && widget.currentDate == null) {
+      return SizedBox.shrink();
     }
     if (widget.isSignUpPage == null) {
       return loginButton(context);
     }
   }
 
-  Widget genericField(TextEditingController controller, String placeholder, String errorMessage) {
+  Widget genericField(TextEditingController controller, String placeholder,
+      String errorMessage) {
     if (widget.isSignUpPage == true) {
       return Column(
         children: [
@@ -340,14 +337,18 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             });
           },
           child: Icon(
-            isObscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            isObscureText
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
           ),
         ),
         validator: (value) {
           if (value != passwordController.text) {
             return 'Le password non corrispondono!';
           }
-          if (value == null || value.isEmpty || !AppRegex.isPasswordValid(value)) {
+          if (value == null ||
+              value.isEmpty ||
+              !AppRegex.isPasswordValid(value)) {
             return 'Inserisci una password valida!';
           }
         },
@@ -373,11 +374,15 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           });
         },
         child: Icon(
-          isObscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          isObscureText
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
         ),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty || !AppRegex.isPasswordValid(value)) {
+        if (value == null ||
+            value.isEmpty ||
+            !AppRegex.isPasswordValid(value)) {
           return 'Inserisci una password valida!';
         }
       },
@@ -407,26 +412,30 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.white, width: 2),
         ),
-        child: Center(child: Text("Iscriviti", style: TextStyle(color: Colors.white, fontSize: 20))),
+        child: Center(
+            child: Text("Iscriviti",
+                style: TextStyle(color: Colors.white, fontSize: 20))),
       ),
       onTap: () async {
         passwordFocusNode.unfocus();
         passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
           var user = up.User(
-              name: capitalize(nameController.text),
-              surname: capitalize(surnameController.text),
-              address: capitalize(addressController.text),
-              birthplace: capitalize(birthplaceController.text),
-              email: emailController.text,
-              birthdate: birthdateController.text,
-              cap: capController.text,
-              city: capitalize(cityController.text),
-              telephone: telephoneController.text,
-              signUpDate: widget.currentDate.toString(),
-              cardNumber: 0,
-          );//uid: "test");
-          context.read<AppCubit>().signUpWithEmail(user, passwordController.text);
+            name: capitalize(nameController.text),
+            surname: capitalize(surnameController.text),
+            address: capitalize(addressController.text),
+            birthplace: capitalize(birthplaceController.text),
+            email: emailController.text,
+            birthdate: birthdateController.text,
+            cap: capController.text,
+            city: capitalize(cityController.text),
+            telephone: telephoneController.text,
+            signUpDate: widget.currentDate.toString(),
+            cardNumber: 0,
+          ); //uid: "test");
+          context
+              .read<AppCubit>()
+              .signUpWithEmail(user, passwordController.text);
         }
       },
     );

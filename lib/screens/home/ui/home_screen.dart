@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:pretty_qr_code_plus/pretty_qr_code_plus.dart';
 import 'package:upper/core/widgets/app_text_button.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/no_internet.dart';
@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late up.User _loggedUser;
   bool _isEventsLoading = true;
 
+  bool qrTapMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -91,10 +92,12 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isAdmin = level == "admin";
     });
-    if (_isAdmin) _loadUsers();
-    else setState(() {
-      _isUsersLoading = false;
-    });
+    if (_isAdmin)
+      _loadUsers();
+    else
+      setState(() {
+        _isUsersLoading = false;
+      });
   }
 
   // Funzione per convertire una stringa dd/mm/yyyy in DateTime
@@ -395,58 +398,88 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _profileWidget() {
-    return Padding(
-      padding: EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Text(FirebaseAuth.instance.currentUser!.displayName!,
-              style: TextStyle(fontSize: 30, color: Colors.white)),
-          SizedBox(
-            height: 10,
-          ),
-          Text(
-            "Mostra questo QR per entrare!",
-            style: TextStyle(fontSize: 16, color: Colors.white),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Container(
-            width: 260,
-            height: 260,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(5)),
-            child: Center(
-              child: SizedBox(
-                width: 250,
-                child: PrettyQrView.data(
-                  data: _qrData,
-                  decoration: const PrettyQrDecoration(
-                    background: Colors.white,
+    if (qrTapMode == false) {
+      return Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text(FirebaseAuth.instance.currentUser!.displayName!,
+                style: TextStyle(fontSize: 30, color: Colors.white)),
+            SizedBox(
+              height: 10,
+            ),
+            Text(
+              "Mostra questo QR per entrare!",
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            GestureDetector(
+              onTap: _toggleTapQr,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                    color: Colors.white, borderRadius: BorderRadius.circular(5)),
+                child: Center(
+                  child: SizedBox(
+                    width: 300,
+                    child: Center(
+                      child: PrettyQrPlus(
+                        data: _qrData,
+                        size: 290,
+                        elementColor: Colors.black,
+                        roundEdges: false,
+                        typeNumber: null,
+                        //decoration: const PrettyQrDecoration(
+                        //  background: Colors.white,
+                        //),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Gap(30.h),
-          Expanded(
-            child: Align(
-              alignment: AlignmentDirectional.bottomCenter,
-              child: AppTextButton(
-                buttonText: 'Logout',
-                textStyle: TextStyles.font14White400Weight,
-                buttonWidth: 100,
-                buttonHeight: 50,
-                onPressed: () {
-                  context.read<AppCubit>().signOut();
-                  context.pushNamed(Routes.loginScreen);
-                },
+            Gap(30.h),
+            Expanded(
+              child: Align(
+                alignment: AlignmentDirectional.bottomCenter,
+                child: AppTextButton(
+                  buttonText: 'Logout',
+                  textStyle: TextStyles.font14White400Weight,
+                  buttonWidth: 100,
+                  buttonHeight: 50,
+                  onPressed: () {
+                    context.read<AppCubit>().signOut();
+                    context.pushNamed(Routes.loginScreen);
+                  },
+                ),
               ),
+            )
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        color: Colors.white,
+        child: Center(
+          child: GestureDetector(
+            onTap: _toggleTapQr,
+            child: PrettyQrPlus(
+              data: _qrData,
+              size: MediaQuery.of(context).size.width - 10,
+              elementColor: Colors.black,
+              roundEdges: false,
+              typeNumber: null,
+              //decoration: const PrettyQrDecoration(
+              //  background: Colors.white,
+              //),
             ),
-          )
-        ],
-      ),
-    );
+          ),
+        ),
+      );
+    }
   }
 
   SafeArea _homePage(BuildContext context) {
@@ -479,4 +512,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  void _toggleTapQr() {
+    setState(() {
+      qrTapMode = !qrTapMode;
+    });
+  }
 }
+
+

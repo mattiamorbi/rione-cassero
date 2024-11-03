@@ -404,7 +404,9 @@ class _EventTileState extends State<EventTile> {
             child: FlutterWebQrcodeScanner(
               cameraDirection: CameraDirection.back,
               stopOnFirstResult: false,
+
               onGetResult: (result) async {
+                //SnackBar(content: Text(result), duration: Duration(seconds: 5));
                 var decryptedData = AesHelper.decrypt(result);
                 var json = jsonDecode(decryptedData);
                 _user = up.User.fromJson(json);

@@ -342,6 +342,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_barcode_sdk:
+    dependency: "direct main"
+    description:
+      name: flutter_barcode_sdk
+      sha256: befdee98a3d5b2b88e51db5dfbab80e92bf90c5287f3b1b1129dcfc4d7750bda
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.8"
   flutter_bloc:
     dependency: "direct main"
     description:
@@ -540,10 +548,10 @@ packages:
     dependency: transitive
     description:
       name: js
-      sha256: c1b2e9b5ea78c45e1a0788d29606ba27dc5f71f019f32ca5140f61ef071838cf
+      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.1"
+    version: "0.6.7"
   leak_tracker:
     dependency: transitive
     description:
@@ -760,6 +768,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.0"
+  pretty_qr_code_plus:
+    dependency: "direct main"
+    description:
+      name: pretty_qr_code_plus
+      sha256: c52a1835ff1d181084616d8b485b77a66f75108ae0a8d34efad65e97ff07bf1d
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1"
   provider:
     dependency: transitive
     description:

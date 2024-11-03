@@ -136,6 +136,23 @@ class AppCubit extends Cubit<AppState> {
     await users.doc(_user.uid!).set({'name':role});
   }
 
+  Stream<bool> watchCardNumber() {
+    // Accede al documento tramite l'ID `uid` e controlla il campo `cardNumber`
+    return FirebaseFirestore.instance
+        .collection('users') // sostituisci 'your_collection' con il nome della tua collezione
+        .doc(_auth.currentUser!.uid)
+        .snapshots()
+        .map((snapshot) {
+      // Controlla che il documento esista e che `cardNumber` sia diverso da 0
+      if (snapshot.exists) {
+        int cardNumber = snapshot.get('cardNumber') ?? 0;
+        return cardNumber != 0;
+      } else {
+        return false;
+      }
+    });
+  }
+
 
 
 

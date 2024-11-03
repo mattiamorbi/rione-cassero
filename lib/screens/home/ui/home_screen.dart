@@ -421,20 +421,43 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 300,
                 height: 300,
                 decoration: BoxDecoration(
-                    color: Colors.white, borderRadius: BorderRadius.circular(5)),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5)),
                 child: Center(
                   child: SizedBox(
                     width: 300,
                     child: Center(
-                      child: PrettyQrPlus(
-                        data: _qrData,
-                        size: 290,
-                        elementColor: Colors.black,
-                        roundEdges: false,
-                        typeNumber: null,
-                        //decoration: const PrettyQrDecoration(
-                        //  background: Colors.white,
-                        //),
+                      child: StreamBuilder(
+                        stream: context.read<AppCubit>().watchCardNumber(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Errore: ${snapshot.error}');
+                          }
+
+                          bool isCardNumberNonZero = snapshot.data ?? false;
+                          if (isCardNumberNonZero) {
+                            return PrettyQrPlus(
+                              data: _qrData,
+                              size: 290,
+                              elementColor: Colors.black,
+                              roundEdges: false,
+                              typeNumber: null,
+                              //decoration: const PrettyQrDecoration(
+                              //  background: Colors.white,
+                              //),
+                            );
+                          } else {
+                            return Text(
+                              "Riceverai una tessera molto presto",
+                              style: TextStyle(fontSize: 20),
+                            );
+                          }
+
+                        },
                       ),
                     ),
                   ),
@@ -519,5 +542,3 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 }
-
-

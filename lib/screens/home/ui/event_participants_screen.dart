@@ -9,7 +9,7 @@ import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
 class EventParticipantScreen extends StatefulWidget {
-  UpperEvent? upperEvent;
+  UpperEvent upperEvent;
   List<up.User> bookedUsers = [];
   List<up.User> participantsUsers = [];
 
@@ -85,7 +85,7 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
       child: Scaffold(
         backgroundColor: Color.fromRGBO(17, 17, 17, 1),
         appBar: AppBar(
-          title: const Text("Ingressi"),
+          title: Text("${widget.upperEvent.title} - Ingressi", style: TextStyle(fontSize: 24,color: Colors.white),),
           foregroundColor: Colors.white,
           backgroundColor: Color.fromRGBO(17, 17, 17, 1),
           titleTextStyle: TextStyle(color: Colors.white),

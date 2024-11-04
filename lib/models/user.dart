@@ -34,12 +34,14 @@ class User {
     required this.telephone,
     required this.cardNumber,
     required this.signUpDate,
+    this.isAdmin,
+    this.id,
     this.state
   });
 
   String getQrData() => AesHelper.encrypt(jsonEncode(this));
 
-  User.fromJson(Map<String, dynamic> json)
+  User.fromJson(Map<String, dynamic> json, {String? parUid, bool? parIsAdmin})
       : this(
           uid: json['uid']! as String,
           name: json['name']! as String,
@@ -53,6 +55,8 @@ class User {
           telephone: json['telephone'] as String,
           cardNumber: json['cardNumber'] as int,
           signUpDate: json['signUpDate'] as String,
+          isAdmin: parIsAdmin != null ? parIsAdmin : false,
+          id: parUid != null ? parUid : null,
         );
 
   int getAge() {

@@ -179,7 +179,7 @@ class AppCubit extends Cubit<AppState> {
     return events;
   }
 
-  Future<List<up.User>> getUsers() async {
+  Future<List<up.User>> getUsersOnce() async {
     List<up.User> users = [];
 
     var usersCollection = firebase.collection("users");
@@ -205,6 +205,29 @@ class AppCubit extends Cubit<AppState> {
     );
 
     return users;
+  }
+
+  Stream<List<up.User>> getUsers() async* {
+    final snapshotStream = FirebaseFirestore.instance.collection('users').snapshots();
+
+    await for (final snapshot in snapshotStream) {
+      List<up.User> userList = [];
+
+      for (var doc in snapshot.docs) {
+        final roleDoc = await FirebaseFirestore.instance.collection('roles').doc(doc.id).get();
+        if (roleDoc.exists) userList.add(up.User.fromJson(doc.data(), parUid: doc.id, parIsAdmin: roleDoc['name'] == 'admin'));
+        else userList.add(up.User.fromJson(doc.data(), parUid: doc.id));
+
+      }
+
+      // Controlla se è il primo caricamento
+      //if (!initialLoadComplete) {
+      //  initialLoadComplete = true;  // Imposta il flag per indicare che il primo caricamento è completo
+      //  print("Caricamento iniziale completato con ${userList.length} utenti.");
+      //}
+
+      yield userList;  // Emette la lista degli utenti caricati
+    }
   }
 
   Future<List<up.User>?> getEventsParticipant(String eventId, List<up.User> allUsers) async {

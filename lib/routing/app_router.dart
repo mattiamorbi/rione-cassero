@@ -11,6 +11,7 @@ import 'package:upper/screens/home/ui/new_event_screen.dart';
 import 'package:upper/screens/home/ui/user_page.dart';
 import 'package:upper/screens/login/ui/login_screen.dart';
 import 'package:upper/screens/signup/ui/sign_up_screen.dart';
+import 'package:upper/screens/signup/ui/verfication.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -45,6 +46,14 @@ class AppRouter {
           builder: (_) => BlocProvider.value(
             value: authCubit,
             child: const SignUpScreen(),
+          ),
+        );
+
+      case Routes.verifyScreen:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: authCubit,
+            child: VerificaEmailPage(),
           ),
         );
 

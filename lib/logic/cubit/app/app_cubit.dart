@@ -13,6 +13,11 @@ class AppCubit extends Cubit<AppState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore firebase = FirebaseFirestore.instance;
 
+  final ActionCodeSettings actionCodeSettings = ActionCodeSettings(
+    url: 'https://cassero-upper.web.app/verifica', // URL di reindirizzamento
+    handleCodeInApp: true,              // Gestisci il codice nell'app
+  );
+
   User? getLoggedUser() => _auth.currentUser;
 
   AppCubit() : super(AuthInitial());
@@ -57,7 +62,7 @@ class AppCubit extends Cubit<AppState> {
     try {
       await _auth.createUserWithEmailAndPassword(email: user.email, password: password);
       await _auth.currentUser!.updateDisplayName("${user.name} ${user.surname}");
-      await _auth.currentUser!.sendEmailVerification();
+      await _auth.currentUser!.sendEmailVerification(actionCodeSettings);
       user.uid = _auth.currentUser!.uid;
       await updateUserInfo(user);
       await _auth.signOut();

@@ -15,14 +15,23 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
+  FirebaseFirestore.instance.settings =
+      const Settings(persistenceEnabled: true);
   await ScreenUtil.ensureScreenSize();
+
+  final Uri uri = Uri.base; // L'URL corrente
+  final String? oobCode = uri.queryParameters['oobCode'];
+
   FirebaseAuth.instance.authStateChanges().listen(
     (user) {
-      if (user == null || !user.emailVerified) {
-        initialRoute = Routes.loginScreen;
-      } else {
-        initialRoute = Routes.homeScreen;
+      if (oobCode != null)
+        initialRoute = Routes.verifyScreen;
+      else {
+        if (user == null || !user.emailVerified) {
+          initialRoute = Routes.loginScreen;
+        } else {
+          initialRoute = Routes.homeScreen;
+        }
       }
     },
   );

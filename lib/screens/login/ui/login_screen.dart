@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   dialogType: DialogType.error,
                   animType: AnimType.rightSlide,
                   title: 'Errore',
-                  desc: state.message,
+                  desc: "Le credenziali inserite non sono corrette!",
                 ).show();
               } else if (state is UserSignIn) {
                 if (!context.mounted) return;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -53,6 +54,16 @@ class _EventTileState extends State<EventTile> {
   List<up.User>? _bookedUsers = [];
   bool _loading = true;
 
+  StreamSubscription<List<up.User>?>? _presenceSubscription;
+  StreamSubscription<List<up.User>?>? _bookSubscription;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _presenceSubscription?.cancel();
+    _bookSubscription?.cancel();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +85,27 @@ class _EventTileState extends State<EventTile> {
   //void _loadLoggedUser() async {
   //  _loggedUser = await context.read<AppCubit>().getUser();
   //}
+
+  void _loadEventSubscription(int index) {
+    _presenceSubscription = context
+        .read<AppCubit>()
+        .getEventsParticipantStream(
+            widget.upperEvents[index].id!, widget.allUsers)
+        .listen((snapshot) {
+      setState(() {
+        _participantUsers = snapshot;
+      });
+    });
+
+    _bookSubscription = context
+        .read<AppCubit>()
+        .getEventsBookStream(widget.upperEvents[index].id!, widget.allUsers)
+        .listen((snapshot) {
+      setState(() {
+        _bookedUsers = snapshot;
+      });
+    });
+  }
 
   Future<void> _onItemFocus(int index) async {
     if (kDebugMode) {
@@ -97,16 +129,21 @@ class _EventTileState extends State<EventTile> {
     _bookedUsers?.clear();
 
     if (widget.isAdmin == true) {
-      _participantUsers = await context
-          .read<AppCubit>()
-          .getEventsParticipant(widget.upperEvents[index].id!, widget.allUsers);
-      _bookedUsers = await context
-          .read<AppCubit>()
-          .getEventsBook(widget.upperEvents[index].id!, widget.allUsers);
+      _presenceSubscription?.cancel();
+      _bookSubscription?.cancel();
+
+      _loadEventSubscription(index);
+
+      // _participantUsers = await context
+      //     .read<AppCubit>()
+      //     .getEventsParticipant(widget.upperEvents[index].id!, widget.allUsers);
+      // _bookedUsers = await context
+      //     .read<AppCubit>()
+      //     .getEventsBook(widget.upperEvents[index].id!, widget.allUsers);
     }
 
-    DateTime oggi = DateTime.now();
-    DateTime domani = DateTime.now();
+    //DateTime oggi = DateTime.now();
+    //DateTime domani = DateTime.now();
 
     setState(() {
       _loading = false;
@@ -228,10 +265,16 @@ class _EventTileState extends State<EventTile> {
                           : Icons.person_add_alt_1,
                       color: Colors.white,
                     ),
-                    Gap(5.w),
-                    Text((_participantData.booked)
-                        ? "Non parteciperò"
-                        : "Parteciperò",style: TextStyle(color: Colors.white, fontSize: 18),)
+                    Visibility(visible: !widget.isAdmin, child: Gap(5.w)),
+                    Visibility(
+                      visible: !widget.isAdmin,
+                      child: Text(
+                        (_participantData.booked)
+                            ? "Non parteciperò"
+                            : "Parteciperò",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                    )
                   ]),
                   onTap: () => _toggleBookEvent(_focusedIndex),
                 ),
@@ -639,8 +682,9 @@ class _EventTileState extends State<EventTile> {
       Routes.viewParticipantsScreen,
       arguments: {
         'upperEvent': widget.upperEvents[index],
-        'bookedUsers': _bookedUsers,
-        'participantsUsers': _participantUsers,
+        'allUsers': widget.allUsers,
+       //'bookedUsers': _bookedUsers,
+       //'participantsUsers': _participantUsers,
       },
     );
   }

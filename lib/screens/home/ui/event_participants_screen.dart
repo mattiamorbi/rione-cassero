@@ -1,23 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/helpers/extensions.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
+
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 
 import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
 class EventParticipantScreen extends StatefulWidget {
   UpperEvent upperEvent;
-  List<up.User> bookedUsers = [];
-  List<up.User> participantsUsers = [];
+  List<up.User> allUsers = [];
+
+  //List<up.User> bookedUsers = [];
+  //List<up.User> participantsUsers = [];
 
   EventParticipantScreen(
-      {super.key,
-      required this.upperEvent,
-      required this.bookedUsers,
-      required this.participantsUsers});
+      {super.key, required this.upperEvent, required this.allUsers});
+
+  //required this.bookedUsers,
+  //required this.participantsUsers});
 
   @override
   State<EventParticipantScreen> createState() => _EventParticipantScreenState();
@@ -27,14 +34,25 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
   List<up.User> _totalJoinEvent = [];
   List<up.User> _filteredUsers = [];
 
+ List<up.User?>? bookedUsers = [];
+ List<up.User?>? participantsUsers = [];
+
   final TextEditingController _searchController = TextEditingController();
   bool _isUsersLoading = true;
+
+  StreamSubscription<List<up.User>?>? _presenceSubscription;
+  StreamSubscription<List<up.User>?>? _bookSubscription;
 
   @override
   void initState() {
     super.initState();
-    _totalJoinEvent = _createJoinList();
-    _filteredUsers = _totalJoinEvent;
+
+    _loadEventSubscription();
+
+    //Future.delayed(Duration(seconds: 3));
+
+
+
 
     if (kDebugMode) {
       print(_totalJoinEvent.length);
@@ -44,19 +62,43 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
     _isUsersLoading = false;
   }
 
+  void _loadEventSubscription() {
+    _presenceSubscription = context
+        .read<AppCubit>()
+        .getEventsParticipantStream(widget.upperEvent.id!, widget.allUsers)
+        .listen((snapshot) {
+      setState(() {
+        participantsUsers = snapshot;
+        _totalJoinEvent = _createJoinList();
+        _filteredUsers = _totalJoinEvent;
+      });
+    });
+
+    _bookSubscription = context
+        .read<AppCubit>()
+        .getEventsBookStream(widget.upperEvent.id!, widget.allUsers)
+        .listen((snapshot) {
+      setState(() {
+        bookedUsers = snapshot;
+        _totalJoinEvent = _createJoinList();
+        _filteredUsers = _totalJoinEvent;
+      });
+    });
+  }
+
   List<up.User> _createJoinList() {
     // Creiamo una mappa per gestire l'unione
     Map<String, up.User> userMap = {};
-    if (kDebugMode) print(widget.bookedUsers.length);
+    if (kDebugMode) print(bookedUsers!.length);
     // Aggiungo prima i prenotati
-    for (var us in widget.bookedUsers) {
+    for (var us in bookedUsers!) {
       //userMap[us.uid!]?.state = 'booked';
-      userMap[us.uid!] = us.copyWith(state: 'booked');
+      userMap[us!.uid!] = us.copyWith(state: 'booked');
     }
 
     // Poi aggiungo i partecipanti, sovrascrivendo se già esiste
-    for (var us in widget.participantsUsers) {
-      userMap[us.uid!] = us.copyWith(state: 'joined');
+    for (var us in participantsUsers!) {
+      userMap[us!.uid!] = us.copyWith(state: 'joined');
       // userMap[us.uid!]?.state = 'joined';
     }
 
@@ -85,7 +127,10 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
       child: Scaffold(
         backgroundColor: Color.fromRGBO(17, 17, 17, 1),
         appBar: AppBar(
-          title: Text("${widget.upperEvent.title} - Ingressi", style: TextStyle(fontSize: 24,color: Colors.white),),
+          title: Text(
+            "${widget.upperEvent.title} - Ingressi",
+            style: TextStyle(fontSize: 24, color: Colors.white),
+          ),
           foregroundColor: Colors.white,
           backgroundColor: Color.fromRGBO(17, 17, 17, 1),
           titleTextStyle: TextStyle(color: Colors.white),
@@ -113,7 +158,7 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                 ),
               ),
               Text(
-                "Partecipanti: ${widget.participantsUsers.length}",
+                "Prenotati: ${bookedUsers!.length} / Ingressi: ${participantsUsers!.length}",
                 style: TextStyle(color: Colors.white),
               ),
               Expanded(

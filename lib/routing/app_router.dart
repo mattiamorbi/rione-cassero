@@ -93,8 +93,9 @@ class AppRouter {
             value: authCubit,
             child: EventParticipantScreen(
               upperEvent: map['upperEvent'] as UpperEvent,
-              bookedUsers: map['bookedUsers'] as List<up.User>,
-              participantsUsers: map['participantsUsers'] as List<up.User>,
+              allUsers: map['allUsers'] as List<up.User>,
+              //bookedUsers: map['bookedUsers'] as List<up.User>,
+              //participantsUsers: map['participantsUsers'] as List<up.User>,
             ),
           ),
         );

@@ -14,8 +14,8 @@ class AppCubit extends Cubit<AppState> {
   final FirebaseFirestore firebase = FirebaseFirestore.instance;
 
   final ActionCodeSettings actionCodeSettings = ActionCodeSettings(
-    url: 'https://cassero-upper.web.app/verifica', // URL di reindirizzamento
-    handleCodeInApp: true,              // Gestisci il codice nell'app
+    url: 'https://cassero-upper.web.app', // URL di reindirizzamento
+    handleCodeInApp: true, // Gestisci il codice nell'app
   );
 
   User? getLoggedUser() => _auth.currentUser;
@@ -57,12 +57,16 @@ class AppCubit extends Cubit<AppState> {
     emit(UserSignedOut());
   }
 
+
+
   Future<void> signUpWithEmail(up.User user, String password) async {
     emit(AuthLoading());
     try {
-      await _auth.createUserWithEmailAndPassword(email: user.email, password: password);
-      await _auth.currentUser!.updateDisplayName("${user.name} ${user.surname}");
-      await _auth.currentUser!.sendEmailVerification();
+      await _auth.createUserWithEmailAndPassword(
+          email: user.email, password: password);
+      await _auth.currentUser!
+          .updateDisplayName("${user.name} ${user.surname}");
+      await _auth.currentUser!.sendEmailVerification(actionCodeSettings);
       user.uid = _auth.currentUser!.uid;
       await updateUserInfo(user);
       //await _auth.signOut();
@@ -83,32 +87,47 @@ class AppCubit extends Cubit<AppState> {
 
   Future<void> bookEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': true, 'presence': tempData.presence});
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants
+        .doc(_auth.currentUser!.uid)
+        .set({'booked': true, 'presence': tempData.presence});
   }
 
   Future<void> unBookEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': false, 'presence': tempData.presence});
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants
+        .doc(_auth.currentUser!.uid)
+        .set({'booked': false, 'presence': tempData.presence});
   }
 
   Future<void> joinEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants.doc(user!.uid).set({'booked': tempData.booked, 'presence': true});
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants
+        .doc(user!.uid)
+        .set({'booked': tempData.booked, 'presence': true});
   }
 
   Future<void> unJoinEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
-    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
-    await eventsParticipants.doc(_auth.currentUser!.uid).set({'booked': tempData.booked, 'presence': false});
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
+    await eventsParticipants
+        .doc(_auth.currentUser!.uid)
+        .set({'booked': tempData.booked, 'presence': false});
   }
 
-  Future<ParticipantData> getParticipantData(String eventId, up.User? user) async {
-    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+  Future<ParticipantData> getParticipantData(
+      String eventId, up.User? user) async {
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
     var doc = await eventsParticipants.doc(user?.uid!).get();
-    return ParticipantData.fromJson(doc.data()) ?? ParticipantData(booked: false, presence: false);
+    return ParticipantData.fromJson(doc.data()) ??
+        ParticipantData(booked: false, presence: false);
   }
 
   Future<up.User> getUser() async {
@@ -135,16 +154,16 @@ class AppCubit extends Cubit<AppState> {
     return data == null ? "user" : Role.fromJson(data).name;
   }
 
-
   Future<void> setUserLevel(up.User _user, String role) async {
     var users = firebase.collection('roles');
-    await users.doc(_user.uid!).set({'name':role});
+    await users.doc(_user.uid!).set({'name': role});
   }
 
   Stream<bool> watchCardNumber() {
     // Accede al documento tramite l'ID `uid` e controlla il campo `cardNumber`
     return FirebaseFirestore.instance
-        .collection('users') // sostituisci 'your_collection' con il nome della tua collezione
+        .collection(
+            'users') // sostituisci 'your_collection' con il nome della tua collezione
         .doc(_auth.currentUser!.uid)
         .snapshots()
         .map((snapshot) {
@@ -157,9 +176,6 @@ class AppCubit extends Cubit<AppState> {
       }
     });
   }
-
-
-
 
   Future<List<UpperEvent>> getUpperEvents() async {
     List<UpperEvent> events = [];
@@ -197,8 +213,10 @@ class AppCubit extends Cubit<AppState> {
           var user = up.User.fromJson(doc.data());
           user.id = doc.id;
           var user_level = await getUserLevelFromUser(user);
-          if (user_level.contains("admin")) user.isAdmin = true;
-          else user.isAdmin = false;
+          if (user_level.contains("admin"))
+            user.isAdmin = true;
+          else
+            user.isAdmin = false;
           users.add(user);
         }
       },
@@ -213,16 +231,22 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Stream<List<up.User>> getUsers() async* {
-    final snapshotStream = FirebaseFirestore.instance.collection('users').snapshots();
+    final snapshotStream =
+        FirebaseFirestore.instance.collection('users').snapshots();
 
     await for (final snapshot in snapshotStream) {
       List<up.User> userList = [];
 
       for (var doc in snapshot.docs) {
-        final roleDoc = await FirebaseFirestore.instance.collection('roles').doc(doc.id).get();
-        if (roleDoc.exists) userList.add(up.User.fromJson(doc.data(), parUid: doc.id, parIsAdmin: roleDoc['name'] == 'admin'));
-        else userList.add(up.User.fromJson(doc.data(), parUid: doc.id));
-
+        final roleDoc = await FirebaseFirestore.instance
+            .collection('roles')
+            .doc(doc.id)
+            .get();
+        if (roleDoc.exists)
+          userList.add(up.User.fromJson(doc.data(),
+              parUid: doc.id, parIsAdmin: roleDoc['name'] == 'admin'));
+        else
+          userList.add(up.User.fromJson(doc.data(), parUid: doc.id));
       }
 
       // Controlla se è il primo caricamento
@@ -231,14 +255,16 @@ class AppCubit extends Cubit<AppState> {
       //  print("Caricamento iniziale completato con ${userList.length} utenti.");
       //}
 
-      yield userList;  // Emette la lista degli utenti caricati
+      yield userList; // Emette la lista degli utenti caricati
     }
   }
 
-  Future<List<up.User>?> getEventsParticipant(String eventId, List<up.User> allUsers) async {
+  Future<List<up.User>?> getEventsParticipant(
+      String eventId, List<up.User> allUsers) async {
     List<up.User> participantList = [];
 
-    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants.get().then(
       (querySnapshot) {
         for (var doc in querySnapshot.docs) {
@@ -260,10 +286,58 @@ class AppCubit extends Cubit<AppState> {
     return participantList;
   }
 
-  Future<List<up.User>?> getEventsBook(String eventId, List<up.User> all_users) async {
+  Stream<List<up.User>?> getEventsParticipantStream(
+      String eventId, List<up.User> allUsers) async* {
+    final snapshotStream = FirebaseFirestore.instance
+        .collection('events')
+        .doc(eventId)
+        .collection("participants")
+        .snapshots();
+
+    await for (final snapshot in snapshotStream) {
+      List<up.User> participantList = [];
+
+      for (var doc in snapshot.docs) {
+        var data = ParticipantData.fromJson(doc.data());
+        if (data?.presence == true) {
+          for (var us in allUsers) {
+            if (us.id == doc.id) participantList.add(us);
+          }
+        }
+      }
+      yield participantList;
+    }
+  }
+
+  Stream<List<up.User>?> getEventsBookStream(
+      String eventId, List<up.User> allUsers) async* {
+    final snapshotStream = FirebaseFirestore.instance
+        .collection('events')
+        .doc(eventId)
+        .collection("participants")
+        .snapshots();
+
+    await for (final snapshot in snapshotStream) {
+      List<up.User> bookedList = [];
+
+      for (var doc in snapshot.docs) {
+        var data = ParticipantData.fromJson(doc.data());
+        if (data?.booked == true) {
+          for (var us in allUsers) {
+            if (us.id == doc.id) bookedList.add(us);
+          }
+        }
+      }
+      yield bookedList;
+    }
+  }
+
+  Future<List<up.User>?> getEventsBook(
+      String eventId, List<up.User> all_users) async {
     List<up.User> participantList = [];
 
-    var eventsParticipants = firebase.collection('events').doc(eventId).collection("participants");
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants.get().then(
       (querySnapshot) {
         for (var doc in querySnapshot.docs) {

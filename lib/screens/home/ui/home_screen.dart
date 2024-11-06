@@ -439,6 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               "Mostra questo QR e un documento d'identità per entrare!",
               style: TextStyle(fontSize: 16, color: Colors.white),
+              textAlign: TextAlign.center,
             ),
             SizedBox(
               height: 20,

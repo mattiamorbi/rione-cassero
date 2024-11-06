@@ -21,12 +21,13 @@ Future<void> main() async {
 
   final Uri uri = Uri.base; // L'URL corrente
   final String? oobCode = uri.queryParameters['oobCode'];
+  final String? mode = uri.queryParameters['mode'];
 
   FirebaseAuth.instance.authStateChanges().listen(
     (user) {
-      if (oobCode != null)
+      if (oobCode != null && mode != null && mode.contains("verifyEmail")) initialRoute = Routes.verifyScreen;
+      //else if (oobCode != null && mode != null && mode.contains("resetPassword")) initialRoute = Routes.forgetScreen;
 
-        initialRoute = Routes.verifyScreen;
         //if (user != null) print("L'utente non e' nullo");
 
       else {

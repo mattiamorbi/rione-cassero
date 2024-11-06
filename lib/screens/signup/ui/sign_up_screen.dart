@@ -62,7 +62,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         dialogType: DialogType.error,
                         animType: AnimType.rightSlide,
                         title: 'Errore',
-                        desc: state.message,
+                        desc: "Le credenziali inserite non sono valide",
                       ).show();
                     } else if (state is UserSignIn) {
                       if (!context.mounted) return;

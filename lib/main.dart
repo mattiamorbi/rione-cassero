@@ -25,7 +25,10 @@ Future<void> main() async {
   FirebaseAuth.instance.authStateChanges().listen(
     (user) {
       if (oobCode != null)
+
         initialRoute = Routes.verifyScreen;
+        //if (user != null) print("L'utente non e' nullo");
+
       else {
         if (user == null || !user.emailVerified) {
           initialRoute = Routes.loginScreen;
@@ -66,6 +69,7 @@ class MyApp extends StatelessWidget {
           onGenerateRoute: router.generateRoute,
           debugShowCheckedModeBanner: false,
           initialRoute: initialRoute,
+
         );
       },
     );

@@ -221,12 +221,18 @@ class _EventTileState extends State<EventTile> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 GestureDetector(
-                  child: Icon(
-                    (_participantData.booked)
-                        ? Icons.person_remove_alt_1
-                        : Icons.person_add_alt_1,
-                    color: Colors.white,
-                  ),
+                  child: Row(children: [
+                    Icon(
+                      (_participantData.booked)
+                          ? Icons.person_remove_alt_1
+                          : Icons.person_add_alt_1,
+                      color: Colors.white,
+                    ),
+                    Gap(5.w),
+                    Text((_participantData.booked)
+                        ? "Non parteciperò"
+                        : "Parteciperò",style: TextStyle(color: Colors.white, fontSize: 18),)
+                  ]),
                   onTap: () => _toggleBookEvent(_focusedIndex),
                 ),
                 Visibility(
@@ -404,7 +410,6 @@ class _EventTileState extends State<EventTile> {
             child: FlutterWebQrcodeScanner(
               cameraDirection: CameraDirection.back,
               stopOnFirstResult: false,
-
               onGetResult: (result) async {
                 //SnackBar(content: Text(result), duration: Duration(seconds: 5));
                 var decryptedData = AesHelper.decrypt(result);
@@ -626,9 +631,7 @@ class _EventTileState extends State<EventTile> {
   Future<void> _editEvent(int index) async {
     await context.pushNamed(Routes.editEventScreen,
         arguments: widget.upperEvents[index]);
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   Future<void> _viewParticipants(int index) async {

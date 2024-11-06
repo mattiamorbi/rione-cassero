@@ -1,20 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:upper/core/widgets/already_have_account_text.dart';
-import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
-import 'package:upper/core/widgets/progress_indicator.dart' as pi;
-import 'package:upper/core/widgets/terms_and_conditions_text.dart';
+import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/routing/routes.dart';
-import 'package:upper/theming/styles.dart';
 
-import '../../../helpers/server_date.dart';
+import '../../../theming/colors.dart';
 
 class VerificaEmailPage extends StatefulWidget {
   @override
@@ -22,6 +15,8 @@ class VerificaEmailPage extends StatefulWidget {
 }
 
 class _VerificaEmailPageState extends State<VerificaEmailPage> {
+  String verify = 'waiting';
+
   @override
   void initState() {
     super.initState();
@@ -39,10 +34,12 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
         await FirebaseAuth.instance.applyActionCode(oobCode);
         print("Email verificata con successo!");
 
-        context.pushNamedAndRemoveUntil(
-          Routes.loginScreen,
-          predicate: (route) => false,
-        );
+        //verify = true;
+        //print(user.name);
+        //context.pushNamedAndRemoveUntil(
+        //  Routes.loginScreen,
+        //  predicate: (route) => false,
+        //);
 
         // Ricarica lo stato utente per riflettere la verifica
         await FirebaseAuth.instance.currentUser?.reload();
@@ -50,6 +47,11 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
         if (user != null && user.emailVerified) {
           // L'email è stata verificata, reindirizza o aggiorna lo stato
           print("L'utente ha verificato l'email.");
+
+          verify = 'true';
+
+          await Future.delayed(const Duration(seconds: 3));
+
           context.pushNamedAndRemoveUntil(
             Routes.loginScreen,
             predicate: (route) => false,
@@ -57,6 +59,7 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
         }
       } catch (e) {
         print("Errore durante la verifica dell'email: $e");
+        verify = 'false';
       }
     }
   }
@@ -64,8 +67,135 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Verifica Email")),
-      body: Center(child: Text("Stiamo verificando la tua email...")),
+      backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+      body: OfflineBuilder(
+        connectivityBuilder: (context, value, child) {
+          final bool connected =
+              value.any((element) => element != ConnectivityResult.none);
+          return connected
+              ? _newVerificationPage(context)
+              : const BuildNoInternet();
+        },
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: ColorsManager.mainBlue,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _newVerificationPage(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+        //appBar: AppBar(
+        //  foregroundColor: Colors.white,
+        //  backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+        //  title: Text(
+        //    "UPPER - Verifica email",
+        //    style: TextStyle(color: Colors.white),
+        //  ),
+        //),
+        body: Padding(
+          padding: const EdgeInsets.only(
+              top: 15.0, bottom: 15.0, left: 40.0, right: 40.0),
+          child: Column(
+            //mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Center(
+                  child: SizedBox(
+                      width: 120,
+                      height: 120,
+                      child: Image(
+                        image: AssetImage("assets/images/upper_2.png"),
+                        fit: BoxFit.fitWidth,
+                      ))),
+              Gap(20.h),
+              Visibility(
+                visible: verify == 'waiting',
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: ColorsManager.mainBlue,
+                  ),
+                ),
+              ),
+              Visibility(
+                  visible: verify == 'waiting',
+                  child: Text(
+                    "Verifica e-mail in corso...",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
+                  )),
+              Visibility(
+                  visible: verify == 'false',
+                  child: Text(
+                    "Codice di verifica non valido",
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
+                  )),
+              Visibility(
+                  visible: verify == 'false',
+                  child: Text(
+                    "Codice errato o già utilizzato",
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                  )),
+              Visibility(
+                  visible: verify == 'true',
+                  child: Text(
+                    "E-mail verificata",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
+                  )),
+              Visibility(
+                  visible: verify == 'true',
+                  child: Text(
+                    "Ora puoi accedere al tuo profilo UPPER",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                  )),
+              Visibility(visible: verify == 'false', child: Gap(30.h)),
+              Visibility(
+                  visible: verify == 'false', child: loginButton(context)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget loginButton(BuildContext context) {
+    return GestureDetector(
+      child: Container(
+        width: 200,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(17, 17, 17, 1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+        child: Center(
+            child: Text("Torna al login",
+                style: TextStyle(color: Colors.white, fontSize: 20))),
+      ),
+      onTap: () {
+        context.pushNamedAndRemoveUntil(
+          Routes.loginScreen,
+          predicate: (route) => false,
+        );
+      },
     );
   }
 }

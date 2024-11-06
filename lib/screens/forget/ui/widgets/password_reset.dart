@@ -62,6 +62,8 @@ class _PasswordResetState extends State<PasswordReset> {
 
   AppTextButton resetButton() {
     return AppTextButton(
+      buttonWidth: 200,
+      buttonHeight: 50,
       buttonText: 'Reset',
       textStyle: TextStyles.font16White600Weight,
       onPressed: () {

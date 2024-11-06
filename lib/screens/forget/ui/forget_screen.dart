@@ -23,10 +23,11 @@ class _ForgetScreenState extends State<ForgetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromRGBO(17, 17, 17, 1),
       body: SafeArea(
         child: Padding(
           padding:
-              EdgeInsets.only(left: 30.w, right: 30.w, bottom: 15.h, top: 5.h),
+              EdgeInsets.only(left: 30.w, right: 30.w, bottom: 15.h, top: 20.h),
           child: Column(
             children: [
               Expanded(
@@ -40,12 +41,12 @@ class _ForgetScreenState extends State<ForgetScreen> {
                           children: [
                             Text(
                               'Reset',
-                              style: TextStyles.font24Blue700Weight,
+                              style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
                             ),
                             Gap(10.h),
                             Text(
-                              "Enter email to reset password",
-                              style: TextStyles.font14Grey400Weight,
+                              "Inserisci la tua email per resettare la password",
+                              style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.normal),
                             ),
                           ],
                         ),
@@ -75,7 +76,7 @@ class _ForgetScreenState extends State<ForgetScreen> {
                               animType: AnimType.rightSlide,
                               title: 'Reset Password',
                               desc:
-                                  'Link to Reset password send to your email, please check inbox messages.',
+                                  'Il link per resettare la password è stato inviato alla tua e-mail',
                             ).show();
                           }
                         },

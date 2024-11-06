@@ -434,41 +434,41 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(FirebaseAuth.instance.currentUser!.displayName!,
                 style: TextStyle(fontSize: 30, color: Colors.white)),
             SizedBox(
-              height: 10,
+              height: 3,
             ),
             Text(
-              "Mostra questo QR per entrare!",
+              "Mostra questo QR e un documento d'identità per entrare!",
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             SizedBox(
               height: 20,
             ),
-            GestureDetector(
-              onTap: _toggleTapQr,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5)),
-                child: Center(
-                  child: SizedBox(
-                    width: 300,
-                    child: Center(
-                      child: StreamBuilder(
-                        stream: context.read<AppCubit>().watchCardNumber(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          }
-                          if (snapshot.hasError) {
-                            return Text('Errore: ${snapshot.error}');
-                          }
+            Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5)),
+              child: Center(
+                child: SizedBox(
+                  width: 320,
+                  child: Center(
+                    child: StreamBuilder(
+                      stream: context.read<AppCubit>().watchCardNumber(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Errore: ${snapshot.error}');
+                        }
 
-                          bool isCardNumberNonZero = snapshot.data ?? false;
-                          if (isCardNumberNonZero) {
-                            return PrettyQrPlus(
+                        bool isCardNumberNonZero = snapshot.data ?? false;
+                        if (isCardNumberNonZero) {
+                          return GestureDetector(
+                            onTap: _toggleTapQr,
+                            child: PrettyQrPlus(
                               data: _qrData,
                               size: 290,
                               elementColor: Colors.black,
@@ -477,16 +477,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               //decoration: const PrettyQrDecoration(
                               //  background: Colors.white,
                               //),
-                            );
-                          } else {
-                            return Text(
-                              "Riceverai una tessera molto presto",
-                              style: TextStyle(fontSize: 20),
-                            );
-                          }
+                            ),
+                          );
+                        } else {
+                          return Center(
+                            child: Text(
+                              "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 20, ),
+                            ),
+                          );
+                        }
 
-                        },
-                      ),
+                      },
                     ),
                   ),
                 ),

@@ -69,7 +69,7 @@ class AppCubit extends Cubit<AppState> {
       await _auth.currentUser!.sendEmailVerification(actionCodeSettings);
       user.uid = _auth.currentUser!.uid;
       await updateUserInfo(user);
-      //await _auth.signOut();
+      await _auth.signOut();
       emit(UserSignupButNotVerified());
     } catch (e) {
       emit(AuthError(e.toString()));

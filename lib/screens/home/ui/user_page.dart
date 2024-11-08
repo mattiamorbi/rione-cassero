@@ -6,6 +6,7 @@ import 'package:gap/gap.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/extensions.dart';
+import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
 import 'package:upper/theming/colors.dart';
 
@@ -15,8 +16,9 @@ import '../../../logic/cubit/app/app_cubit.dart';
 // ignore: must_be_immutable
 class UserPage extends StatefulWidget {
   up.User user;
+  UpperEvent? event;
 
-  UserPage({super.key, required this.user});
+  UserPage({super.key, required this.user, this.event});
 
   @override
   State<UserPage> createState() => _UserScreenState();
@@ -24,7 +26,7 @@ class UserPage extends StatefulWidget {
 
 class _UserScreenState extends State<UserPage> {
   bool editCardNumber = false;
-
+  bool forceEntered = false;
   final TextEditingController _cardNumber = TextEditingController();
 
   @override
@@ -121,6 +123,8 @@ class _UserScreenState extends State<UserPage> {
     if (signUpDate == null) {
       signUpDate = DateTime(2024, 1, 1);
     }
+
+    //print(widget.event!.title);
 
     return SafeArea(
       child: Scaffold(
@@ -288,6 +292,23 @@ class _UserScreenState extends State<UserPage> {
                       onTap: () => _updateUser(widget.user),
                     ),
                   ),
+                  Gap(15.w),
+                  Visibility(
+                    visible: widget.event != null ? widget.event!.isToday! : false,
+                    child: GestureDetector(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.event,
+                            color: forceEntered ? Colors.green : Colors.orange, size: 30,
+                          ),
+                          Gap(10.w),
+                          Text(forceEntered ? "Aggiunto come entrato" : "Forza ingresso", style: TextStyle(color: forceEntered ? Colors.green : Colors.orange,fontSize: 15),)
+                        ],
+                      ),
+                      onTap: () => _forceEnteredUser(widget.user, widget.event!),
+                    ),
+                  ),
                 ],
               )
             ]),
@@ -295,6 +316,13 @@ class _UserScreenState extends State<UserPage> {
         ),
       ),
     );
+  }
+
+  void _forceEnteredUser(up.User user, UpperEvent event) async {
+    await context.read<AppCubit>().joinEvent(event.id!, user);
+    setState(() {
+      forceEntered = true;
+    });
   }
 
   void _updateUser(up.User _user) async {

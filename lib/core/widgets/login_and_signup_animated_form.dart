@@ -221,7 +221,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       "Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
                       style: TextStyle(
                           fontSize: 20,
-                          color: terms2ApprovalError == false
+                          color: terms3ApprovalError == false
                               ? Colors.white
                               : Colors.red),
                     ),

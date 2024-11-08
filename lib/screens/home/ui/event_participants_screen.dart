@@ -182,7 +182,7 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                                   side: BorderSide(width: 2),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                onTap: () => _showUser(user),
+                                onTap: () => _showUser(user, widget.upperEvent),
                                 leading: Icon(
                                   Icons.person_outline,
                                   color: user.state == 'booked'
@@ -210,11 +210,12 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
     );
   }
 
-  void _showUser(up.User _user) async {
+  void _showUser(up.User _user, UpperEvent _event) async {
     await context.pushNamed(
       Routes.viewUserPage,
       arguments: {
         'user': _user,
+        'event': _event,
       },
     );
     setState(() {});

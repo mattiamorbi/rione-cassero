@@ -176,24 +176,8 @@ class _EventTileState extends State<EventTile> {
           .bookEvent(widget.upperEvents[index].id!, widget.loggedUser);
     }
 
-    var participantData = await _getParticipantData(index, widget.loggedUser);
-
-    if (kDebugMode) {
-      print("ho riletto ${participantData.booked}");
-      print(_bookedUsers);
-    }
-    if (participantData.booked) {
-      _bookedUsers?.add(widget.loggedUser);
-    } else {
-      for (int i = 0; i < _bookedUsers!.length; i++) {
-        if (_bookedUsers![i].uid == widget.loggedUser.uid)
-          _bookedUsers?.remove(_bookedUsers?.elementAt(i));
-      }
-    }
-    //print("ho riletto ${participantDatatemp.booked}");
     setState(() {
       _qrMode = 0;
-      _participantData = participantData;
     });
   }
 

@@ -106,7 +106,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: authCubit,
-            child: UserPage(user: map['user'] as up.User,
+            child: UserPage(user: map['user'] as up.User, event: map['event'] as UpperEvent?,
             ),
           ),
         );

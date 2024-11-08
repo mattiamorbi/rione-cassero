@@ -392,10 +392,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showUser(up.User _user) async {
+    UpperEvent? todayEvent;
+    for (UpperEvent event in _events) {
+      event.checkTodayDate();
+      if (event.isToday!) todayEvent = event;
+    }
+
+    //print(todayEvent!.title);
+
     await context.pushNamed(
       Routes.viewUserPage,
       arguments: {
         'user': _user,
+        'event': todayEvent,
       },
     );
     setState(() {});

@@ -52,6 +52,13 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   final passwordFocusNode = FocusNode();
   final passwordConfirmationFocusNode = FocusNode();
 
+  bool terms1Approval = false;
+  bool terms1ApprovalError = false;
+  bool terms2Approval = false;
+  bool terms2ApprovalError = false;
+  bool terms3Approval = false;
+  bool terms3ApprovalError = false;
+
   _EmailAndPasswordState();
 
   @override
@@ -78,7 +85,9 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           capField(),
           genericField(
               telephoneController, 'Telefono', 'Inserisci un telefono valido'),
-          Gap(5.h),
+          Gap(20.h),
+          termsFields(),
+          Gap(20.h),
           PasswordValidations(
             hasMinLength: hasMinLength,
             isSignup: widget.isSignUpPage ?? false,
@@ -104,6 +113,127 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     cityController.dispose();
     telephoneController.dispose();
     passwordConfirmationController.dispose();
+  }
+
+  Widget termsFields() {
+    if (widget.isSignUpPage == true) {
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                terms1Approval = !terms1Approval;
+                if (terms1Approval) terms1ApprovalError = false;
+              });
+            },
+            child: Row(
+              children: [
+                Row(children: [
+                  Icon(
+                    terms1Approval == false
+                        ? Icons.circle_outlined
+                        : Icons.check_circle,
+                    color: terms1ApprovalError == false
+                        ? Colors.white
+                        : Colors.red,
+                    size: 25,
+                  ),
+                  Gap(15.w),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width - 140,
+                    child: Text(
+                      maxLines: 3,
+                      "Acconsento al trattamento dei miei dati personali e delle categorie particolari di dati personali (Art.2) per finalità connesse al tesseramento alla FEDERITALIA (Art. 1 - lettere a,b,c,d)",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: terms1ApprovalError == false
+                              ? Colors.white
+                              : Colors.red),
+                    ),
+                  )
+                ]),
+              ],
+            ),
+          ),
+          Gap(15.h),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                terms2Approval = !terms2Approval;
+                if (terms2Approval) terms2ApprovalError = false;
+              });
+            },
+            child: Row(
+              children: [
+                Row(children: [
+                  Icon(
+                    terms2Approval == false
+                        ? Icons.circle_outlined
+                        : Icons.check_circle,
+                    color: terms2ApprovalError == false
+                        ? Colors.white
+                        : Colors.red,
+                    size: 25,
+                  ),
+                  Gap(15.w),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width - 140,
+                    child: Text(
+                      maxLines: 3,
+                      "Acconsento al trattamento dei miei dati personali, in particolare immagini e video riprese, per il perseguimento delle finalità (Art. 1 - lettera e)",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: terms2ApprovalError == false
+                              ? Colors.white
+                              : Colors.red),
+                    ),
+                  )
+                ]),
+              ],
+            ),
+          ),
+          Gap(15.h),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                terms3Approval = !terms3Approval;
+                if (terms3Approval) terms3ApprovalError = false;
+              });
+            },
+            child: Row(
+              children: [
+                //"Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
+                Row(children: [
+                  Icon(
+                    terms3Approval == false
+                        ? Icons.circle_outlined
+                        : Icons.check_circle,
+                    color: terms3ApprovalError == false
+                        ? Colors.white
+                        : Colors.red,
+                    size: 25,
+                  ),
+                  Gap(15.w),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width - 140,
+                    child: Text(
+                      maxLines: 3,
+                      "Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: terms2ApprovalError == false
+                              ? Colors.white
+                              : Colors.red),
+                    ),
+                  )
+                ]),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else
+      return SizedBox.shrink();
   }
 
   Widget emailField() {
@@ -420,6 +550,14 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         passwordFocusNode.unfocus();
         passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
+          setState(() {
+            terms1ApprovalError = !terms1Approval;
+            terms2ApprovalError = !terms2Approval;
+            terms3ApprovalError = !terms3Approval;
+          });
+
+          if (!terms1Approval || !terms2Approval || !terms3Approval) return;
+
           var user = up.User(
             name: capitalize(nameController.text),
             surname: capitalize(surnameController.text),

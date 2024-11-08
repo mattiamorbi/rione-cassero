@@ -17,23 +17,23 @@ class PasswordValidations extends StatelessWidget {
   }
 
   Widget buildValidationRow(String text, bool hasValidated) {
-    return isSignup
+    return isSignup && hasValidated == false
         ? Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 3.5,
-                backgroundColor: Colors.white,
+                backgroundColor: hasValidated ? Colors.green : Colors.red,
               ),
               Gap(6.w),
               Text(
                 text,
                 style: TextStyles.font14White500Weight.copyWith(
-                  decoration: hasValidated ? TextDecoration.lineThrough : null,
-                  decorationColor: Colors.green,
-                  decorationThickness: 2,
+                  //decoration: hasValidated ? TextDecoration.lineThrough : null,
+                  //decorationColor: Colors.green,
+                  //decorationThickness: 2,
                   color: hasValidated
-                      ? ColorsManager.gray
-                      : Colors.white,
+                      ? Colors.green
+                      : Colors.red,
                 ),
               )
             ],

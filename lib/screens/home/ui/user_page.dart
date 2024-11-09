@@ -303,7 +303,7 @@ class _UserScreenState extends State<UserPage> {
                             color: forceEntered ? Colors.green : Colors.orange, size: 30,
                           ),
                           Gap(10.w),
-                          Text(forceEntered ? "Aggiunto come entrato" : "Forza ingresso", style: TextStyle(color: forceEntered ? Colors.green : Colors.orange,fontSize: 15),)
+                          Text(forceEntered ? "Aggiunto come entrato" : "Ingresso manuale", style: TextStyle(color: forceEntered ? Colors.green : Colors.orange,fontSize: 15),)
                         ],
                       ),
                       onTap: () => _forceEnteredUser(widget.user, widget.event!),

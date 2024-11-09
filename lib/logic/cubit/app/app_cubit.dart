@@ -76,6 +76,30 @@ class AppCubit extends Cubit<AppState> {
     }
   }
 
+  // Funzione per ottenere un nuovo indice incrementale
+  Future<int> getNewIndex() async {
+    final DocumentReference counterDoc = firebase.collection('cardsNumber').doc('index');
+
+    return firebase.runTransaction((transaction) async {
+      // Recupera il contatore attuale
+      DocumentSnapshot snapshot = await transaction.get(counterDoc);
+
+      int newIndex;
+      if (snapshot.exists) {
+        // Se il contatore esiste, lo incrementa
+        int currentIndex = snapshot['value'];
+        newIndex = currentIndex + 1;
+        transaction.update(counterDoc, {'value': newIndex});
+      } else {
+        // Se non esiste, lo crea e lo imposta a 1
+        newIndex = 1000; // start from 1000
+        transaction.set(counterDoc, {'value': newIndex});
+      }
+
+      return newIndex;
+    });
+  }
+
   Future<String> getUserID(User user) async {
     return _auth.currentUser!.uid.toString();
   }

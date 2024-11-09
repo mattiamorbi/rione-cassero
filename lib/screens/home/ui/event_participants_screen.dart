@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/helpers/extensions.dart';
+import 'package:upper/logic/cubit/app/app_cubit.dart';
 import 'package:upper/models/upper_event.dart';
 import 'package:upper/models/user.dart' as up;
-
-import 'package:upper/logic/cubit/app/app_cubit.dart';
 
 import '../../../routing/routes.dart';
 
@@ -34,8 +33,8 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
   List<up.User> _totalJoinEvent = [];
   List<up.User> _filteredUsers = [];
 
- List<up.User?>? bookedUsers = [];
- List<up.User?>? participantsUsers = [];
+  List<up.User?>? bookedUsers = [];
+  List<up.User?>? participantsUsers = [];
 
   final TextEditingController _searchController = TextEditingController();
   bool _isUsersLoading = true;
@@ -50,9 +49,6 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
     _loadEventSubscription();
 
     //Future.delayed(Duration(seconds: 3));
-
-
-
 
     if (kDebugMode) {
       print(_totalJoinEvent.length);
@@ -183,13 +179,36 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 onTap: () => _showUser(user, widget.upperEvent),
+                                //leading: Icon(
+                                //  Icons.person_outline,
+                                //  color: user.state == 'booked'
+                                //      ? Colors.orange
+                                //      : user.state == 'joined'
+                                //          ? Colors.green
+                                //          : Colors.black,
+                                //),
                                 leading: Icon(
-                                  Icons.person_outline,
-                                  color: user.state == 'booked'
-                                      ? Colors.orange
+                                   user.cardNumber != 0
+                                      ? Icons.person
+                                      : Icons.person_outline,
+                                  color:  user.cardNumber != 0
+                                      ? Colors.green
+                                      : Colors.black,
+                                ),
+                                trailing: Text(
+                                  user.state == 'booked'
+                                      ? "PRENOTATO"
                                       : user.state == 'joined'
-                                          ? Colors.green
-                                          : Colors.black,
+                                          ? "ENTRATO"
+                                          : "",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: user.state == 'booked'
+                                          ? Colors.orange
+                                          : user.state == 'joined'
+                                              ? Colors.red
+                                              : Colors.black,
+                                      fontWeight: FontWeight.bold),
                                 ),
 
                                 //trailing: GestureDetector(

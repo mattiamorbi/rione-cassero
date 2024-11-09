@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<UpperEvent> _events = [];
   List<up.User> _users = [];
   bool _isUsersLoading = true;
+  bool _isLoggedUserLoading = true;
   List<up.User> _filteredUsers = []; // Lista filtrata da visualizzare
   final TextEditingController _searchController =
       TextEditingController(); // Controller per il campo di ricerca
@@ -111,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loggedUser = user;
     setState(() {
       _qrData = user.getQrData();
+      _isLoggedUserLoading = false;
     });
   }
 
@@ -204,8 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _eventsWidget() {
-    print(_isEventsLoading);
-    print(_isUsersLoading);
+    //print(_isEventsLoading);
+    //print(_isUsersLoading);
     if (!_isEventsLoading && !_isUsersLoading) {
       //if (_events.isNotEmpty) {
       return Column(
@@ -328,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               user.isAdmin!
                                   ? Icons.settings_accessibility
                                   : user.cardNumber != 0
-                                      ? Icons.person_pin
+                                      ? Icons.person
                                       : Icons.person_outline,
                               color: user.isAdmin!
                                   ? Colors.orange
@@ -435,113 +437,121 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _profileWidget() {
-    if (qrTapMode == false) {
-      return Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Text(FirebaseAuth.instance.currentUser!.displayName!,
-                style: TextStyle(fontSize: 30, color: Colors.white)),
-            SizedBox(
-              height: 3,
-            ),
-            Text(
-              "Mostra questo QR e un documento d'identità per entrare!",
-              style: TextStyle(fontSize: 16, color: Colors.white),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5)),
-              child: Center(
-                child: SizedBox(
-                  width: 320,
-                  child: Center(
-                    child: StreamBuilder(
-                      stream: context.read<AppCubit>().watchCardNumber(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        }
-                        if (snapshot.hasError) {
-                          return Text('Errore: ${snapshot.error}');
-                        }
+    if (_isLoggedUserLoading == false) {
+      if (qrTapMode == false) {
+        return Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Text(FirebaseAuth.instance.currentUser!.displayName!,
+                  style: TextStyle(fontSize: 30, color: Colors.white)),
+              SizedBox(
+                height: 3,
+              ),
+              Text(
+                "Mostra questo QR e un documento d'identità per entrare!",
+                style: TextStyle(fontSize: 16, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Container(
+                width: 320,
+                height: 320,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5)),
+                child: Center(
+                  child: SizedBox(
+                    width: 320,
+                    child: Center(
+                      child: StreamBuilder(
+                        stream: context.read<AppCubit>().watchCardNumber(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Errore: ${snapshot.error}');
+                          }
 
-                        bool isCardNumberNonZero = snapshot.data ?? false;
-                        if (isCardNumberNonZero) {
-                          return GestureDetector(
-                            onTap: _toggleTapQr,
-                            child: PrettyQrPlus(
-                              data: _qrData,
-                              size: 290,
-                              elementColor: Colors.black,
-                              roundEdges: false,
-                              typeNumber: null,
-                              //decoration: const PrettyQrDecoration(
-                              //  background: Colors.white,
-                              //),
-                            ),
-                          );
-                        } else {
-                          return Center(
-                            child: Text(
-                              "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 20, ),
-                            ),
-                          );
-                        }
-
-                      },
+                          bool isCardNumberNonZero = snapshot.data ?? false;
+                          if (isCardNumberNonZero) {
+                            return GestureDetector(
+                              onTap: _toggleTapQr,
+                              child: PrettyQrPlus(
+                                data: _qrData,
+                                size: 290,
+                                elementColor: Colors.black,
+                                roundEdges: false,
+                                typeNumber: null,
+                                //decoration: const PrettyQrDecoration(
+                                //  background: Colors.white,
+                                //),
+                              ),
+                            );
+                          } else {
+                            return Center(
+                              child: Text(
+                                "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 20,),
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Gap(30.h),
-            Expanded(
-              child: Align(
-                alignment: AlignmentDirectional.bottomCenter,
-                child: AppTextButton(
-                  buttonText: 'Logout',
-                  textStyle: TextStyles.font14White400Weight,
-                  buttonWidth: 100,
-                  buttonHeight: 50,
-                  onPressed: () {
-                    context.read<AppCubit>().signOut();
-                    context.pushNamed(Routes.loginScreen);
-                  },
+              Gap(30.h),
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.bottomCenter,
+                  child: AppTextButton(
+                    buttonText: 'Logout',
+                    textStyle: TextStyles.font14White400Weight,
+                    buttonWidth: 100,
+                    buttonHeight: 50,
+                    onPressed: () {
+                      context.read<AppCubit>().signOut();
+                      context.pushNamed(Routes.loginScreen);
+                    },
+                  ),
                 ),
+              )
+            ],
+          ),
+        );
+      } else {
+        return Container(
+          color: Colors.white,
+          child: Center(
+            child: GestureDetector(
+              onTap: _toggleTapQr,
+              child: PrettyQrPlus(
+                data: _qrData,
+                size: MediaQuery
+                    .of(context)
+                    .size
+                    .width - 10,
+                elementColor: Colors.black,
+                roundEdges: false,
+                typeNumber: null,
+                //decoration: const PrettyQrDecoration(
+                //  background: Colors.white,
+                //),
               ),
-            )
-          ],
-        ),
-      );
-    } else {
-      return Container(
-        color: Colors.white,
-        child: Center(
-          child: GestureDetector(
-            onTap: _toggleTapQr,
-            child: PrettyQrPlus(
-              data: _qrData,
-              size: MediaQuery.of(context).size.width - 10,
-              elementColor: Colors.black,
-              roundEdges: false,
-              typeNumber: null,
-              //decoration: const PrettyQrDecoration(
-              //  background: Colors.white,
-              //),
             ),
           ),
-        ),
+        );
+      }
+    } else {
+      return Center(
+        child: Image(image: AssetImage("assets/images/loading.gif")),
       );
     }
   }

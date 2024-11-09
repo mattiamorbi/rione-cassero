@@ -570,7 +570,13 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             telephone: telephoneController.text,
             signUpDate: widget.currentDate.toString(),
             cardNumber: 0,
-          ); //uid: "test");
+          );
+
+          if (user.getAge() >= 18) {
+              user.cardNumber = await context
+                  .read<AppCubit>().getNewIndex();
+          }
+
           context
               .read<AppCubit>()
               .signUpWithEmail(user, passwordController.text);

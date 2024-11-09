@@ -29,11 +29,15 @@ class _UserScreenState extends State<UserPage> {
   bool forceEntered = false;
   final TextEditingController _cardNumber = TextEditingController();
 
+  TextStyle title = TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold);
+  TextStyle data = TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.normal);
+
+
   @override
   void initState() {
     super.initState();
 
-    if (widget.user.cardNumber == 0) editCardNumber = true;
+    //if (widget.user.cardNumber == 0) editCardNumber = true;
   }
 
   @override
@@ -69,46 +73,6 @@ class _UserScreenState extends State<UserPage> {
       controller: controller,
     );
   }
-
-//Future<void> _uploadToFirebase() async {
-//  //this.build(context);
-//  context.pushNamed(Routes.homeScreen);
-//  final storageRef = FirebaseStorage.instance.ref();
-//  final imageRef = storageRef.child("images/${_pickedImage!.name}");
-
-//  try {
-//    await imageRef.putData(_webImage);
-//  } on FirebaseException catch (e) {
-//    if (kDebugMode) {
-//      print("Errore durante il caricamento dell'immagine! $e");
-//    }
-//  }
-//  var events = FirebaseFirestore.instance.collection('events');
-//  var upperEvent = UpperEvent(
-//      title: _titleController.text,
-//      description: _descriptionController.text,
-//      date: _dateController.text,
-//      time: _timeController.text,
-//      place: _placeController.text,
-//      imagePath: _pickedImage == null
-//          ? widget.upperEvent!.imagePath
-//          : "images/${_pickedImage!.name}");
-
-//  try {
-//    if (widget.upperEvent != null) {
-//      var id = widget.upperEvent!.id;
-//      widget.upperEvent = upperEvent;
-//      await events.doc(id).set(widget.upperEvent!.toJson());
-//    } else {
-//      await events.doc().set(upperEvent.toJson());
-//    }
-//    //context.pushNamed(Routes.homeScreen);
-//  } on Exception catch (e) {
-//    if (kDebugMode) {
-//      print("Error while saving event! $e");
-//    }
-//  }
-//}
 
   Widget _newUserPage(BuildContext context) {
     int age = widget.user.getAge();
@@ -147,11 +111,11 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "NOME   ",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: title,
                   ),
                   Text(
                     "${widget.user.name} ${widget.user.surname}",
-                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    style: data,
                   ),
                 ],
               ),
@@ -161,11 +125,11 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "DATA DI NASCITA   ",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: title,
                   ),
                   Text(
                     "${widget.user.birthdate} (${age} anni)",
-                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    style: data,
                   ),
                 ],
               ),
@@ -175,11 +139,11 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "LUOGO DI NASCITA   ",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: title,
                   ),
                   Text(
                     "${widget.user.birthplace}",
-                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    style: data,
                   ),
                 ],
               ),
@@ -189,11 +153,25 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "RESIDENZA   ",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style:title,
                   ),
                   Text(
-                    "${widget.user.address}, ${widget.user.city}  (${widget.user.cap})",
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                    "${widget.user.address}",
+                    style: data,
+                  ),
+                ],
+              ),
+              Gap(25.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "CITTA'   ",
+                    style: title,
+                  ),
+                  Text(
+                    "${widget.user.city}  (${widget.user.cap})",
+                    style: data,
                   ),
                 ],
               ),
@@ -203,11 +181,11 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "E-MAIL   ",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: title,
                   ),
                   Text(
                     "${widget.user.email}",
-                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    style: data,
                   ),
                 ],
               ),
@@ -217,11 +195,11 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "TELEFONO   ",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: title,
                   ),
                   Text(
                     "${widget.user.telephone}",
-                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    style: data,
                   ),
                 ],
               ),
@@ -231,11 +209,11 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "DATA ISCRIZIONE   ",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: title,
                   ),
                   Text(
                     "${signUpDate.day}/${signUpDate.month}/${signUpDate.year} ${signUpDate.hour}:${signUpDate.minute}",
-                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    style: data,
                   ),
                 ],
               ),
@@ -247,11 +225,17 @@ class _UserScreenState extends State<UserPage> {
                   children: [
                     Text(
                       "TESSERA   ",
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                      style: title,
                     ),
                     Text(
-                      "${widget.user.cardNumber}",
-                      style: TextStyle(color: Colors.white, fontSize: 24),
+                      widget.user.cardNumber == 0
+                          ? "NON TESSERATO"
+                          : "${widget.user.cardNumber}",
+                      style: TextStyle(
+                          color: widget.user.cardNumber == 0
+                              ? Colors.red
+                              : Colors.white,
+                          fontSize: data.fontSize),
                     ),
                   ],
                 ),
@@ -265,48 +249,73 @@ class _UserScreenState extends State<UserPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    child: Container(
-                        width: 50,
-                        height: 50,
-                        child: Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                        )),
-                    onTap: () {
-                      setState(() {
-                        editCardNumber = !editCardNumber;
-                      });
-                    },
-                  ),
                   Visibility(
-                    visible: editCardNumber,
+                    visible: widget.user.cardNumber == 0,
                     child: GestureDetector(
-                      child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Icon(
-                            Icons.save,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.app_registration,
                             color: Colors.white,
-                          )),
-                      onTap: () => _updateUser(widget.user),
+                            size: 30,
+                          ),
+                          Gap(10.w),
+                          Text(
+                            "Assegna tessera",
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          )
+                        ],
+                      ),
+                      onTap: () => _assignCardNumber(widget.user),
                     ),
                   ),
                   Gap(15.w),
                   Visibility(
-                    visible: widget.event != null ? widget.event!.isToday! : false,
+                    visible: widget.user.cardNumber != 0,
+                    child: GestureDetector(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 30,
+                          ),
+                          Gap(10.w),
+                          Text(
+                            "Cancella tessera",
+                            style: TextStyle(color: Colors.red, fontSize: 15),
+                          )
+                        ],
+                      ),
+                      onTap: () => _removeCardNumber(widget.user),
+                    ),
+                  ),
+                  Gap(15.w),
+                  Visibility(
+                    visible:
+                        widget.event != null ? widget.event!.isToday! : false,
                     child: GestureDetector(
                       child: Row(
                         children: [
                           Icon(
                             Icons.event,
-                            color: forceEntered ? Colors.green : Colors.orange, size: 30,
+                            color: forceEntered ? Colors.green : Colors.orange,
+                            size: 30,
                           ),
                           Gap(10.w),
-                          Text(forceEntered ? "Aggiunto come entrato" : "Ingresso manuale", style: TextStyle(color: forceEntered ? Colors.green : Colors.orange,fontSize: 15),)
+                          Text(
+                            forceEntered
+                                ? "Aggiunto come entrato"
+                                : "Ingresso manuale",
+                            style: TextStyle(
+                                color:
+                                    forceEntered ? Colors.green : Colors.orange,
+                                fontSize: 15),
+                          )
                         ],
                       ),
-                      onTap: () => _forceEnteredUser(widget.user, widget.event!),
+                      onTap: () =>
+                          _forceEnteredUser(widget.user, widget.event!),
                     ),
                   ),
                 ],
@@ -331,6 +340,24 @@ class _UserScreenState extends State<UserPage> {
     setState(() {
       editCardNumber = false;
       context.pop();
+    });
+  }
+
+  void _assignCardNumber(up.User _user) async {
+    _user.cardNumber = await context.read<AppCubit>().getNewIndex();
+    await context.read<AppCubit>().updateUserInfo(_user);
+    setState(() {
+      editCardNumber = false;
+      //context.pop();
+    });
+  }
+
+  void _removeCardNumber(up.User _user) async {
+    _user.cardNumber = 0;
+    await context.read<AppCubit>().updateUserInfo(_user);
+    setState(() {
+      editCardNumber = false;
+      //context.pop();
     });
   }
 

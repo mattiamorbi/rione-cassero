@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
@@ -84,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     userSubscription = context.read<AppCubit>().getUsers().listen((userList) {
       setState(() {
         _users = userList;
-        print("aggiunto utente totale ${_users.length}");
+        //print("aggiunto utente totale ${_users.length}");
         _filterUsers(_searchController.text);
       });
 
@@ -93,7 +94,9 @@ class _HomeScreenState extends State<HomeScreen> {
           _isUsersLoading = false;
           _filteredUsers = _users;
         });
-        print("Caricamento iniziale completato con ${userList.length} utenti.");
+        if (kDebugMode) {
+          print("Caricamento iniziale completato con ${userList.length} utenti.");
+        }
       }
     });
 
@@ -146,7 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     var tmpEvents = await context.read<AppCubit>().getUpperEvents();
 
-    print(tmpEvents.length);
+    if (kDebugMode) {
+      print(tmpEvents.length);
+    }
 
     if (_isAdmin == false) {
       // mostro solo eventi futuri
@@ -161,7 +166,9 @@ class _HomeScreenState extends State<HomeScreen> {
     } else
       _events = tmpEvents;
 
-    print(_events.length);
+    if (kDebugMode) {
+      print(_events.length);
+    }
 
     if (_events.length > 1) {
       _events.sort((a, b) => a.getDate().compareTo(b.getDate()));
@@ -180,7 +187,9 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    print(_events.length);
+    if (kDebugMode) {
+      print(_events.length);
+    }
 
     setState(() {
       _isEventsLoading = false;

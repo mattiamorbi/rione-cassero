@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 Future<DateTime?> fetchCurrentDateTime() async {
@@ -10,7 +11,9 @@ Future<DateTime?> fetchCurrentDateTime() async {
 
 
     if (response.statusCode == 200) {
-      print(response.body);
+      if (kDebugMode) {
+        print(response.body);
+      }
       Map<String, dynamic> data = jsonDecode(response.body);
       String dateTimeString = data['formatted']; // Ottieni la stringa della data
       date = DateTime.parse(dateTimeString);

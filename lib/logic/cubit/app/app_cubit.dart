@@ -174,7 +174,9 @@ class AppCubit extends Cubit<AppState> {
     var users = firebase.collection('roles');
     var doc = await users.doc(_user.uid).get();
     var data = doc.data();
-    print("Livello letto per ${_user.name} : ${data}");
+    if (kDebugMode) {
+      print("Livello letto per ${_user.name} : ${data}");
+    }
     return data == null ? "user" : Role.fromJson(data).name;
   }
 

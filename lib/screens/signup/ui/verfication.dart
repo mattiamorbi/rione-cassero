@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -32,7 +33,9 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
       try {
         // Applica il codice di verifica per confermare l'email
         await FirebaseAuth.instance.applyActionCode(oobCode);
-        print("Email verificata con successo!");
+        if (kDebugMode) {
+          print("Email verificata con successo!");
+        }
 
         //verify = true;
         //print(user.name);
@@ -46,7 +49,9 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
         final user = FirebaseAuth.instance.currentUser;
         if (user != null && user.emailVerified) {
           // L'email è stata verificata, reindirizza o aggiorna lo stato
-          print("L'utente ha verificato l'email.");
+          if (kDebugMode) {
+            print("L'utente ha verificato l'email.");
+          }
 
           verify = 'true';
 
@@ -58,7 +63,9 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
           );
         }
       } catch (e) {
-        print("Errore durante la verifica dell'email: $e");
+        if (kDebugMode) {
+          print("Errore durante la verifica dell'email: $e");
+        }
         verify = 'false';
       }
     }

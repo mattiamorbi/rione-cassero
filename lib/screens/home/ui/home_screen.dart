@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:html' as html;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -47,9 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   StreamSubscription<List<up.User>>? userSubscription;
 
+  late String?
+      whatsappGroupLink; // = "https://chat.whatsapp.com/GNCcUncHRnX3cqqfsKemoa";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
           final bool connected =
@@ -72,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserLevel();
     _loadEvents();
     _loadQr();
+    _loadWhatsappLink();
   }
 
   @override
@@ -79,6 +85,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
     _searchController.dispose();
     userSubscription?.cancel();
+  }
+
+  void _loadWhatsappLink() async {
+    String link = await context.read<AppCubit>().getWhatsappLink();
+    setState(() {
+      whatsappGroupLink = link;
+    });
   }
 
   void _loadUsers() {
@@ -95,19 +108,20 @@ class _HomeScreenState extends State<HomeScreen> {
           _filteredUsers = _users;
         });
         if (kDebugMode) {
-          print("Caricamento iniziale completato con ${userList.length} utenti.");
+          print(
+              "Caricamento iniziale completato con ${userList.length} utenti.");
         }
       }
     });
 
-   //setState(() {
-   //  _isUsersLoading = true;
-   //});
-   //_users = await context.read<AppCubit>().getUsers();
-   //setState(() {
-   //  _isUsersLoading = false;
-   //  _filteredUsers = _users;
-   //});
+    //setState(() {
+    //  _isUsersLoading = true;
+    //});
+    //_users = await context.read<AppCubit>().getUsers();
+    //setState(() {
+    //  _isUsersLoading = false;
+    //  _filteredUsers = _users;
+    //});
   }
 
   void _loadQr() async {
@@ -185,6 +199,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _events[index_today] = temp;
         }
       }
+    } else {
+      for (UpperEvent event in _events) {
+        event.checkTodayDate();
+      }
     }
 
     if (kDebugMode) {
@@ -215,6 +233,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _eventsWidget() {
+    //print("Events ${_events.length}");
+    //print("Events ${_isAdmin}");
+    //print("Events ${_users.length}");
+    //print("Events ${_loggedUser.name}");
+
     //print(_isEventsLoading);
     //print(_isUsersLoading);
     if (!_isEventsLoading && !_isUsersLoading) {
@@ -310,7 +333,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          Text("Totale utenti: ${_users.length}", style: TextStyle(color: Colors.white, fontSize: 14),),
+          Text(
+            "Totale utenti: ${_users.length}",
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
           Expanded(
             child: _isUsersLoading
                 ? Center(child: Text('Caricamento utenti in corso...'))
@@ -506,12 +532,60 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Text(
                                 "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 20,),
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
                               ),
                             );
                           }
                         },
                       ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: 320,
+                child: Center(
+                  child: Row(children: [
+                    Text(
+                      _loggedUser.uid!,
+                      style: TextStyle(color: Colors.white, fontSize: 9),
+                      textAlign: TextAlign.start,
+                    ),
+                    Gap(10.w),
+                    Visibility(
+                      visible: _loggedUser.cardNumber != 0,
+                      child: Expanded(
+                        child: Text(
+                          _loggedUser.cardNumber.toString(),
+                          style: TextStyle(color: Colors.white, fontSize: 9),
+                          textAlign: TextAlign.end,
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
+              ),
+              Gap(20.h),
+              Visibility(
+                visible: whatsappGroupLink != null,
+                child: GestureDetector(
+                  onTap: _redirectWhatsapp,
+                  child: Container(
+                    width: 320,
+                    height: 60,
+                    padding: const EdgeInsets.only(
+                        right: 8.0, left: 8.0, bottom: 2.0, top: 2.0),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(5)),
+                    child: Row(
+                      children: [
+                        //Icon(Icons.message),
+                        Image(image: AssetImage("assets/images/whatsapp.gif")),
+                        Text("Unisciti al gruppo Whatsapp")
+                      ],
                     ),
                   ),
                 ),
@@ -543,10 +617,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: _toggleTapQr,
               child: PrettyQrPlus(
                 data: _qrData,
-                size: MediaQuery
-                    .of(context)
-                    .size
-                    .width - 10,
+                size: MediaQuery.of(context).size.width - 10,
                 elementColor: Colors.black,
                 roundEdges: false,
                 typeNumber: null,
@@ -563,6 +634,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Image(image: AssetImage("assets/images/loading.gif")),
       );
     }
+  }
+
+  void _redirectWhatsapp() {
+    html.window.open(whatsappGroupLink!, "_blank");
   }
 
   SafeArea _homePage(BuildContext context) {
@@ -590,7 +665,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.only(bottom: 10),
             ),
           ),
-          body: TabBarView(children: _tabBarViewWidgets()),
+          body: Padding(padding: const EdgeInsets.only(bottom: 10.0),child: TabBarView(children: _tabBarViewWidgets())),
         ),
       ),
     );

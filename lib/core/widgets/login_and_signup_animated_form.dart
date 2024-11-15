@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -136,7 +137,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                     color: terms1ApprovalError == false
                         ? Colors.white
                         : Colors.red,
-                    size: 25,
+                    size: 18,
                   ),
                   Gap(15.w),
                   SizedBox(
@@ -145,7 +146,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       maxLines: 3,
                       "Acconsento al trattamento dei miei dati personali e delle categorie particolari di dati personali (Art.2) per finalità connesse al tesseramento alla FEDERITALIA (Art. 1 - lettere a,b,c,d)",
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 8,
                           color: terms1ApprovalError == false
                               ? Colors.white
                               : Colors.red),
@@ -173,7 +174,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                     color: terms2ApprovalError == false
                         ? Colors.white
                         : Colors.red,
-                    size: 25,
+                    size: 18,
                   ),
                   Gap(15.w),
                   SizedBox(
@@ -182,7 +183,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       maxLines: 3,
                       "Acconsento al trattamento dei miei dati personali, in particolare immagini e video riprese, per il perseguimento delle finalità (Art. 1 - lettera e)",
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 8,
                           color: terms2ApprovalError == false
                               ? Colors.white
                               : Colors.red),
@@ -211,7 +212,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                     color: terms3ApprovalError == false
                         ? Colors.white
                         : Colors.red,
-                    size: 25,
+                    size: 18,
                   ),
                   Gap(15.w),
                   SizedBox(
@@ -220,7 +221,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       maxLines: 3,
                       "Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 8,
                           color: terms3ApprovalError == false
                               ? Colors.white
                               : Colors.red),
@@ -362,6 +363,20 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     _setupPasswordControllerListener();
 
     if (widget.currentDate == null) _loadServerDate();
+
+    if (kDebugMode) {
+      nameController.text = "Mattia";
+      surnameController.text = "Morbidelli";
+      emailController.text = "mattia.morbidelli@gmail.com";
+      passwordController.text = "Mattia1998";
+      addressController.text = "Via dei Beroardi, 83";
+      birthdateController.text = "15/07/1998";
+      birthplaceController.text = "Arezzo";
+      capController.text = "52043";
+      cityController.text = "Castiglion Fiorentino";
+      telephoneController.text = "3496880713";
+      passwordConfirmationController.text = "Mattia1998";
+    }
   }
 
   void _loadServerDate() async {
@@ -415,12 +430,12 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   }
 
   loginOrSignUpOrPasswordButton(BuildContext context) {
-    if (widget.isSignUpPage == true && widget.currentDate != null) {
+    if (widget.isSignUpPage == true) {// && widget.currentDate != null) {
       return signUpButton(context);
     }
-    if (widget.isSignUpPage == true && widget.currentDate == null) {
-      return SizedBox.shrink();
-    }
+    //if (widget.isSignUpPage == true && widget.currentDate == null) {
+    //  return SizedBox.shrink();
+    //}
     if (widget.isSignUpPage == null) {
       return loginButton(context);
     }
@@ -557,6 +572,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           });
 
           if (!terms1Approval || !terms2Approval || !terms3Approval) return;
+
+          if (widget.currentDate == null) return;
 
           var user = up.User(
             name: capitalize(nameController.text),

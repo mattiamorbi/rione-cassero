@@ -16,6 +16,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "site": "upperclubx",
     "public": "build/web",
     "ignore": [
       "firebase.json",

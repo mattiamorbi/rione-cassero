@@ -58,6 +58,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '548464344018',
     projectId: 'cassero-upper',
     authDomain: 'cassero-upper.firebaseapp.com',
+    //authDomain: 'upperclubx.web.app',
     storageBucket: 'cassero-upper.appspot.com',
     measurementId: 'G-T0QJJCKP8C',
   );

@@ -14,7 +14,7 @@ class AppCubit extends Cubit<AppState> {
   final FirebaseFirestore firebase = FirebaseFirestore.instance;
 
   final ActionCodeSettings actionCodeSettings = ActionCodeSettings(
-    url: 'https://cassero-upper.web.app', // URL di reindirizzamento
+    url: 'https://upperclubx.web.app', // URL di reindirizzamento
     handleCodeInApp: true, // Gestisci il codice nell'app
   );
 
@@ -72,6 +72,7 @@ class AppCubit extends Cubit<AppState> {
       await _auth.signOut();
       emit(UserSignupButNotVerified());
     } catch (e) {
+      print(e.toString());
       emit(AuthError(e.toString()));
     }
   }
@@ -161,6 +162,15 @@ class AppCubit extends Cubit<AppState> {
       print(doc.data());
     }
     return up.User.fromJson(doc.data()!);
+  }
+
+  Future<String> getWhatsappLink() async {
+    var users = firebase.collection('social');
+    var doc = await users.doc('whatsapp').get();
+    if (kDebugMode) {
+      print(doc.data());
+    }
+    return doc.data()?['link'];
   }
 
   Future<String> getUserLevel() async {

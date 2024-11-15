@@ -58,6 +58,7 @@ dependencies:
   time_machine: ^0.9.17
   flutter_barcode_sdk: ^2.2.8
   pretty_qr_code_plus: ^0.0.1
+  #html: ^0.15.0
 
 dev_dependencies:
   flutter_test:

@@ -690,7 +690,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _toggleTapQr() {
     setState(() {
-      qrTapMode = !qrTapMode;
+      if (isMobileDevice()) qrTapMode = !qrTapMode;
     });
   }
 }

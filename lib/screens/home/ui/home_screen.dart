@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -77,6 +78,19 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadEvents();
     _loadQr();
     _loadWhatsappLink();
+  }
+
+  bool isMobileDevice() {
+    final userAgent = html.window.navigator.userAgent.toLowerCase();
+    final width = window.physicalSize.width / window.devicePixelRatio;
+
+    // Usa user agent per la verifica primaria
+    if (userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone')) {
+      return true;
+    }
+
+    // Verifica secondaria con larghezza schermo
+    return width < 600;
   }
 
   @override
@@ -568,7 +582,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Gap(20.h),
               Visibility(
-                visible: whatsappGroupLink != null,
+                visible: whatsappGroupLink != null && isMobileDevice(),
                 child: GestureDetector(
                   onTap: _redirectWhatsapp,
                   child: Container(

@@ -54,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
           final bool connected =
@@ -584,7 +583,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         //Icon(Icons.message),
                         Image(image: AssetImage("assets/images/whatsapp.gif")),
-                        Text("Unisciti al gruppo Whatsapp")
+                        Gap(15.w),
+                        Text("Unisciti al gruppo Whatsapp",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -665,7 +666,9 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.only(bottom: 10),
             ),
           ),
-          body: Padding(padding: const EdgeInsets.only(bottom: 10.0),child: TabBarView(children: _tabBarViewWidgets())),
+          body: Padding(
+              padding: const EdgeInsets.only(bottom: 25.0),
+              child: TabBarView(children: _tabBarViewWidgets())),
         ),
       ),
     );

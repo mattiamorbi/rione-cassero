@@ -589,10 +589,10 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             cardNumber: 0,
           );
 
-          if (user.getAge() >= 18) {
-              user.cardNumber = await context
-                  .read<AppCubit>().getNewIndex();
-          }
+          //if (user.getAge() >= 18) {
+          //    user.cardNumber = await context
+          //        .read<AppCubit>().getNewIndex();
+          //}
 
           context
               .read<AppCubit>()

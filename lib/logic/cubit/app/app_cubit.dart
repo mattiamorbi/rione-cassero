@@ -195,7 +195,7 @@ class AppCubit extends Cubit<AppState> {
     await users.doc(_user.uid!).set({'name': role});
   }
 
-  Stream<bool> watchCardNumber() {
+  Stream<int> watchCardNumber() {
     // Accede al documento tramite l'ID `uid` e controlla il campo `cardNumber`
     return FirebaseFirestore.instance
         .collection(
@@ -205,10 +205,10 @@ class AppCubit extends Cubit<AppState> {
         .map((snapshot) {
       // Controlla che il documento esista e che `cardNumber` sia diverso da 0
       if (snapshot.exists) {
-        int cardNumber = snapshot.get('cardNumber') ?? 0;
-        return cardNumber != 0;
+        int cardNumber = snapshot.get('cardNumber');
+        return cardNumber;
       } else {
-        return false;
+        return 0;
       }
     });
   }

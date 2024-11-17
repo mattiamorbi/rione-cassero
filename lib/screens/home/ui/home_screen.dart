@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool qrTapMode = false;
 
   StreamSubscription<List<up.User>>? userSubscription;
+  StreamSubscription<int>? cardSubscription;
 
   late String?
       whatsappGroupLink; // = "https://chat.whatsapp.com/GNCcUncHRnX3cqqfsKemoa";
@@ -75,9 +76,24 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     BlocProvider.of<AppCubit>(context);
     _loadUserLevel();
-    _loadEvents();
     _loadQr();
+    _loadEvents();
     _loadWhatsappLink();
+    _listenCardNumber();
+  }
+
+  void _listenCardNumber() {
+
+    cardSubscription =
+        context.read<AppCubit>().watchCardNumber().listen((cardNumber) {
+      if (_loggedUser.cardNumber == 0) _loadEvents();
+      _loadQr();
+      setState(() {
+        _loggedUser.cardNumber = cardNumber;
+        //print("aggiunto utente totale ${_users.length}");
+        //_filterUsers(_searchController.text);
+      });
+    });
   }
 
   bool isMobileDevice() {
@@ -85,7 +101,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final width = window.physicalSize.width / window.devicePixelRatio;
 
     // Usa user agent per la verifica primaria
-    if (userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone')) {
+    if (userAgent.contains('mobile') ||
+        userAgent.contains('android') ||
+        userAgent.contains('iphone')) {
       return true;
     }
 
@@ -187,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
         DateTime eDate =
             convertiStringaAData(event.date).add(Duration(days: 1));
         if (eDate.isAfter(DateTime.now()) || event.isToday!) {
-          _events.add(event);
+          if (_loggedUser.cardNumber != 0) _events.add(event);
         }
       }
     } else
@@ -514,46 +532,74 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: SizedBox(
                     width: 320,
                     child: Center(
-                      child: StreamBuilder(
-                        stream: context.read<AppCubit>().watchCardNumber(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          }
-                          if (snapshot.hasError) {
-                            return Text('Errore: ${snapshot.error}');
-                          }
-
-                          bool isCardNumberNonZero = snapshot.data ?? false;
-                          if (isCardNumberNonZero) {
-                            return GestureDetector(
-                              onTap: _toggleTapQr,
-                              child: PrettyQrPlus(
-                                data: _qrData,
-                                size: 290,
-                                elementColor: Colors.black,
-                                roundEdges: false,
-                                typeNumber: null,
-                                //decoration: const PrettyQrDecoration(
-                                //  background: Colors.white,
-                                //),
-                              ),
-                            );
-                          } else {
-                            return Center(
-                              child: Text(
-                                "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 20,
+                        child: _loggedUser.cardNumber != 0
+                            ? GestureDetector(
+                                onTap: _toggleTapQr,
+                                child: PrettyQrPlus(
+                                  data: _qrData,
+                                  size: 290,
+                                  elementColor: Colors.black,
+                                  roundEdges: false,
+                                  typeNumber: null,
+                                  //decoration: const PrettyQrDecoration(
+                                  //  background: Colors.white,
+                                  //),
                                 ),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ),
+                              )
+                            : Center(
+                                child: Text(
+                                  "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              )
+                        //child: StreamBuilder(
+                        //  stream: context.read<AppCubit>().watchCardNumber(),
+                        //  builder: (context, snapshot) {
+                        //    if (snapshot.connectionState ==
+                        //        ConnectionState.waiting) {
+                        //      return CircularProgressIndicator();
+                        //    }
+                        //    if (snapshot.hasError) {
+                        //      return Text('Errore: ${snapshot.error}');
+                        //    }
+//
+                        //    bool isCardNumberNonZero = snapshot.data ?? false;
+                        //    //print(snapshot.data);
+                        //    //_loadEvents();
+                        //    if (isCardNumberNonZero) {
+                        //      //print(snapshot.data?['cardNumber']);
+                        //      //_loadQr();
+                        //      return GestureDetector(
+                        //        onTap: _toggleTapQr,
+                        //        child: PrettyQrPlus(
+                        //          data: _qrData,
+                        //          size: 290,
+                        //          elementColor: Colors.black,
+                        //          roundEdges: false,
+                        //          typeNumber: null,
+                        //          //decoration: const PrettyQrDecoration(
+                        //          //  background: Colors.white,
+                        //          //),
+                        //        ),
+                        //      );
+                        //    } else {
+                        //      _loggedUser.cardNumber = 0;
+                        //      return Center(
+                        //        child: Text(
+                        //          "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
+                        //          textAlign: TextAlign.center,
+                        //          style: TextStyle(
+                        //            fontSize: 20,
+                        //          ),
+                        //        ),
+                        //      );
+                        //    }
+                        //  },
+                        //),
+                        ),
                   ),
                 ),
               ),
@@ -582,7 +628,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Gap(20.h),
               Visibility(
-                visible: whatsappGroupLink != null && isMobileDevice(),
+                visible: whatsappGroupLink != null &&
+                    isMobileDevice() &&
+                    _loggedUser.cardNumber != 0,
                 child: GestureDetector(
                   onTap: _redirectWhatsapp,
                   child: Container(

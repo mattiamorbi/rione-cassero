@@ -35,6 +35,7 @@ class AppCubit extends Cubit<AppState> {
   Future<void> signInWithEmail(String email, String password) async {
     emit(AuthLoading());
     try {
+      await _auth.setPersistence(Persistence.LOCAL);
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,

@@ -293,7 +293,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Expanded(
                 child: Center(
                     child: Text(
-              "Nessun evento in programma",
+                      textAlign: TextAlign.center,
+              _loggedUser.cardNumber != 0 ? "Nessun evento in programma" : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,

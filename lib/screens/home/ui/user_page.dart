@@ -26,12 +26,14 @@ class UserPage extends StatefulWidget {
 
 class _UserScreenState extends State<UserPage> {
   bool editCardNumber = false;
+  bool loadingCardNumber = false;
   bool forceEntered = false;
   final TextEditingController _cardNumber = TextEditingController();
 
-  TextStyle title = TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold);
-  TextStyle data = TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.normal);
-
+  TextStyle title =
+      TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold);
+  TextStyle data = TextStyle(
+      color: Colors.white, fontSize: 14, fontWeight: FontWeight.normal);
 
   @override
   void initState() {
@@ -153,7 +155,7 @@ class _UserScreenState extends State<UserPage> {
                 children: [
                   Text(
                     "RESIDENZA   ",
-                    style:title,
+                    style: title,
                   ),
                   Text(
                     "${widget.user.address}",
@@ -250,7 +252,24 @@ class _UserScreenState extends State<UserPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Visibility(
-                    visible: widget.user.cardNumber == 0,
+                    visible: loadingCardNumber,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.downloading,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                        Gap(10.w),
+                        Text(
+                          "Creazione tessera in corso...",
+                          style: TextStyle(color: Colors.white, fontSize: 15),
+                        )
+                      ],
+                    ),
+                  ),
+                  Visibility(
+                    visible: widget.user.cardNumber == 0 && !loadingCardNumber,
                     child: GestureDetector(
                       child: Row(
                         children: [
@@ -271,7 +290,7 @@ class _UserScreenState extends State<UserPage> {
                   ),
                   Gap(15.w),
                   Visibility(
-                    visible: widget.user.cardNumber != 0,
+                    visible: widget.user.cardNumber != 0 && !loadingCardNumber,
                     child: GestureDetector(
                       child: Row(
                         children: [
@@ -344,19 +363,27 @@ class _UserScreenState extends State<UserPage> {
   }
 
   void _assignCardNumber(up.User _user) async {
+    setState(() {
+      loadingCardNumber = true;
+    });
     _user.cardNumber = await context.read<AppCubit>().getNewIndex();
     await context.read<AppCubit>().updateUserInfo(_user);
     setState(() {
       editCardNumber = false;
+      loadingCardNumber = false;
       //context.pop();
     });
   }
 
   void _removeCardNumber(up.User _user) async {
+    setState(() {
+      loadingCardNumber = true;
+    });
     _user.cardNumber = 0;
     await context.read<AppCubit>().updateUserInfo(_user);
     setState(() {
       editCardNumber = false;
+      loadingCardNumber = false;
       //context.pop();
     });
   }

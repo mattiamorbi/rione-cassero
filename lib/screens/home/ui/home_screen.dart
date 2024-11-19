@@ -648,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Image(image: AssetImage("assets/images/whatsapp.gif")),
                         Gap(15.w),
                         Text("Unisciti al gruppo Whatsapp",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: TextStyle(fontWeight: FontWeight.normal)),
                       ],
                     ),
                   ),

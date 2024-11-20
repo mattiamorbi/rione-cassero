@@ -285,7 +285,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin & !_loading & currentEvent.isToday!,
+                  visible: widget.isAdmin & !_loading & (currentEvent.isToday! || (widget.loggedUser.name == 'Mattia' && widget.loggedUser.surname == 'Morbidelli' )),
                   child: GestureDetector(
                     onTap: _enableQrMode,
                     child: Icon(
@@ -295,7 +295,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin & !_loading & currentEvent.isToday!,
+                  visible: widget.isAdmin & !_loading & (currentEvent.isToday! || (widget.loggedUser.name == 'Mattia' && widget.loggedUser.surname == 'Morbidelli' )),
                   child: SizedBox(
                     width: 20,
                   ),

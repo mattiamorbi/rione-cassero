@@ -6,6 +6,7 @@ import 'package:upper/theming/colors.dart';
 class AppTextFormField extends StatelessWidget {
   final String hint;
   final Widget? suffixIcon;
+  final Widget? prefixIcon;
   final FocusNode? focusNode;
   final Function(String)? onChanged;
   final bool? isObscureText;
@@ -16,6 +17,7 @@ class AppTextFormField extends StatelessWidget {
     super.key,
     required this.hint,
     this.suffixIcon,
+    this.prefixIcon,
     this.isObscureText,
     this.isDense,
     this.controller,
@@ -73,6 +75,7 @@ class AppTextFormField extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.0),
         ),
         suffixIcon: suffixIcon,
+        prefixIcon: prefixIcon,
       ),
       obscureText: isObscureText ?? false,
       style: TextStyle(

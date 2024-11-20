@@ -38,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<up.User> _users = [];
   bool _isUsersLoading = true;
   bool _isLoggedUserLoading = true;
+  bool cardFilter = false;
   List<up.User> _filteredUsers = []; // Lista filtrata da visualizzare
   final TextEditingController _searchController =
       TextEditingController(); // Controller per il campo di ricerca
@@ -50,8 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<List<up.User>>? userSubscription;
   StreamSubscription<int>? cardSubscription;
 
-  late String?
-      whatsappGroupLink; // = "https://chat.whatsapp.com/GNCcUncHRnX3cqqfsKemoa";
+  late String whatsappGroupLink =
+      ""; // = "https://chat.whatsapp.com/GNCcUncHRnX3cqqfsKemoa";
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _listenCardNumber() {
-
     cardSubscription =
         context.read<AppCubit>().watchCardNumber().listen((cardNumber) {
       if (_loggedUser.cardNumber == 0) _loadEvents();
@@ -293,8 +293,10 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Expanded(
                 child: Center(
                     child: Text(
-                      textAlign: TextAlign.center,
-              _loggedUser.cardNumber != 0 ? "Nessun evento in programma" : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
+              textAlign: TextAlign.center,
+              _loggedUser.cardNumber != 0
+                  ? "Nessun evento in programma"
+                  : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
@@ -332,14 +334,30 @@ class _HomeScreenState extends State<HomeScreen> {
 // Funzione per filtrare la lista degli utenti in base al testo inserito
   void _filterUsers(String query) {
     List<up.User> filtered = _users.where((utente) {
+      bool result = false;
       String fullName =
           '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
-      return fullName.contains(query.toLowerCase());
+      result = fullName.contains(query.toLowerCase());
+      if (cardFilter) result = result && utente.cardNumber==0;
+      return result;
     }).toList();
 
     setState(() {
       _filteredUsers = filtered;
     });
+  }
+
+  void _manageCardFilter() {
+    if (_isUsersLoading) return;
+    setState(() {
+      cardFilter = !cardFilter;
+    });
+    _filterUsers(_searchController.text);
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _filterUsers("");
   }
 
   Widget _userManagementWidget() {
@@ -350,23 +368,44 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SingleChildScrollView(
-              child: AppTextFormField(
-                hint: "Cerca",
-                validator: (value) {},
-                controller: _searchController,
-                isObscureText: false,
-                suffixIcon: Icon(
-                  Icons.search,
-                  color: Colors.black38,
+              child: Row(children: [
+                Expanded(
+                  child: AppTextFormField(
+                    hint: "Cerca",
+                    validator: (value) {},
+                    controller: _searchController,
+                    isObscureText: false,
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.black38,
+                    ),
+                    suffixIcon: Visibility(
+                      visible: _searchController.text.length != 0,
+                      child: GestureDetector(
+                        onTap: _clearSearch,
+                        child: Icon(
+                          Icons.cancel,
+                          color: Colors.black38,
+                        ),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      _filterUsers(value);
+                    },
+                  ),
                 ),
-                onChanged: (value) {
-                  _filterUsers(value);
-                },
-              ),
+                Gap(20.w),
+                GestureDetector(
+                  onTap: _manageCardFilter,
+                  child: Icon(cardFilter ? Icons.person : Icons.person_outline, color: Colors.white, size: 30,),
+
+                ),
+                Gap(10.w),
+              ]),
             ),
           ),
           Text(
-            "Totale utenti: ${_users.length}",
+            cardFilter ? "Totale utenti: ${_users.length} / Da tesserare: ${_filteredUsers.length}" : "Totale utenti: ${_users.length}",
             style: TextStyle(color: Colors.white, fontSize: 14),
           ),
           Expanded(
@@ -394,56 +433,59 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             leading: Icon(
+                              user.getAge() < 18 ? Icons.bedroom_baby_outlined :
                               user.isAdmin!
                                   ? Icons.settings_accessibility
                                   : user.cardNumber != 0
                                       ? Icons.person
                                       : Icons.person_outline,
-                              color: user.isAdmin!
+                              color: user.getAge() < 18 && user.cardNumber == 0 ? Colors.red :
+                              user.isAdmin!
                                   ? Colors.orange
                                   : user.cardNumber != 0
                                       ? Colors.green
                                       : Colors.black,
                             ),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (String result) {
-                                switch (result) {
-                                  case 'show_user':
-                                    _showUser(user);
-                                    break;
-                                  case 'reimposta_password':
-                                    _resetPassword(user);
-                                    break;
-                                  case 'rendi_amministratore':
-                                    _userToAdmin(user);
-                                    break;
-                                  case 'elimina_account':
-                                    _deleteAccount(user);
-                                    break;
-                                }
-                              },
-                              itemBuilder: (BuildContext context) =>
-                                  <PopupMenuEntry<String>>[
-                                const PopupMenuItem<String>(
-                                  value: 'show_user',
-                                  child: Text('Visualizza'),
+                            trailing:
+                                PopupMenuButton<String>(
+                                  onSelected: (String result) {
+                                    switch (result) {
+                                      case 'show_user':
+                                        _showUser(user);
+                                        break;
+                                      case 'reimposta_password':
+                                        _resetPassword(user);
+                                        break;
+                                      case 'rendi_amministratore':
+                                        _userToAdmin(user);
+                                        break;
+                                      case 'elimina_account':
+                                        _deleteAccount(user);
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'show_user',
+                                      child: Text('Visualizza'),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                      value: 'reimposta_password',
+                                      child: Text('Reimposta password'),
+                                    ),
+                                    PopupMenuItem<String>(
+                                      value: 'rendi_amministratore',
+                                      child: user.isAdmin!
+                                          ? Text('Rendi utente')
+                                          : Text('Rendi amministratore'),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                      value: 'elimina_account',
+                                      child: Text('Elimina account'),
+                                    ),
+                                  ],
                                 ),
-                                const PopupMenuItem<String>(
-                                  value: 'reimposta_password',
-                                  child: Text('Reimposta password'),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'rendi_amministratore',
-                                  child: user.isAdmin!
-                                      ? Text('Rendi utente')
-                                      : Text('Rendi amministratore'),
-                                ),
-                                const PopupMenuItem<String>(
-                                  value: 'elimina_account',
-                                  child: Text('Elimina account'),
-                                ),
-                              ],
-                            ),
                             title: Text('${user.name} ${user.surname}'),
                             subtitle: Text(
                                 'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
@@ -629,7 +671,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Gap(20.h),
               Visibility(
-                visible: whatsappGroupLink != null &&
+                visible: whatsappGroupLink != "" &&
                     isMobileDevice() &&
                     _loggedUser.cardNumber != 0,
                 child: GestureDetector(

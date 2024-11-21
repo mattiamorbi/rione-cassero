@@ -159,7 +159,7 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
               ),
               Expanded(
                 child: _isUsersLoading
-                    ? Center(child: Text('Caricamento utenti in corso...'))
+                    ? Center(child: Text('Caricamento utenti in corso...', style: TextStyle(color: Colors.white),))
                     : _filteredUsers.isEmpty
                         ? Center(child: Text('Nessun utente trovato'))
                         : ListView.builder(

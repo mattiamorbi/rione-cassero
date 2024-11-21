@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:pretty_qr_code_plus/pretty_qr_code_plus.dart';
 import 'package:upper/core/widgets/app_text_form_field.dart';
 import 'package:upper/core/widgets/no_internet.dart';
 import 'package:upper/helpers/extensions.dart';
@@ -31,9 +32,14 @@ class _UserScreenState extends State<UserPage> {
   final TextEditingController _cardNumber = TextEditingController();
 
   TextStyle title =
-      TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold);
+  TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold);
   TextStyle data = TextStyle(
       color: Colors.white, fontSize: 14, fontWeight: FontWeight.normal);
+
+  late String _qrData = "";
+
+  bool _isQrLoading = false;
+  bool qrMode = false;
 
   @override
   void initState() {
@@ -49,7 +55,7 @@ class _UserScreenState extends State<UserPage> {
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
           final bool connected =
-              value.any((element) => element != ConnectivityResult.none);
+          value.any((element) => element != ConnectivityResult.none);
           return connected ? _newUserPage(context) : const BuildNoInternet();
         },
         child: const Center(
@@ -106,7 +112,7 @@ class _UserScreenState extends State<UserPage> {
         body: Padding(
           padding: const EdgeInsets.only(
               top: 15.0, bottom: 15.0, left: 40.0, right: 40.0),
-          child: SingleChildScrollView(
+          child: !qrMode ? SingleChildScrollView(
             child: Column(children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -119,6 +125,18 @@ class _UserScreenState extends State<UserPage> {
                     "${widget.user.name} ${widget.user.surname}",
                     style: data,
                   ),
+                  Visibility(
+                    visible: widget.user.cardNumber != 0,
+                    child: Expanded(
+                      child: Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                              onTap: _showUserQr,
+                              child: Icon(Icons.qr_code,
+                                  color: Colors.white, size: 35))),
+
+                    ),
+                  )
                 ],
               ),
               Gap(25.h),
@@ -214,7 +232,8 @@ class _UserScreenState extends State<UserPage> {
                     style: title,
                   ),
                   Text(
-                    "${signUpDate.day}/${signUpDate.month}/${signUpDate.year} ${signUpDate.hour}:${signUpDate.minute}",
+                    "${signUpDate.day}/${signUpDate.month}/${signUpDate
+                        .year} ${signUpDate.hour}:${signUpDate.minute}",
                     style: data,
                   ),
                 ],
@@ -312,7 +331,7 @@ class _UserScreenState extends State<UserPage> {
                   Gap(15.w),
                   Visibility(
                     visible:
-                        widget.event != null ? widget.event!.isToday! : false,
+                    widget.event != null ? widget.event!.isToday! : false,
                     child: GestureDetector(
                       child: Row(
                         children: [
@@ -328,7 +347,7 @@ class _UserScreenState extends State<UserPage> {
                                 : "Ingresso manuale",
                             style: TextStyle(
                                 color:
-                                    forceEntered ? Colors.green : Colors.orange,
+                                forceEntered ? Colors.green : Colors.orange,
                                 fontSize: 15),
                           )
                         ],
@@ -340,10 +359,54 @@ class _UserScreenState extends State<UserPage> {
                 ],
               )
             ]),
+          ) :
+          Center(
+            child: Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5)),
+              child: Center(
+                child: SizedBox(
+                  width: 320,
+                  child: Center(
+                      child:  GestureDetector(
+                        onTap: _toggleTapQr,
+                        child: PrettyQrPlus(
+                          data: _qrData,
+                          size: 290,
+                          elementColor: Colors.black,
+                          roundEdges: false,
+                          typeNumber: null,
+                        ),
+                      )
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _showUserQr() async {
+    setState(() {
+      _isQrLoading = true;
+    });
+    var user = await context.read<AppCubit>().getUserFromUser(widget.user);
+    setState(() {
+      _qrData = user.getQrData();
+      _isQrLoading = false;
+      qrMode = true;
+    });
+  }
+
+  void _toggleTapQr() {
+    setState(() {
+      qrMode = false;
+    });
   }
 
   void _forceEnteredUser(up.User user, UpperEvent event) async {

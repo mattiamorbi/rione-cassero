@@ -165,6 +165,15 @@ class AppCubit extends Cubit<AppState> {
     return up.User.fromJson(doc.data()!);
   }
 
+  Future<up.User> getUserFromUser(up.User user) async {
+    var users = firebase.collection('users');
+    var doc = await users.doc(user.uid).get();
+    if (kDebugMode) {
+      print(doc.data());
+    }
+    return up.User.fromJson(doc.data()!);
+  }
+
   Future<String> getWhatsappLink() async {
     var users = firebase.collection('social');
     var doc = await users.doc('whatsapp').get();

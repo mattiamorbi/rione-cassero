@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String fullName =
           '${utente.name.toLowerCase()} ${utente.surname.toLowerCase()}';
       result = fullName.contains(query.toLowerCase());
-      if (cardFilter) result = result && utente.cardNumber==0;
+      if (cardFilter) result = result && utente.cardNumber == 0;
       return result;
     }).toList();
 
@@ -362,55 +362,63 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _userManagementWidget() {
     return Container(
+      height: MediaQuery.of(context).size.height, // Altezza massima dello schermo
       padding: EdgeInsets.only(left: 10, right: 10),
       child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: SingleChildScrollView(
-              child: Row(children: [
-                Expanded(
-                  child: AppTextFormField(
-                    hint: "Cerca",
-                    validator: (value) {},
-                    controller: _searchController,
-                    isObscureText: false,
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.black38,
-                    ),
-                    suffixIcon: Visibility(
-                      visible: _searchController.text.length != 0,
-                      child: GestureDetector(
-                        onTap: _clearSearch,
-                        child: Icon(
-                          Icons.cancel,
-                          color: Colors.black38,
-                        ),
+            child: Row(children: [
+              Expanded(
+                child: AppTextFormField(
+                  hint: "Cerca",
+                  validator: (value) {},
+                  controller: _searchController,
+                  isObscureText: false,
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Colors.black38,
+                  ),
+                  suffixIcon: Visibility(
+                    visible: _searchController.text.length != 0,
+                    child: GestureDetector(
+                      onTap: _clearSearch,
+                      child: Icon(
+                        Icons.cancel,
+                        color: Colors.black38,
                       ),
                     ),
-                    onChanged: (value) {
-                      _filterUsers(value);
-                    },
                   ),
+                  onChanged: (value) {
+                    _filterUsers(value);
+                  },
                 ),
-                Gap(20.w),
-                GestureDetector(
-                  onTap: _manageCardFilter,
-                  child: Icon(cardFilter ? Icons.person : Icons.person_outline, color: Colors.white, size: 30,),
-
+              ),
+              Gap(20.w),
+              GestureDetector(
+                onTap: _manageCardFilter,
+                child: Icon(
+                  cardFilter ? Icons.person : Icons.person_outline,
+                  color: Colors.white,
+                  size: 30,
                 ),
-                Gap(10.w),
-              ]),
-            ),
+              ),
+              Gap(10.w),
+            ]),
           ),
           Text(
-            cardFilter ? "Totale utenti: ${_users.length} / Da tesserare: ${_filteredUsers.length}" : "Totale utenti: ${_users.length}",
+            cardFilter
+                ? "Totale utenti: ${_users.length} / Da tesserare: ${_filteredUsers.length}"
+                : "Totale utenti: ${_users.length}",
             style: TextStyle(color: Colors.white, fontSize: 14),
           ),
           Expanded(
             child: _isUsersLoading
-                ? Center(child: Text('Caricamento utenti in corso...', style: TextStyle(color: Colors.white),))
+                ? Center(
+                    child: Text(
+                    'Caricamento utenti in corso...',
+                    style: TextStyle(color: Colors.white),
+                  ))
                 : _filteredUsers.isEmpty
                     ? Center(
                         child: Text('Nessun utente trovato'),
@@ -433,59 +441,60 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             leading: Icon(
-                              user.getAge() < 18 ? Icons.bedroom_baby_outlined :
-                              user.isAdmin!
-                                  ? Icons.settings_accessibility
-                                  : user.cardNumber != 0
-                                      ? Icons.person
-                                      : Icons.person_outline,
-                              color: user.getAge() < 18 && user.cardNumber == 0 ? Colors.red :
-                              user.isAdmin!
-                                  ? Colors.orange
-                                  : user.cardNumber != 0
-                                      ? Colors.green
-                                      : Colors.black,
+                              user.getAge() < 18
+                                  ? Icons.bedroom_baby_outlined
+                                  : user.isAdmin!
+                                      ? Icons.settings_accessibility
+                                      : user.cardNumber != 0
+                                          ? Icons.person
+                                          : Icons.person_outline,
+                              color: user.getAge() < 18 && user.cardNumber == 0
+                                  ? Colors.red
+                                  : user.isAdmin!
+                                      ? Colors.orange
+                                      : user.cardNumber != 0
+                                          ? Colors.green
+                                          : Colors.black,
                             ),
-                            trailing:
-                                PopupMenuButton<String>(
-                                  onSelected: (String result) {
-                                    switch (result) {
-                                      case 'show_user':
-                                        _showUser(user);
-                                        break;
-                                      case 'reimposta_password':
-                                        _resetPassword(user);
-                                        break;
-                                      case 'rendi_amministratore':
-                                        _userToAdmin(user);
-                                        break;
-                                      case 'elimina_account':
-                                        _deleteAccount(user);
-                                        break;
-                                    }
-                                  },
-                                  itemBuilder: (BuildContext context) =>
-                                      <PopupMenuEntry<String>>[
-                                    const PopupMenuItem<String>(
-                                      value: 'show_user',
-                                      child: Text('Visualizza'),
-                                    ),
-                                    const PopupMenuItem<String>(
-                                      value: 'reimposta_password',
-                                      child: Text('Reimposta password'),
-                                    ),
-                                    PopupMenuItem<String>(
-                                      value: 'rendi_amministratore',
-                                      child: user.isAdmin!
-                                          ? Text('Rendi utente')
-                                          : Text('Rendi amministratore'),
-                                    ),
-                                    const PopupMenuItem<String>(
-                                      value: 'elimina_account',
-                                      child: Text('Elimina account'),
-                                    ),
-                                  ],
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (String result) {
+                                switch (result) {
+                                  case 'show_user':
+                                    _showUser(user);
+                                    break;
+                                  case 'reimposta_password':
+                                    _resetPassword(user);
+                                    break;
+                                  case 'rendi_amministratore':
+                                    _userToAdmin(user);
+                                    break;
+                                  case 'elimina_account':
+                                    _deleteAccount(user);
+                                    break;
+                                }
+                              },
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'show_user',
+                                  child: Text('Visualizza'),
                                 ),
+                                const PopupMenuItem<String>(
+                                  value: 'reimposta_password',
+                                  child: Text('Reimposta password'),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'rendi_amministratore',
+                                  child: user.isAdmin!
+                                      ? Text('Rendi utente')
+                                      : Text('Rendi amministratore'),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'elimina_account',
+                                  child: Text('Elimina account'),
+                                ),
+                              ],
+                            ),
                             title: Text('${user.name} ${user.surname}'),
                             subtitle: Text(
                                 'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
@@ -548,8 +557,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _profileWidget() {
     if (_isLoggedUserLoading == false) {
       if (qrTapMode == false) {
-        return Padding(
+        return SingleChildScrollView(
           padding: EdgeInsets.all(8.0),
+          physics: ClampingScrollPhysics(), // Consente solo scroll verticale
           child: Column(
             children: [
               Text(FirebaseAuth.instance.currentUser!.displayName!,
@@ -597,52 +607,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontSize: 20,
                                   ),
                                 ),
-                              )
-                        //child: StreamBuilder(
-                        //  stream: context.read<AppCubit>().watchCardNumber(),
-                        //  builder: (context, snapshot) {
-                        //    if (snapshot.connectionState ==
-                        //        ConnectionState.waiting) {
-                        //      return CircularProgressIndicator();
-                        //    }
-                        //    if (snapshot.hasError) {
-                        //      return Text('Errore: ${snapshot.error}');
-                        //    }
-//
-                        //    bool isCardNumberNonZero = snapshot.data ?? false;
-                        //    //print(snapshot.data);
-                        //    //_loadEvents();
-                        //    if (isCardNumberNonZero) {
-                        //      //print(snapshot.data?['cardNumber']);
-                        //      //_loadQr();
-                        //      return GestureDetector(
-                        //        onTap: _toggleTapQr,
-                        //        child: PrettyQrPlus(
-                        //          data: _qrData,
-                        //          size: 290,
-                        //          elementColor: Colors.black,
-                        //          roundEdges: false,
-                        //          typeNumber: null,
-                        //          //decoration: const PrettyQrDecoration(
-                        //          //  background: Colors.white,
-                        //          //),
-                        //        ),
-                        //      );
-                        //    } else {
-                        //      _loggedUser.cardNumber = 0;
-                        //      return Center(
-                        //        child: Text(
-                        //          "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
-                        //          textAlign: TextAlign.center,
-                        //          style: TextStyle(
-                        //            fontSize: 20,
-                        //          ),
-                        //        ),
-                        //      );
-                        //    }
-                        //  },
-                        //),
-                        ),
+                              )),
                   ),
                 ),
               ),
@@ -697,19 +662,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Gap(30.h),
-              Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional.bottomCenter,
-                  child: AppTextButton(
-                    buttonText: 'Logout',
-                    textStyle: TextStyles.font14White400Weight,
-                    buttonWidth: 100,
-                    buttonHeight: 50,
-                    onPressed: () {
-                      context.read<AppCubit>().signOut();
-                      context.pushNamed(Routes.loginScreen);
-                    },
-                  ),
+              Align(
+                alignment: AlignmentDirectional.bottomCenter,
+                child: AppTextButton(
+                  buttonText: 'Logout',
+                  textStyle: TextStyles.font14White400Weight,
+                  buttonWidth: 100,
+                  buttonHeight: 50,
+                  onPressed: () {
+                    context.read<AppCubit>().signOut();
+                    context.pushNamed(Routes.loginScreen);
+                  },
                 ),
               )
             ],

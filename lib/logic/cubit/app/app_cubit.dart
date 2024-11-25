@@ -276,34 +276,47 @@ class AppCubit extends Cubit<AppState> {
     return users;
   }
 
+  //Stream<List<up.User>> getUsers() async* {
+  //  final snapshotStream =
+  //      FirebaseFirestore.instance.collection('users').snapshots();
+//
+  //  await for (final snapshot in snapshotStream) {
+  //    List<up.User> userList = [];
+//
+  //    for (var doc in snapshot.docs) {
+  //      final roleDoc = await FirebaseFirestore.instance
+  //          .collection('roles')
+  //          .doc(doc.id)
+  //          .get();
+  //      if (roleDoc.exists)
+  //        userList.add(up.User.fromJson(doc.data(),
+  //            parUid: doc.id, parIsAdmin: roleDoc['name'] == 'admin'));
+  //      else
+  //        userList.add(up.User.fromJson(doc.data(), parUid: doc.id));
+  //    }
+  //    yield userList; // Emette la lista degli utenti caricati
+  //  }
+  //}
+
   Stream<List<up.User>> getUsers() async* {
-    final snapshotStream =
-        FirebaseFirestore.instance.collection('users').snapshots();
+    // Precarica i ruoli in una mappa
+    final rolesSnapshot = await FirebaseFirestore.instance.collection('roles').get();
+    final rolesMap = {for (var doc in rolesSnapshot.docs) doc.id: doc.data()['name']};
+
+    // Ottieni il flusso degli utenti
+    final snapshotStream = FirebaseFirestore.instance.collection('users').snapshots();
 
     await for (final snapshot in snapshotStream) {
-      List<up.User> userList = [];
+      final userList = snapshot.docs.map((doc) {
+        final roleName = rolesMap[doc.id] ?? ''; // Recupera il ruolo dalla mappa
+        final isAdmin = (roleName == 'admin');
+        return up.User.fromJson(doc.data(), parUid: doc.id, parIsAdmin: isAdmin);
+      }).toList();
 
-      for (var doc in snapshot.docs) {
-        final roleDoc = await FirebaseFirestore.instance
-            .collection('roles')
-            .doc(doc.id)
-            .get();
-        if (roleDoc.exists)
-          userList.add(up.User.fromJson(doc.data(),
-              parUid: doc.id, parIsAdmin: roleDoc['name'] == 'admin'));
-        else
-          userList.add(up.User.fromJson(doc.data(), parUid: doc.id));
-      }
-
-      // Controlla se è il primo caricamento
-      //if (!initialLoadComplete) {
-      //  initialLoadComplete = true;  // Imposta il flag per indicare che il primo caricamento è completo
-      //  print("Caricamento iniziale completato con ${userList.length} utenti.");
-      //}
-
-      yield userList; // Emette la lista degli utenti caricati
+      yield userList;
     }
   }
+
 
   Future<List<up.User>?> getEventsParticipant(
       String eventId, List<up.User> allUsers) async {

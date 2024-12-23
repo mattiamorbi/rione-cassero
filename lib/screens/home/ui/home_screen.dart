@@ -214,6 +214,8 @@ class _HomeScreenState extends State<HomeScreen> {
       print(_events.length);
     }
 
+    if (true)
+
     //for (int i = 0; i < tmpEvents.length; i++) {
     //  print(_events[i].date);
     //}

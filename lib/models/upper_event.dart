@@ -12,6 +12,8 @@ class UpperEvent {
   String? id;
   bool? isToday;
 
+  DateTime? date_time;
+
   UpperEvent({
     required this.title,
     required this.description,
@@ -21,6 +23,7 @@ class UpperEvent {
     required this.imagePath,
     this.id,
     this.isToday,
+    this.date_time,
   });
 
   DateTime getDate() => DateTimeHelper.getDateTime(date);
@@ -48,6 +51,7 @@ class UpperEvent {
           time: json['time']! as String,
           place: json['place']! as String,
           imagePath: json['imagePath']! as String,
+          date_time: DateTimeHelper.getDateTime(json['date']! as String),
         );
 
   Map<String, Object?> toJson() {

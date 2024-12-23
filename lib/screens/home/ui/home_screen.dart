@@ -208,16 +208,23 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_loggedUser.cardNumber != 0) _events.add(event);
         }
       }
-    } else
-      _events = tmpEvents;
+    } else _events = tmpEvents;
 
     if (kDebugMode) {
       print(_events.length);
     }
 
+    //for (int i = 0; i < tmpEvents.length; i++) {
+    //  print(_events[i].date);
+    //}
+
     if (_events.length > 1) {
-      _events.sort((a, b) => a.getDate().compareTo(b.getDate()));
+      _events.sort((b, a) => a.getDate().compareTo(b.getDate()));
     }
+
+   //for (int i = 0; i < tmpEvents.length; i++) {
+   //  print(_events[i].date);
+   //}
 
     // se un evento ha la da di oggi lo metto in prima fila
     if (_events.length > 1) {

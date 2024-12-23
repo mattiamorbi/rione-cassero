@@ -210,6 +210,9 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } else _events = tmpEvents;
 
+    if (kDebugMode) {
+      print(_events.length);
+    }
 
     //for (int i = 0; i < tmpEvents.length; i++) {
     //  print(_events[i].date);

@@ -10,17 +10,17 @@ import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:pretty_qr_code_plus/pretty_qr_code_plus.dart';
-import 'package:upper/core/widgets/app_text_button.dart';
-import 'package:upper/core/widgets/app_text_form_field.dart';
-import 'package:upper/core/widgets/no_internet.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
-import 'package:upper/models/upper_event.dart';
-import 'package:upper/models/user.dart' as up;
-import 'package:upper/routing/routes.dart';
-import 'package:upper/screens/home/ui/widgets/event_tile.dart';
-import 'package:upper/theming/colors.dart';
-import 'package:upper/theming/styles.dart';
+import 'package:rione_cassero/core/widgets/app_text_button.dart';
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
+import 'package:rione_cassero/core/widgets/no_internet.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/models/upper_event.dart';
+import 'package:rione_cassero/models/user.dart' as up;
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/screens/home/ui/widgets/event_tile.dart';
+import 'package:rione_cassero/theming/colors.dart';
+import 'package:rione_cassero/theming/styles.dart';
 
 class HomeScreen extends StatefulWidget {
   int? tab_index;
@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserLevel();
     _loadQr();
     _loadEvents();
-    _loadWhatsappLink();
+    //_loadWhatsappLink();
     _listenCardNumber();
   }
 
@@ -254,8 +254,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _getTabBars() {
     var widgets = <Widget>[
-      Icon(Icons.calendar_month_rounded, color: Colors.white),
-      Icon(Icons.account_circle_outlined, color: Colors.white),
+      Icon(Icons.calendar_month_rounded, color: ColorsManager.gray17),
+      Icon(Icons.account_circle_outlined, color: ColorsManager.gray17),
     ];
 
     if (_isAdmin) {
@@ -307,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
-                  color: Colors.white),
+                  color: ColorsManager.gray17),
             ))),
           ),
 //           Visibility(
@@ -406,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: _manageCardFilter,
                 child: Icon(
                   cardFilter ? Icons.person : Icons.person_outline,
-                  color: Colors.white,
+                  color: ColorsManager.gray17,
                   size: 30,
                 ),
               ),
@@ -417,14 +417,14 @@ class _HomeScreenState extends State<HomeScreen> {
             cardFilter
                 ? "Totale utenti: ${_users.length} / Da tesserare: ${_filteredUsers.length}"
                 : "Totale utenti: ${_users.length}",
-            style: TextStyle(color: Colors.white, fontSize: 14),
+            style: TextStyle(color: ColorsManager.gray17, fontSize: 14),
           ),
           Expanded(
             child: _isUsersLoading
                 ? Center(
                     child: Text(
                     'Caricamento utenti in corso...',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: ColorsManager.gray17),
                   ))
                 : _filteredUsers.isEmpty
                     ? Center(
@@ -435,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemBuilder: (context, index) {
                           final user = _filteredUsers[index];
                           return ListTile(
-                            tileColor: Colors.white,
+                            tileColor: ColorsManager.gray9_01,
                             textColor: Colors.black,
                             onTap: () => _showUser(user),
                             subtitleTextStyle: TextStyle(
@@ -444,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             shape: RoundedRectangleBorder(
                               //<-- SEE HERE
-                              side: BorderSide(width: 2),
+                              side: BorderSide(width: 0, color: ColorsManager.gray17_03),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             leading: Icon(
@@ -475,9 +475,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   case 'rendi_amministratore':
                                     _userToAdmin(user);
                                     break;
-                                  case 'elimina_account':
-                                    _deleteAccount(user);
-                                    break;
                                 }
                               },
                               itemBuilder: (BuildContext context) =>
@@ -495,10 +492,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: user.isAdmin!
                                       ? Text('Rendi utente')
                                       : Text('Rendi amministratore'),
-                                ),
-                                const PopupMenuItem<String>(
-                                  value: 'elimina_account',
-                                  child: Text('Elimina account'),
                                 ),
                               ],
                             ),
@@ -552,14 +545,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _deleteAccount(up.User _user) async {
-    // questa funzione deve cancellare un account
 
-    setState(() {
-      // giusto per aggiornare la lista
-      _isUsersLoading = false;
-    });
-  }
 
   Widget _profileWidget() {
     if (_isLoggedUserLoading == false) {
@@ -570,13 +556,13 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               Text(FirebaseAuth.instance.currentUser!.displayName!,
-                  style: TextStyle(fontSize: 30, color: Colors.white)),
+                  style: TextStyle(fontSize: 30, color: ColorsManager.gray17)),
               SizedBox(
                 height: 3,
               ),
               Text(
                 "Mostra questo QR e un documento d'identità per entrare!",
-                style: TextStyle(fontSize: 16, color: Colors.white),
+                style: TextStyle(fontSize: 16, color: ColorsManager.gray17),
                 textAlign: TextAlign.center,
               ),
               SizedBox(
@@ -586,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 320,
                 height: 320,
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: ColorsManager.gray17_03,
                     borderRadius: BorderRadius.circular(5)),
                 child: Center(
                   child: SizedBox(
@@ -602,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   roundEdges: false,
                                   typeNumber: null,
                                   //decoration: const PrettyQrDecoration(
-                                  //  background: Colors.white,
+                                  //  background: ColorsManager.gray17,
                                   //),
                                 ),
                               )
@@ -624,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(children: [
                     Text(
                       _loggedUser.uid!,
-                      style: TextStyle(color: Colors.white, fontSize: 9),
+                      style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
                       textAlign: TextAlign.start,
                     ),
                     Gap(10.w),
@@ -633,7 +619,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Expanded(
                         child: Text(
                           _loggedUser.cardNumber.toString(),
-                          style: TextStyle(color: Colors.white, fontSize: 9),
+                          style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
                           textAlign: TextAlign.end,
                         ),
                       ),
@@ -654,7 +640,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.only(
                         right: 8.0, left: 8.0, bottom: 2.0, top: 2.0),
                     decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: ColorsManager.gray17,
                         borderRadius: BorderRadius.circular(5)),
                     child: Row(
                       children: [
@@ -673,7 +659,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: AlignmentDirectional.bottomCenter,
                 child: AppTextButton(
                   buttonText: 'Logout',
-                  textStyle: TextStyles.font14White400Weight,
+                  textStyle: TextStyles.font16Black600Weight,
                   buttonWidth: 100,
                   buttonHeight: 50,
                   onPressed: () {
@@ -687,7 +673,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       } else {
         return Container(
-          color: Colors.white,
+          color: ColorsManager.gray17,
           child: Center(
             child: GestureDetector(
               onTap: _toggleTapQr,
@@ -698,7 +684,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 roundEdges: false,
                 typeNumber: null,
                 //decoration: const PrettyQrDecoration(
-                //  background: Colors.white,
+                //  background: ColorsManager.gray17,
                 //),
               ),
             ),
@@ -722,22 +708,22 @@ class _HomeScreenState extends State<HomeScreen> {
         initialIndex: widget.tab_index ?? 1,
         length: _isAdmin ? 3 : 2,
         child: Scaffold(
-          backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+          backgroundColor: ColorsManager.background,
           appBar: AppBar(
-            backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+            backgroundColor: ColorsManager.background,
             title: Padding(
               padding: const EdgeInsets.only(top: 40.0),
               //child: Center(child: Container(width: 300, height: 100, child: Image(image: AssetImage("assets/images/upper_2.png"),fit: BoxFit.scaleDown,))),
               child: Center(
                 child: Text(
-                  "UPPER",
-                  style: TextStyle(color: Colors.white, fontSize: 25),
+                  "RIONE CASSERO",
+                  style: TextStyle(color: ColorsManager.gray17, fontSize: 25),
                 ),
               ),
             ),
             bottom: TabBar(
               tabs: _getTabBars(),
-              indicatorColor: Colors.white,
+              indicatorColor: ColorsManager.gray17,
               padding: EdgeInsets.only(bottom: 10),
             ),
           ),

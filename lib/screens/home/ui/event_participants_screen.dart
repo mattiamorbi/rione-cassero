@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:upper/core/widgets/app_text_form_field.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
-import 'package:upper/models/upper_event.dart';
-import 'package:upper/models/user.dart' as up;
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/models/upper_event.dart';
+import 'package:rione_cassero/models/user.dart' as up;
+import 'package:rione_cassero/theming/colors.dart';
 
 import '../../../routing/routes.dart';
 
@@ -121,15 +122,15 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+        backgroundColor: ColorsManager.background,
         appBar: AppBar(
           title: Text(
             "${widget.upperEvent.title} - Ingressi",
-            style: TextStyle(fontSize: 24, color: Colors.white),
+            style: TextStyle(fontSize: 24, color: ColorsManager.gray17),
           ),
-          foregroundColor: Colors.white,
-          backgroundColor: Color.fromRGBO(17, 17, 17, 1),
-          titleTextStyle: TextStyle(color: Colors.white),
+          foregroundColor: ColorsManager.gray17,
+          backgroundColor: ColorsManager.background,
+          titleTextStyle: TextStyle(color: ColorsManager.gray17),
         ),
         body: Container(
           padding: EdgeInsets.only(left: 10, right: 10),
@@ -155,11 +156,11 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
               ),
               Text(
                 "Prenotati: ${bookedUsers!.length} / Ingressi: ${participantsUsers!.length}",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: ColorsManager.gray17),
               ),
               Expanded(
                 child: _isUsersLoading
-                    ? Center(child: Text('Caricamento utenti in corso...', style: TextStyle(color: Colors.white),))
+                    ? Center(child: Text('Caricamento utenti in corso...', style: TextStyle(color: ColorsManager.gray17),))
                     : _filteredUsers.isEmpty
                         ? Center(child: Text('Nessun utente trovato'))
                         : ListView.builder(
@@ -167,7 +168,7 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                             itemBuilder: (context, index) {
                               final user = _filteredUsers[index];
                               return ListTile(
-                                tileColor: Colors.white,
+                                tileColor: ColorsManager.gray17_03,
                                 textColor: Colors.black,
                                 subtitleTextStyle: TextStyle(
                                   fontSize: 12,

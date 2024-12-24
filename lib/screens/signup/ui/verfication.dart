@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:upper/core/widgets/no_internet.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/routing/routes.dart';
+import 'package:rione_cassero/core/widgets/no_internet.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/routing/routes.dart';
 
 import '../../../theming/colors.dart';
 
@@ -74,7 +74,7 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+      backgroundColor: ColorsManager.background,
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
           final bool connected =
@@ -95,13 +95,13 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
   Widget _newVerificationPage(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+        backgroundColor: ColorsManager.background,
         //appBar: AppBar(
-        //  foregroundColor: Colors.white,
-        //  backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+        //  foregroundColor: ColorsManager.gray17,
+        //  backgroundColor: ColorsManager.background,
         //  title: Text(
         //    "UPPER - Verifica email",
-        //    style: TextStyle(color: Colors.white),
+        //    style: TextStyle(color: ColorsManager.gray17),
         //  ),
         //),
         body: Padding(
@@ -133,7 +133,7 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
                   child: Text(
                     "Verifica e-mail in corso...",
                     style: TextStyle(
-                        color: Colors.white,
+                        color: ColorsManager.gray17,
                         fontSize: 20,
                         fontWeight: FontWeight.bold),
                   )),
@@ -160,7 +160,7 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
                   child: Text(
                     "E-mail verificata",
                     style: TextStyle(
-                        color: Colors.white,
+                        color: ColorsManager.gray17,
                         fontSize: 20,
                         fontWeight: FontWeight.bold),
                   )),
@@ -169,7 +169,7 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
                   child: Text(
                     "Ora puoi accedere al tuo profilo UPPER",
                     style: TextStyle(
-                        color: Colors.white,
+                        color: ColorsManager.gray17,
                         fontSize: 12,
                         fontWeight: FontWeight.bold),
                   )),
@@ -189,13 +189,13 @@ class _VerificaEmailPageState extends State<VerificaEmailPage> {
         width: 200,
         height: 40,
         decoration: BoxDecoration(
-          color: Color.fromRGBO(17, 17, 17, 1),
+          color: ColorsManager.background,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: ColorsManager.gray17, width: 2),
         ),
         child: Center(
             child: Text("Torna al login",
-                style: TextStyle(color: Colors.white, fontSize: 20))),
+                style: TextStyle(color: ColorsManager.gray17, fontSize: 20))),
       ),
       onTap: () {
         context.pushNamedAndRemoveUntil(

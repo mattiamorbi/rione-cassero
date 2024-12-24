@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:upper/theming/colors.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 class AppTextFormField extends StatelessWidget {
   final String hint;
@@ -48,14 +48,14 @@ class AppTextFormField extends StatelessWidget {
         contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 17.h),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.white,
+            color: Color.fromRGBO(17, 17, 17, 0.3),
             width: 1.3.w,
           ),
           borderRadius: BorderRadius.circular(16),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.white,
+            color: ColorsManager.gray17,
             width: 1.3.w,
           ),
           borderRadius: BorderRadius.circular(16),

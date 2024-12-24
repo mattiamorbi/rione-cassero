@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:upper/core/widgets/already_have_account_text.dart';
-import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
-import 'package:upper/core/widgets/progress_indicator.dart' as pi;
-import 'package:upper/core/widgets/terms_and_conditions_text.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
-import 'package:upper/routing/routes.dart';
-import 'package:upper/theming/styles.dart';
+import 'package:rione_cassero/core/widgets/already_have_account_text.dart';
+import 'package:rione_cassero/core/widgets/login_and_signup_animated_form.dart';
+import 'package:rione_cassero/core/widgets/progress_indicator.dart' as pi;
+import 'package:rione_cassero/core/widgets/terms_and_conditions_text.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/theming/styles.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 import '../../../helpers/server_date.dart';
 
@@ -29,7 +30,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(
-          color: Color.fromRGBO(17, 17, 17, 1),
+          color: ColorsManager.background,
           //image: DecorationImage(image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
         ),
         child: Padding(
@@ -40,7 +41,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 Text(
                   'Partecipa ad UPPER',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
+                  style: TextStyle(color: ColorsManager.gray17, fontSize: 20),
                 ),
                 Gap(2.h),
                 Text(

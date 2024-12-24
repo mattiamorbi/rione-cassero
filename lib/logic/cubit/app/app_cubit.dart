@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:upper/models/participant_data.dart';
-import 'package:upper/models/role.dart';
-import 'package:upper/models/upper_event.dart';
-import 'package:upper/models/user.dart' as up;
+import 'package:rione_cassero/models/participant_data.dart';
+import 'package:rione_cassero/models/role.dart';
+import 'package:rione_cassero/models/upper_event.dart';
+import 'package:rione_cassero/models/user.dart' as up;
 
 part 'app_state.dart';
 

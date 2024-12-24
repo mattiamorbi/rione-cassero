@@ -5,12 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
-import 'package:upper/core/widgets/already_have_account_text.dart';
-import 'package:upper/core/widgets/progress_indicator.dart' as pi;
-import 'package:upper/core/widgets/terms_and_conditions_text.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
-import 'package:upper/theming/styles.dart';
-import 'package:upper/screens/forget/ui/widgets/password_reset.dart';
+import 'package:rione_cassero/core/widgets/already_have_account_text.dart';
+import 'package:rione_cassero/core/widgets/progress_indicator.dart' as pi;
+import 'package:rione_cassero/core/widgets/terms_and_conditions_text.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/theming/colors.dart';
+import 'package:rione_cassero/screens/forget/ui/widgets/password_reset.dart';
 
 class ForgetScreen extends StatefulWidget {
   const ForgetScreen({super.key});
@@ -23,7 +23,7 @@ class _ForgetScreenState extends State<ForgetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+      backgroundColor: ColorsManager.background,
       body: SafeArea(
         child: Padding(
           padding:
@@ -41,12 +41,12 @@ class _ForgetScreenState extends State<ForgetScreen> {
                           children: [
                             Text(
                               'Reset',
-                              style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: 24, color: ColorsManager.gray17, fontWeight: FontWeight.bold),
                             ),
                             Gap(10.h),
                             Text(
                               "Inserisci la tua email per resettare la password",
-                              style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.normal),
+                              style: TextStyle(fontSize: 14, color: ColorsManager.gray17, fontWeight: FontWeight.normal),
                             ),
                           ],
                         ),

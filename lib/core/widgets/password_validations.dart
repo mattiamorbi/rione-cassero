@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:upper/theming/colors.dart';
-import 'package:upper/theming/styles.dart';
+import 'package:rione_cassero/theming/colors.dart';
+import 'package:rione_cassero/theming/styles.dart';
 
 class PasswordValidations extends StatelessWidget {
   final bool hasMinLength;

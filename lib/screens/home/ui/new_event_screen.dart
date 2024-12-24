@@ -6,11 +6,11 @@ import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:upper/core/widgets/app_text_form_field.dart';
-import 'package:upper/core/widgets/no_internet.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/models/upper_event.dart';
-import 'package:upper/theming/colors.dart';
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
+import 'package:rione_cassero/core/widgets/no_internet.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/models/upper_event.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 import '../../../helpers/date_time_helper.dart';
 import '../../../routing/routes.dart';
@@ -229,15 +229,15 @@ class _NewEventScreenState extends State<NewEventScreen> {
   Widget _newEventScreen(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+        backgroundColor: ColorsManager.background,
         appBar: AppBar(
-            backgroundColor: Color.fromRGBO(17, 17, 17, 1),
-            foregroundColor: Colors.white,
+            backgroundColor: ColorsManager.background,
+            foregroundColor: ColorsManager.gray17,
             title: Text(
               widget.upperEvent == null
                   ? "UPPER - Nuovo evento"
                   : "UPPER - Modifica evento",
-              style: TextStyle(fontSize: 24, color: Colors.white),
+              style: TextStyle(fontSize: 24, color: ColorsManager.gray17),
             )),
         body: Padding(
           padding: const EdgeInsets.only(
@@ -250,7 +250,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                     widget.upperEvent == null
                         ? "Aggiungi un nuovo evento"
                         : "Modifica evento",
-                    style: TextStyle(fontSize: 15, color: Colors.white),
+                    style: TextStyle(fontSize: 15, color: ColorsManager.gray17),
                   )),
               Form(
                 key: formKey,
@@ -298,7 +298,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                           height: 50,
                           child: Icon(
                             Icons.image,
-                            color: _noImage == true ? Colors.red : Colors.white,
+                            color: _noImage == true ? Colors.red : ColorsManager.gray17,
                           )),
                       onTap: _loadImage),
                   SizedBox(
@@ -310,7 +310,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                         height: 50,
                         child: Icon(
                           Icons.save,
-                          color: Colors.white,
+                          color: ColorsManager.gray17,
                         )),
                     onTap: _uploadToFirebase,
                   ),

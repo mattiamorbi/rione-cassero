@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:upper/core/widgets/app_text_form_field.dart';
-import 'package:upper/core/widgets/password_validations.dart';
-import 'package:upper/helpers/app_regex.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
-import 'package:upper/models/user.dart' as up;
-import 'package:upper/routing/routes.dart';
-import 'package:upper/theming/styles.dart';
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
+import 'package:rione_cassero/core/widgets/password_validations.dart';
+import 'package:rione_cassero/helpers/app_regex.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/models/user.dart' as up;
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/theming/styles.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 import '../../helpers/server_date.dart';
 
@@ -135,7 +136,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                         ? Icons.circle_outlined
                         : Icons.check_circle,
                     color: terms1ApprovalError == false
-                        ? Colors.white
+                        ? ColorsManager.gray17
                         : Colors.red,
                     size: 18,
                   ),
@@ -148,7 +149,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       style: TextStyle(
                           fontSize: 8,
                           color: terms1ApprovalError == false
-                              ? Colors.white
+                              ? ColorsManager.gray17
                               : Colors.red),
                     ),
                   )
@@ -172,7 +173,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                         ? Icons.circle_outlined
                         : Icons.check_circle,
                     color: terms2ApprovalError == false
-                        ? Colors.white
+                        ? ColorsManager.gray17
                         : Colors.red,
                     size: 18,
                   ),
@@ -185,7 +186,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       style: TextStyle(
                           fontSize: 8,
                           color: terms2ApprovalError == false
-                              ? Colors.white
+                              ? ColorsManager.gray17
                               : Colors.red),
                     ),
                   )
@@ -210,7 +211,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                         ? Icons.circle_outlined
                         : Icons.check_circle,
                     color: terms3ApprovalError == false
-                        ? Colors.white
+                        ? ColorsManager.gray17
                         : Colors.red,
                     size: 18,
                   ),
@@ -223,7 +224,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       style: TextStyle(
                           fontSize: 8,
                           color: terms3ApprovalError == false
-                              ? Colors.white
+                              ? ColorsManager.gray17
                               : Colors.red),
                     ),
                   )
@@ -394,13 +395,13 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         width: 200,
         height: 40,
         decoration: BoxDecoration(
-          color: Color.fromRGBO(17, 17, 17, 1),
+          color: ColorsManager.background,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: ColorsManager.gray17, width: 2),
         ),
         child: Center(
-            child: Text("Entra in UPPER",
-                style: TextStyle(color: Colors.white, fontSize: 20))),
+            child: Text("Entra in CASSERO",
+                style: TextStyle(color: ColorsManager.gray17, fontSize: 20))),
       ),
       onTap: () async {
         passwordFocusNode.unfocus();
@@ -554,13 +555,13 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         width: 200,
         height: 40,
         decoration: BoxDecoration(
-          color: Color.fromRGBO(17, 17, 17, 1),
+          color: ColorsManager.background,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: ColorsManager.gray17, width: 2),
         ),
         child: Center(
             child: Text("Iscriviti",
-                style: TextStyle(color: Colors.white, fontSize: 20))),
+                style: TextStyle(color: ColorsManager.gray17, fontSize: 20))),
       ),
       onTap: () async {
         passwordFocusNode.unfocus();

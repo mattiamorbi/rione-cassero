@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:upper/firebase_options.dart';
-import 'package:upper/routing/app_router.dart';
-import 'package:upper/routing/routes.dart';
-import 'package:upper/theming/colors.dart';
+import 'package:rione_cassero/firebase_options.dart';
+import 'package:rione_cassero/routing/app_router.dart';
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 late String initialRoute;
 

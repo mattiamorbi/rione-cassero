@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 class AppTextButton extends StatelessWidget {
   final double? borderRadius;
@@ -33,20 +34,20 @@ class AppTextButton extends StatelessWidget {
         width: buttonWidth,
         height: buttonHeight,
         decoration: BoxDecoration(
-          color: Color.fromRGBO(17, 17, 17, 1),
+          color: ColorsManager.background,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: ColorsManager.gray17, width: 2),
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Visibility(
             visible: buttonText != "",
-            child: Text(buttonText, style: TextStyle(color: Colors.white, fontSize: 20)),
+            child: Text(buttonText, style: TextStyle(color: ColorsManager.gray17, fontSize: 20)),
           ),
           Visibility(
               visible: buttonIcon != null,
               child: Icon(
                 buttonIcon?.icon ?? Icons.add,
-                color: Colors.white,
+                color: ColorsManager.gray17,
               )),
         ]),
       ),

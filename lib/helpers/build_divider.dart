@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:upper/theming/colors.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 class BuildDivider {
   static Widget buildDivider() {

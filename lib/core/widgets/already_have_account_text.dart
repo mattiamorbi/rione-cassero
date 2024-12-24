@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/routing/routes.dart';
-import 'package:upper/theming/styles.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/theming/styles.dart';
 
 class AlreadyHaveAccountText extends StatelessWidget {
   const AlreadyHaveAccountText({super.key});
@@ -25,7 +25,7 @@ class AlreadyHaveAccountText extends StatelessWidget {
               style: TextStyles.font11White400Weight,
             ),
             TextSpan(
-              text: ' Entra in UPPER',
+              text: ' Entra in CASSERO',
               style: TextStyles.font11Blue600Weight,
             ),
           ],

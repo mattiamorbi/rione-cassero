@@ -1,6 +1,6 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:upper/helpers/date_time_helper.dart';
+import 'package:rione_cassero/helpers/date_time_helper.dart';
 
 class UpperEvent {
   final String title;

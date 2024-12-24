@@ -19,7 +19,7 @@ class TextStyles {
   static TextStyle font16White600Weight = TextStyle(
     fontSize: 16.sp,
     fontWeight: FontWeight.w600,
-    color: Colors.white,
+    color: ColorsManager.gray17,
   );
   static TextStyle font13Grey400Weight = TextStyle(
     fontSize: 13.sp,
@@ -34,7 +34,7 @@ class TextStyles {
   static TextStyle font14White400Weight = TextStyle(
     fontSize: 14.sp,
     fontWeight: FontWeight.w400,
-    color: Colors.white,
+    color: ColorsManager.gray17,
   );
   static TextStyle font14Hint500Weight = TextStyle(
     fontSize: 14.sp,
@@ -49,7 +49,7 @@ class TextStyles {
   static TextStyle font14White500Weight = TextStyle(
     fontSize: 14.sp,
     fontWeight: FontWeight.w500,
-    color: Colors.white,
+    color: ColorsManager.gray17,
   );
 
   static TextStyle font15DarkBlue500Weight = TextStyle(
@@ -71,12 +71,17 @@ class TextStyles {
   static TextStyle font11White400Weight = TextStyle(
     fontSize: 11.sp,
     fontWeight: FontWeight.w400,
-    color: Colors.white,
+    color: ColorsManager.gray17,
   );
   static TextStyle font11Blue600Weight = TextStyle(
     fontSize: 11.sp,
     fontWeight: FontWeight.w600,
     color: ColorsManager.mainBlue,
+  );
+  static TextStyle font16Black600Weight = TextStyle(
+    fontSize: 16.sp,
+    fontWeight: FontWeight.w600,
+    color: Color.fromRGBO(17, 17, 17, 1),
   );
   static TextStyle font11MediumLightShadeOfGray400Weight = TextStyle(
     fontSize: 11.sp,

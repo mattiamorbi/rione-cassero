@@ -4,12 +4,12 @@ import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:pretty_qr_code_plus/pretty_qr_code_plus.dart';
-import 'package:upper/core/widgets/app_text_form_field.dart';
-import 'package:upper/core/widgets/no_internet.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/models/upper_event.dart';
-import 'package:upper/models/user.dart' as up;
-import 'package:upper/theming/colors.dart';
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
+import 'package:rione_cassero/core/widgets/no_internet.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/models/upper_event.dart';
+import 'package:rione_cassero/models/user.dart' as up;
+import 'package:rione_cassero/theming/colors.dart';
 
 import '../../../helpers/date_time_helper.dart';
 import '../../../logic/cubit/app/app_cubit.dart';
@@ -34,7 +34,7 @@ class _UserScreenState extends State<UserPage> {
   TextStyle title =
   TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold);
   TextStyle data = TextStyle(
-      color: Colors.white, fontSize: 14, fontWeight: FontWeight.normal);
+      color: ColorsManager.gray17, fontSize: 14, fontWeight: FontWeight.normal);
 
   late String _qrData = "";
 
@@ -51,7 +51,7 @@ class _UserScreenState extends State<UserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+      backgroundColor: ColorsManager.background,
       body: OfflineBuilder(
         connectivityBuilder: (context, value, child) {
           final bool connected =
@@ -100,13 +100,13 @@ class _UserScreenState extends State<UserPage> {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+        backgroundColor: ColorsManager.background,
         appBar: AppBar(
-          foregroundColor: Colors.white,
-          backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+          foregroundColor: ColorsManager.gray17,
+          backgroundColor: ColorsManager.background,
           title: Text(
-            "UPPER - ${widget.user.name} ${widget.user.surname}",
-            style: TextStyle(color: Colors.white),
+            "RIONE CASSERO - ${widget.user.name} ${widget.user.surname}",
+            style: TextStyle(color: ColorsManager.gray17),
           ),
         ),
         body: Padding(
@@ -133,7 +133,7 @@ class _UserScreenState extends State<UserPage> {
                           child: GestureDetector(
                               onTap: _showUserQr,
                               child: Icon(Icons.qr_code,
-                                  color: Colors.white, size: 35))),
+                                  color: ColorsManager.gray17, size: 35))),
 
                     ),
                   )
@@ -255,7 +255,7 @@ class _UserScreenState extends State<UserPage> {
                       style: TextStyle(
                           color: widget.user.cardNumber == 0
                               ? Colors.red
-                              : Colors.white,
+                              : ColorsManager.gray17,
                           fontSize: data.fontSize),
                     ),
                   ],
@@ -276,13 +276,13 @@ class _UserScreenState extends State<UserPage> {
                       children: [
                         Icon(
                           Icons.downloading,
-                          color: Colors.white,
+                          color: ColorsManager.gray17,
                           size: 30,
                         ),
                         Gap(10.w),
                         Text(
                           "Creazione tessera in corso...",
-                          style: TextStyle(color: Colors.white, fontSize: 15),
+                          style: TextStyle(color: ColorsManager.gray17, fontSize: 15),
                         )
                       ],
                     ),
@@ -294,13 +294,13 @@ class _UserScreenState extends State<UserPage> {
                         children: [
                           Icon(
                             Icons.app_registration,
-                            color: Colors.white,
+                            color: ColorsManager.gray17,
                             size: 30,
                           ),
                           Gap(10.w),
                           Text(
                             "Assegna tessera",
-                            style: TextStyle(color: Colors.white, fontSize: 15),
+                            style: TextStyle(color: ColorsManager.gray17, fontSize: 15),
                           )
                         ],
                       ),
@@ -365,7 +365,7 @@ class _UserScreenState extends State<UserPage> {
               width: 320,
               height: 320,
               decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: ColorsManager.gray17,
                   borderRadius: BorderRadius.circular(5)),
               child: Center(
                 child: SizedBox(

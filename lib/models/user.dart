@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:time_machine/time_machine.dart';
-import 'package:upper/helpers/aes_helper.dart';
-import 'package:upper/helpers/date_time_helper.dart';
+import 'package:rione_cassero/helpers/aes_helper.dart';
+import 'package:rione_cassero/helpers/date_time_helper.dart';
 
 class User {
   String? uid;

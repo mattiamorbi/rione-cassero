@@ -8,13 +8,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_web_qrcode_scanner/flutter_web_qrcode_scanner.dart';
 import 'package:gap/gap.dart';
 import 'package:scroll_snap_list/scroll_snap_list.dart';
-import 'package:upper/helpers/aes_helper.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
-import 'package:upper/models/participant_data.dart';
-import 'package:upper/models/upper_event.dart';
-import 'package:upper/models/user.dart' as up;
-import 'package:upper/routing/routes.dart';
+import 'package:rione_cassero/helpers/aes_helper.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/models/participant_data.dart';
+import 'package:rione_cassero/models/upper_event.dart';
+import 'package:rione_cassero/models/user.dart' as up;
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 // ignore: must_be_immutable
 class EventTile extends StatefulWidget {
@@ -199,21 +200,21 @@ class _EventTileState extends State<EventTile> {
               style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: ColorsManager.gray17),
             ),
             Text(
               "${currentEvent.date} - ${currentEvent.time}",
               style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: ColorsManager.gray17),
             ),
             Text(
               currentEvent.place,
               style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: ColorsManager.gray17),
             ),
             Visibility(
               visible: widget.isAdmin & !_loading,
@@ -247,7 +248,7 @@ class _EventTileState extends State<EventTile> {
                       (_participantData.booked)
                           ? Icons.person_remove_alt_1
                           : Icons.person_add_alt_1,
-                      color: Colors.white,
+                      color: ColorsManager.gray17,
                     ),
                     Visibility(visible: !widget.isAdmin, child: Gap(5.w)),
                     Visibility(
@@ -256,7 +257,7 @@ class _EventTileState extends State<EventTile> {
                         (_participantData.booked)
                             ? "Non parteciperò"
                             : "Parteciperò",
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        style: TextStyle(color: ColorsManager.gray17, fontSize: 18),
                       ),
                     )
                   ]),
@@ -367,7 +368,7 @@ class _EventTileState extends State<EventTile> {
               child: Text(
                 "PRENOTATO",
                 style: TextStyle(
-                    color: Colors.white,
+                    color: ColorsManager.gray17,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
               ),
@@ -459,7 +460,7 @@ class _EventTileState extends State<EventTile> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FloatingActionButton(
-                backgroundColor: Color.fromRGBO(17, 17, 17, 1),
+                backgroundColor: ColorsManager.background,
                 onPressed: () {
                   //setState(() {
                   //  _qrMode = 0;
@@ -468,7 +469,7 @@ class _EventTileState extends State<EventTile> {
                 },
                 child: Icon(
                   Icons.arrow_back,
-                  color: Colors.white,
+                  color: ColorsManager.gray17,
                 ),
               ),
               //Gap(15.w),
@@ -482,7 +483,7 @@ class _EventTileState extends State<EventTile> {
               children: [
                 Text(
                   widget.upperEvents[_focusedIndex].title,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: ColorsManager.gray17),
                 ),
                 Gap(25.h),
                 Visibility(
@@ -519,7 +520,7 @@ class _EventTileState extends State<EventTile> {
                     ),
                     Text(
                       "${_user?.name} ${_user?.surname}",
-                      style: TextStyle(color: Colors.white, fontSize: 24),
+                      style: TextStyle(color: ColorsManager.gray17, fontSize: 24),
                     ),
                   ],
                 ),
@@ -533,7 +534,7 @@ class _EventTileState extends State<EventTile> {
                     ),
                     Text(
                       "${_user?.birthdate}",
-                      style: TextStyle(color: Colors.white, fontSize: 24),
+                      style: TextStyle(color: ColorsManager.gray17, fontSize: 24),
                     ),
                   ],
                 ),
@@ -555,7 +556,7 @@ class _EventTileState extends State<EventTile> {
                       style: TextStyle(
                           color: (_user?.getAge() ?? 0) < 18
                               ? Colors.red
-                              : Colors.white,
+                              : ColorsManager.gray17,
                           fontSize: 24),
                     ),
                   ],
@@ -621,7 +622,7 @@ class _EventTileState extends State<EventTile> {
               itemCount: data.length,
               key: sslKey,
               initialIndex: _focusedIndex as double,
-              background: Colors.white,
+              background: ColorsManager.gray17,
               padding: EdgeInsets.all(8.0),
               //dynamicItemOpacity: 0.2,
               //listViewPadding: EdgeInsets.all(8.0),

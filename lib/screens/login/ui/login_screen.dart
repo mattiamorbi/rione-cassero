@@ -5,15 +5,15 @@ import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
-import 'package:upper/core/widgets/login_and_signup_animated_form.dart';
-import 'package:upper/core/widgets/no_internet.dart';
-import 'package:upper/core/widgets/progress_indicator.dart' as pi;
-import 'package:upper/core/widgets/terms_and_conditions_text.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
-import 'package:upper/routing/routes.dart';
-import 'package:upper/screens/login/ui/widgets/do_not_have_account.dart';
-import 'package:upper/theming/colors.dart';
+import 'package:rione_cassero/core/widgets/login_and_signup_animated_form.dart';
+import 'package:rione_cassero/core/widgets/no_internet.dart';
+import 'package:rione_cassero/core/widgets/progress_indicator.dart' as pi;
+import 'package:rione_cassero/core/widgets/terms_and_conditions_text.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/screens/login/ui/widgets/do_not_have_account.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(
-          color: Color.fromRGBO(17, 17, 17, 1),
+          color: ColorsManager.background,
           //image: DecorationImage(
               //image: AssetImage("assets/images/upper.jpeg"), fit: BoxFit.cover),
         ),
@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _loginPage(BuildContext context) {
     return Container(
       constraints: BoxConstraints(minWidth: double.infinity,minHeight: double.infinity),
-      color: Color.fromRGBO(17, 17, 17, 1),
+      color: ColorsManager.background,
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(top: 10.0, right: 40, left: 40, bottom: 10),
@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.max,
                 //crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(width: 200, height: 200, child: Image(image: AssetImage("assets/images/upper_2.png"), fit: BoxFit.fitWidth ,)),
+                  SizedBox(width: 200, height: 200, child: Image(image: AssetImage("assets/images/cassero.jpeg"), fit: BoxFit.fitHeight ,)),
                   SizedBox(height: 20),
                   EmailAndPassword(),
                   Gap(20.h),

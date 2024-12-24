@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
-import 'package:upper/helpers/app_regex.dart';
-import 'package:upper/theming/styles.dart';
-import 'package:upper/core/widgets/app_text_button.dart';
-import 'package:upper/core/widgets/app_text_form_field.dart';
-import 'package:upper/logic/cubit/app/app_cubit.dart';
+import 'package:rione_cassero/helpers/app_regex.dart';
+import 'package:rione_cassero/theming/styles.dart';
+import 'package:rione_cassero/core/widgets/app_text_button.dart';
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
 
 class PasswordReset extends StatefulWidget {
   const PasswordReset({super.key});
@@ -65,7 +65,7 @@ class _PasswordResetState extends State<PasswordReset> {
       buttonWidth: 200,
       buttonHeight: 50,
       buttonText: 'Reset',
-      textStyle: TextStyles.font16White600Weight,
+      textStyle: TextStyles.font16Black600Weight,
       onPressed: () {
         if (formKey.currentState!.validate()) {
           context.read<AppCubit>().resetPassword(emailController.text);

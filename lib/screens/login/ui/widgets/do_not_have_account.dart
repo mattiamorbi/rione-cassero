@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:upper/helpers/extensions.dart';
-import 'package:upper/routing/routes.dart';
+import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/routing/routes.dart';
+import 'package:rione_cassero/theming/colors.dart';
 
 class DoNotHaveAccountText extends StatelessWidget {
   const DoNotHaveAccountText({super.key});
@@ -13,11 +14,11 @@ class DoNotHaveAccountText extends StatelessWidget {
         width: 200,
         height: 40,
         decoration: BoxDecoration(
-          color: Color.fromRGBO(17, 17, 17, 1),
+          color: ColorsManager.background,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: ColorsManager.gray17, width: 2),
         ),
-        child: Center(child: Text("Iscriviti", style: TextStyle(color: Colors.white, fontSize: 20))),
+        child: Center(child: Text("Iscriviti", style: TextStyle(color: ColorsManager.gray17, fontSize: 20))),
 
       ),
       onTap: () => context.pushNamed(Routes.signupScreen),

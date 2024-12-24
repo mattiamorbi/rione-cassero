@@ -53,13 +53,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBLAneTLsBXtf7rvNFGDxvEe62EE22bISQ',
-    appId: '1:548464344018:web:d4b4c7e17e10e1ef3c260b',
-    messagingSenderId: '548464344018',
-    projectId: 'cassero-upper',
-    authDomain: 'cassero-upper.firebaseapp.com',
+    apiKey: 'AIzaSyCdrPOd9sCfHLm6xXRN-kx0spPIHd9_Nbo',
+    appId: '1:666124791496:web:a2e5b2a6fcf57f38153ffd',
+    messagingSenderId: '666124791496',
+    projectId: 'rione-cassero',
+    authDomain: 'rione-cassero.firebaseapp.com',
     //authDomain: 'upperclubx.web.app',
-    storageBucket: 'cassero-upper.appspot.com',
-    measurementId: 'G-T0QJJCKP8C',
+    storageBucket: 'rione-cassero.appspot.com',
+    measurementId: 'G-MW7F50WX5X',
   );
 }

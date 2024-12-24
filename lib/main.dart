@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (_, child) {
         return MaterialApp(
-          title: 'UPPER',
+          title: 'RIONE CASSERO',
           theme: ThemeData(
             useMaterial3: true,
             textSelectionTheme: const TextSelectionThemeData(

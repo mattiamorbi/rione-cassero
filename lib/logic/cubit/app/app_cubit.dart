@@ -14,7 +14,7 @@ class AppCubit extends Cubit<AppState> {
   final FirebaseFirestore firebase = FirebaseFirestore.instance;
 
   final ActionCodeSettings actionCodeSettings = ActionCodeSettings(
-    url: 'https://upperclubx.web.app', // URL di reindirizzamento
+    url: 'https://rione-cassero.web.app', // URL di reindirizzamento
     handleCodeInApp: true, // Gestisci il codice nell'app
   );
 

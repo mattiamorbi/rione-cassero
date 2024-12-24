@@ -75,9 +75,9 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           emailField(),
           passwordField(),
           forgetPasswordTextButton(),
-          Gap(18.h),
+          if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(18.h),
           passwordConfirmationField(),
-          Gap(18.h),
+          if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(18.h),
           genericField(birthplaceController, 'Luogo di nascita',
               'Inserisci un luogo valido'),
           birthPlaceField(),
@@ -87,7 +87,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           capField(),
           genericField(
               telephoneController, 'Telefono', 'Inserisci un telefono valido'),
-          Gap(20.h),
+          if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(20.h),
           termsFields(),
           Gap(20.h),
           PasswordValidations(

@@ -40,7 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Partecipa ad UPPER',
+                  'Partecipa a RIONE CASSERO',
                   style: TextStyle(color: ColorsManager.gray17, fontSize: 20),
                 ),
                 Gap(2.h),

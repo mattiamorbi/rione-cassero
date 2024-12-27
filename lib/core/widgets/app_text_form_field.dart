@@ -29,7 +29,7 @@ class AppTextFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       focusNode: focusNode,
-
+      //textAlign: TextAlign.center,
       validator: (value) {
         return validator(value);
       },

@@ -16,6 +16,7 @@ import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/routing/routes.dart';
 import 'package:rione_cassero/theming/colors.dart';
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 
 // ignore: must_be_immutable
 class EventTile extends StatefulWidget {
@@ -46,6 +47,7 @@ class _EventTileState extends State<EventTile> {
       ParticipantData(booked: false, presence: false);
 
   int _qrMode = 0;
+  int _bookMode = 0;
 
   List<UpperEvent> data = [];
   int _focusedIndex = 0;
@@ -57,6 +59,8 @@ class _EventTileState extends State<EventTile> {
 
   StreamSubscription<List<up.User>?>? _presenceSubscription;
   StreamSubscription<List<up.User>?>? _bookSubscription;
+
+  final TextEditingController _bookEventController = TextEditingController();
 
   @override
   void dispose() {
@@ -158,6 +162,13 @@ class _EventTileState extends State<EventTile> {
     });
   }
 
+  void _toggleBookMode() {
+    setState(() {
+      _bookMode = 1;
+      _bookEventController.text = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
+    });
+  }
+
   Future<void> _toggleBookEvent(int index) async {
     //print(_loggedUser.uid);
     if (kDebugMode) print(_participantData.booked);
@@ -237,8 +248,9 @@ class _EventTileState extends State<EventTile> {
               ),
             ),
             SizedBox(
-              height: 25,
+              height: 5,
             ),
+            _bookMode == 0 ?
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -261,7 +273,7 @@ class _EventTileState extends State<EventTile> {
                       ),
                     )
                   ]),
-                  onTap: () => _toggleBookEvent(_focusedIndex),
+                  onTap: () => _toggleBookMode(),//_toggleBookEvent(_focusedIndex),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
@@ -332,7 +344,26 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
               ],
-            )
+            ) :
+                Column(
+                  children: [
+                    Container(
+                      width: 300,
+                      height: 50,
+                      child: AppTextFormField(
+                        hint: "",
+                        validator: (value) {
+                          String enteredValue = (value ?? '').trim();
+                          _bookEventController.text = enteredValue;
+                          if (enteredValue.isEmpty) {
+                            return "Il valore non può essere nullo";
+                          }
+                        },
+                        controller: _bookEventController,
+                      ),
+                    )
+                  ],
+                )
           ],
         ),
       );

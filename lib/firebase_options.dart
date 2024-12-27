@@ -58,7 +58,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '666124791496',
     projectId: 'rione-cassero',
     authDomain: 'rione-cassero.firebaseapp.com',
-    //authDomain: 'upperclubx.web.app',
     storageBucket: 'rione-cassero.firebasestorage.app',
     measurementId: 'G-MW7F50WX5X',
   );

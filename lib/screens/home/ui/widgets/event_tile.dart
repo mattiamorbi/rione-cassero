@@ -525,20 +525,20 @@ class _EventTileState extends State<EventTile> {
                   ],
                 ),
                 Gap(25.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      "DATA DI NASCITA  ",
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    Text(
-                      "${_user?.birthdate}",
-                      style: TextStyle(color: ColorsManager.gray17, fontSize: 24),
-                    ),
-                  ],
-                ),
-                Gap(25.h),
+                //Row(
+                //  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //  children: [
+                //    Text(
+                //      "DATA DI NASCITA  ",
+                //      style: TextStyle(color: Colors.grey, fontSize: 12),
+                //    ),
+                //    Text(
+                //      "${_user?.birthdate}",
+                //      style: TextStyle(color: ColorsManager.gray17, fontSize: 24),
+                //    ),
+                //  ],
+                //),
+                //Gap(25.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -640,6 +640,8 @@ class _EventTileState extends State<EventTile> {
       );
     }
   }
+
+
 
   Future<void> _loadImage(int index) async {
     try {

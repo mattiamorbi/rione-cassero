@@ -1,6 +1,7 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rione_cassero/helpers/date_time_helper.dart';
+import 'package:http/http.dart' as http;
 
 class UpperEvent {
   final String title;
@@ -37,11 +38,31 @@ class UpperEvent {
     } else this.isToday = false;
   }
 
-  Future<Uint8List?> getEventImage() async {
-    final storageRef = FirebaseStorage.instance.ref();
-    final imageRef = storageRef.child(imagePath);
-    return await imageRef.getData();
-  }
+Future<Uint8List?> getEventImage() async {
+  final storageRef = FirebaseStorage.instance.ref();
+  final imageRef = storageRef.child(imagePath);
+  print(imagePath);
+  return await imageRef.getData();
+}
+
+// Future<Uint8List?> getEventImage() async {
+//   try {
+//     final ref = FirebaseStorage.instance.ref(imagePath);
+//     final url = await ref.getDownloadURL();
+
+//     // Ottieni i dati dell'immagine tramite un HTTP GET
+//     final response = await http.get(Uri.parse(url));
+//     if (response.statusCode == 200) {
+//       return response.bodyBytes;
+//     } else {
+//       throw Exception('Errore nel caricamento immagine: ${response.statusCode}');
+//     }
+//   } catch (e) {
+//     print('Errore: $e');
+//     return null;
+//   }
+// }
+
 
   UpperEvent.fromJson(Map<String, dynamic> json)
       : this(

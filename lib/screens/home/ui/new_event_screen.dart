@@ -151,8 +151,12 @@ class _NewEventScreenState extends State<NewEventScreen> {
       final storageRef = FirebaseStorage.instance.ref();
       var events = FirebaseFirestore.instance.collection('events');
 
+      print("1--");
+
       if (widget.upperEvent == null) {
         final storageRef = FirebaseStorage.instance.ref();
+
+        print("2--");
 
         if (_pickedImage == null) {
           setState(() {
@@ -161,8 +165,11 @@ class _NewEventScreenState extends State<NewEventScreen> {
           return;
         } else {
           final imageRef = storageRef.child("images/${_pickedImage!.name}");
+          print("3--");
           try {
+            print("5--");
             await imageRef.putData(_webImage);
+            print("6--");
           } on FirebaseException catch (e) {
             if (kDebugMode) {
               print("Errore durante il caricamento dell'immagine! $e");
@@ -176,6 +183,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
               time: _timeController.text,
               place: _placeController.text,
               imagePath: "images/${_pickedImage!.name}");
+
+          print("4--");
 
           try {
             await events.doc().set(newUpperEvent.toJson());
@@ -235,8 +244,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
             foregroundColor: ColorsManager.gray17,
             title: Text(
               widget.upperEvent == null
-                  ? "UPPER - Nuovo evento"
-                  : "UPPER - Modifica evento",
+                  ? "Rione Cassero - Nuovo evento"
+                  : "Rione Cassero - Modifica evento",
               style: TextStyle(fontSize: 24, color: ColorsManager.gray17),
             )),
         body: Padding(
@@ -244,14 +253,6 @@ class _NewEventScreenState extends State<NewEventScreen> {
               top: 15.0, bottom: 15.0, left: 40.0, right: 40.0),
           child: SingleChildScrollView(
             child: Column(children: [
-              Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    widget.upperEvent == null
-                        ? "Aggiungi un nuovo evento"
-                        : "Modifica evento",
-                    style: TextStyle(fontSize: 15, color: ColorsManager.gray17),
-                  )),
               Form(
                 key: formKey,
                 child: Column(

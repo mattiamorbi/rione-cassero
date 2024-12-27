@@ -40,11 +40,11 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   TextEditingController surnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-  TextEditingController birthdateController = TextEditingController();
-  TextEditingController birthplaceController = TextEditingController();
-  TextEditingController capController = TextEditingController();
-  TextEditingController cityController = TextEditingController();
+  //TextEditingController addressController = TextEditingController();
+  //TextEditingController birthdateController = TextEditingController();
+  //TextEditingController birthplaceController = TextEditingController();
+  //TextEditingController capController = TextEditingController();
+  //TextEditingController cityController = TextEditingController();
   TextEditingController telephoneController = TextEditingController();
   TextEditingController passwordConfirmationController =
       TextEditingController();
@@ -54,12 +54,12 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   final passwordFocusNode = FocusNode();
   final passwordConfirmationFocusNode = FocusNode();
 
-  bool terms1Approval = false;
-  bool terms1ApprovalError = false;
-  bool terms2Approval = false;
-  bool terms2ApprovalError = false;
-  bool terms3Approval = false;
-  bool terms3ApprovalError = false;
+  //bool terms1Approval = false;
+  //bool terms1ApprovalError = false;
+  //bool terms2Approval = false;
+  //bool terms2ApprovalError = false;
+  //bool terms3Approval = false;
+  //bool terms3ApprovalError = false;
 
   _EmailAndPasswordState();
 
@@ -78,17 +78,17 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(18.h),
           passwordConfirmationField(),
           if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(18.h),
-          genericField(birthplaceController, 'Luogo di nascita',
-              'Inserisci un luogo valido'),
-          birthPlaceField(),
-          genericField(
-              addressController, 'Indirizzo', 'Inserisci un indirizzo valido'),
-          genericField(cityController, 'Citta', 'Inserisci una citta valida'),
-          capField(),
+          //genericField(birthplaceController, 'Luogo di nascita',
+          //    'Inserisci un luogo valido'),
+          //birthPlaceField(),
+          //genericField(
+          //    addressController, 'Indirizzo', 'Inserisci un indirizzo valido'),
+          //genericField(cityController, 'Citta', 'Inserisci una citta valida'),
+          //capField(),
           genericField(
               telephoneController, 'Telefono', 'Inserisci un telefono valido'),
           if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(20.h),
-          termsFields(),
+          //termsFields(),
           Gap(20.h),
           PasswordValidations(
             hasMinLength: hasMinLength,
@@ -108,135 +108,136 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     surnameController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    addressController.dispose();
-    birthdateController.dispose();
-    birthplaceController.dispose();
-    capController.dispose();
-    cityController.dispose();
+    //addressController.dispose();
+    //birthdateController.dispose();
+    //birthplaceController.dispose();
+    //capController.dispose();
+    //cityController.dispose();
     telephoneController.dispose();
     passwordConfirmationController.dispose();
   }
 
-  Widget termsFields() {
-    if (widget.isSignUpPage == true) {
-      return Column(
-        children: [
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                terms1Approval = !terms1Approval;
-                if (terms1Approval) terms1ApprovalError = false;
-              });
-            },
-            child: Row(
-              children: [
-                Row(children: [
-                  Icon(
-                    terms1Approval == false
-                        ? Icons.circle_outlined
-                        : Icons.check_circle,
-                    color: terms1ApprovalError == false
-                        ? ColorsManager.gray17
-                        : Colors.red,
-                    size: 18,
-                  ),
-                  Gap(15.w),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 140,
-                    child: Text(
-                      maxLines: 3,
-                      "Acconsento al trattamento dei miei dati personali e delle categorie particolari di dati personali (Art.2) per finalità connesse al tesseramento alla FEDERITALIA (Art. 1 - lettere a,b,c,d)",
-                      style: TextStyle(
-                          fontSize: 8,
-                          color: terms1ApprovalError == false
-                              ? ColorsManager.gray17
-                              : Colors.red),
-                    ),
-                  )
-                ]),
-              ],
-            ),
-          ),
-          Gap(15.h),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                terms2Approval = !terms2Approval;
-                if (terms2Approval) terms2ApprovalError = false;
-              });
-            },
-            child: Row(
-              children: [
-                Row(children: [
-                  Icon(
-                    terms2Approval == false
-                        ? Icons.circle_outlined
-                        : Icons.check_circle,
-                    color: terms2ApprovalError == false
-                        ? ColorsManager.gray17
-                        : Colors.red,
-                    size: 18,
-                  ),
-                  Gap(15.w),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 140,
-                    child: Text(
-                      maxLines: 3,
-                      "Acconsento al trattamento dei miei dati personali, in particolare immagini e video riprese, per il perseguimento delle finalità (Art. 1 - lettera e)",
-                      style: TextStyle(
-                          fontSize: 8,
-                          color: terms2ApprovalError == false
-                              ? ColorsManager.gray17
-                              : Colors.red),
-                    ),
-                  )
-                ]),
-              ],
-            ),
-          ),
-          Gap(15.h),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                terms3Approval = !terms3Approval;
-                if (terms3Approval) terms3ApprovalError = false;
-              });
-            },
-            child: Row(
-              children: [
-                //"Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
-                Row(children: [
-                  Icon(
-                    terms3Approval == false
-                        ? Icons.circle_outlined
-                        : Icons.check_circle,
-                    color: terms3ApprovalError == false
-                        ? ColorsManager.gray17
-                        : Colors.red,
-                    size: 18,
-                  ),
-                  Gap(15.w),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 140,
-                    child: Text(
-                      maxLines: 3,
-                      "Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
-                      style: TextStyle(
-                          fontSize: 8,
-                          color: terms3ApprovalError == false
-                              ? ColorsManager.gray17
-                              : Colors.red),
-                    ),
-                  )
-                ]),
-              ],
-            ),
-          ),
-        ],
-      );
-    } else
-      return SizedBox.shrink();
-  }
+
+//Widget termsFields() {
+//  if (widget.isSignUpPage == true) {
+//    return Column(
+//      children: [
+//        GestureDetector(
+//          onTap: () {
+//            setState(() {
+//              terms1Approval = !terms1Approval;
+//              if (terms1Approval) terms1ApprovalError = false;
+//            });
+//          },
+//          child: Row(
+//            children: [
+//              Row(children: [
+//                Icon(
+//                  terms1Approval == false
+//                      ? Icons.circle_outlined
+//                      : Icons.check_circle,
+//                  color: terms1ApprovalError == false
+//                      ? ColorsManager.gray17
+//                      : Colors.red,
+//                  size: 18,
+//                ),
+//                Gap(15.w),
+//                SizedBox(
+//                  width: MediaQuery.of(context).size.width - 140,
+//                  child: Text(
+//                    maxLines: 3,
+//                    "Acconsento al trattamento dei miei dati personali e delle categorie particolari di dati personali (Art.2) per finalità connesse al tesseramento alla FEDERITALIA (Art. 1 - lettere a,b,c,d)",
+//                    style: TextStyle(
+//                        fontSize: 8,
+//                        color: terms1ApprovalError == false
+//                            ? ColorsManager.gray17
+//                            : Colors.red),
+//                  ),
+//                )
+//              ]),
+//            ],
+//          ),
+//        ),
+//        Gap(15.h),
+//        GestureDetector(
+//          onTap: () {
+//            setState(() {
+//              terms2Approval = !terms2Approval;
+//              if (terms2Approval) terms2ApprovalError = false;
+//            });
+//          },
+//          child: Row(
+//            children: [
+//              Row(children: [
+//                Icon(
+//                  terms2Approval == false
+//                      ? Icons.circle_outlined
+//                      : Icons.check_circle,
+//                  color: terms2ApprovalError == false
+//                      ? ColorsManager.gray17
+//                      : Colors.red,
+//                  size: 18,
+//                ),
+//                Gap(15.w),
+//                SizedBox(
+//                  width: MediaQuery.of(context).size.width - 140,
+//                  child: Text(
+//                    maxLines: 3,
+//                    "Acconsento al trattamento dei miei dati personali, in particolare immagini e video riprese, per il perseguimento delle finalità (Art. 1 - lettera e)",
+//                    style: TextStyle(
+//                        fontSize: 8,
+//                        color: terms2ApprovalError == false
+//                            ? ColorsManager.gray17
+//                            : Colors.red),
+//                  ),
+//                )
+//              ]),
+//            ],
+//          ),
+//        ),
+//        Gap(15.h),
+//        GestureDetector(
+//          onTap: () {
+//            setState(() {
+//              terms3Approval = !terms3Approval;
+//              if (terms3Approval) terms3ApprovalError = false;
+//            });
+//          },
+//          child: Row(
+//            children: [
+//              //"Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
+//              Row(children: [
+//                Icon(
+//                  terms3Approval == false
+//                      ? Icons.circle_outlined
+//                      : Icons.check_circle,
+//                  color: terms3ApprovalError == false
+//                      ? ColorsManager.gray17
+//                      : Colors.red,
+//                  size: 18,
+//                ),
+//                Gap(15.w),
+//                SizedBox(
+//                  width: MediaQuery.of(context).size.width - 140,
+//                  child: Text(
+//                    maxLines: 3,
+//                    "Acconsento al trattamento dei miei dati personali a soggetti terzi, per finalità promozionali e informaztive (Art. 1 - lettera f)",
+//                    style: TextStyle(
+//                        fontSize: 8,
+//                        color: terms3ApprovalError == false
+//                            ? ColorsManager.gray17
+//                            : Colors.red),
+//                  ),
+//                )
+//              ]),
+//            ],
+//          ),
+//        ),
+//      ],
+//    );
+//  } else
+//    return SizedBox.shrink();
+//}
 
   Widget emailField() {
     return Column(
@@ -261,37 +262,38 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     );
   }
 
-  Widget capField() {
-    if (widget.isSignUpPage == true) {
-      return Column(
-        children: [
-          AppTextFormField(
-            hint: 'CAP',
-            validator: (value) {
-              String cap = (value ?? '').trim();
-              capController.text = cap;
-              var validCap = cap.isNotEmpty && cap.length == 5;
-              try {
-                int.parse(cap);
-                validCap &= true;
-              } on Exception {
-                // Nel caso di CAP non valido
-                validCap = false;
-              }
-              if (!validCap) {
-                return 'Inserisci un CAP valido!';
-              }
-            },
-            controller: capController,
-          ),
-          Gap(18.h),
-        ],
-      );
-    } else {
-      return SizedBox.shrink();
-    }
-  }
+//Widget capField() {
+//  if (widget.isSignUpPage == true) {
+//    return Column(
+//      children: [
+//        AppTextFormField(
+//          hint: 'CAP',
+//          validator: (value) {
+//            String cap = (value ?? '').trim();
+//            capController.text = cap;
+//            var validCap = cap.isNotEmpty && cap.length == 5;
+//            try {
+//              int.parse(cap);
+//              validCap &= true;
+//            } on Exception {
+//              // Nel caso di CAP non valido
+//              validCap = false;
+//            }
+//            if (!validCap) {
+//              return 'Inserisci un CAP valido!';
+//            }
+//          },
+//          controller: capController,
+//        ),
+//        Gap(18.h),
+//      ],
+//    );
+//  } else {
+//    return SizedBox.shrink();
+//  }
+//}
 
+  /*
   Widget birthPlaceField() {
     if (widget.isSignUpPage == true) {
       return Column(
@@ -338,7 +340,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       return SizedBox.shrink();
     }
   }
-
+*/
   Widget forgetPasswordTextButton() {
     if (widget.isSignUpPage == null) {
       return TextButton(
@@ -370,11 +372,11 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       surnameController.text = "Morbidelli";
       emailController.text = "mattia.morbidelli@gmail.com";
       passwordController.text = "Mattia1998";
-      addressController.text = "Via dei Beroardi, 83";
-      birthdateController.text = "15/07/1998";
-      birthplaceController.text = "Arezzo";
-      capController.text = "52043";
-      cityController.text = "Castiglion Fiorentino";
+      //addressController.text = "Via dei Beroardi, 83";
+      //birthdateController.text = "15/07/1998";
+      //birthplaceController.text = "Arezzo";
+      //capController.text = "52043";
+      //cityController.text = "Castiglion Fiorentino";
       telephoneController.text = "3496880713";
       passwordConfirmationController.text = "Mattia1998";
     }
@@ -400,7 +402,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           border: Border.all(color: ColorsManager.gray17, width: 2),
         ),
         child: Center(
-            child: Text("Entra in CASSERO",
+            child: Text("Accedi",
                 style: TextStyle(color: ColorsManager.gray17, fontSize: 20))),
       ),
       onTap: () async {
@@ -567,13 +569,13 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         passwordFocusNode.unfocus();
         passwordConfirmationFocusNode.unfocus();
         if (formKey.currentState!.validate()) {
-          setState(() {
-            terms1ApprovalError = !terms1Approval;
-            terms2ApprovalError = !terms2Approval;
-            terms3ApprovalError = !terms3Approval;
-          });
+          //setState(() {
+          //  terms1ApprovalError = !terms1Approval;
+          //  terms2ApprovalError = !terms2Approval;
+          //  terms3ApprovalError = !terms3Approval;
+          //});
 
-          if (!terms1Approval || !terms2Approval || !terms3Approval) return;
+          //if (!terms1Approval || !terms2Approval || !terms3Approval) return;
 
           // se il servizio web non funziona la prendo dal telefono con lo stesso formato per evitare comportamenti strani dell'app
           widget.currentDate ?? DateTime.parse(DateTime.now().toString().split(".")[0]);
@@ -581,12 +583,12 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           var user = up.User(
             name: capitalize(nameController.text),
             surname: capitalize(surnameController.text),
-            address: capitalize(addressController.text),
-            birthplace: capitalize(birthplaceController.text),
+            //address: capitalize(addressController.text),
+            //birthplace: capitalize(birthplaceController.text),
             email: emailController.text,
-            birthdate: birthdateController.text,
-            cap: capController.text,
-            city: capitalize(cityController.text),
+            //birthdate: birthdateController.text,
+            //cap: capController.text,
+            //city: capitalize(cityController.text),
             telephone: telephoneController.text,
             signUpDate: widget.currentDate.toString(),
             cardNumber: 0,

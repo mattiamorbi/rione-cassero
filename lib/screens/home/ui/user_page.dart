@@ -140,62 +140,62 @@ class _UserScreenState extends State<UserPage> {
                 ],
               ),
               Gap(25.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "DATA DI NASCITA   ",
-                    style: title,
-                  ),
-                  Text(
-                    "${widget.user.birthdate} (${age} anni)",
-                    style: data,
-                  ),
-                ],
-              ),
-              Gap(25.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "LUOGO DI NASCITA   ",
-                    style: title,
-                  ),
-                  Text(
-                    "${widget.user.birthplace}",
-                    style: data,
-                  ),
-                ],
-              ),
-              Gap(25.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "RESIDENZA   ",
-                    style: title,
-                  ),
-                  Text(
-                    "${widget.user.address}",
-                    style: data,
-                  ),
-                ],
-              ),
-              Gap(25.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "CITTA'   ",
-                    style: title,
-                  ),
-                  Text(
-                    "${widget.user.city}  (${widget.user.cap})",
-                    style: data,
-                  ),
-                ],
-              ),
-              Gap(25.h),
+              //Row(
+              //  mainAxisAlignment: MainAxisAlignment.start,
+              //  children: [
+              //    Text(
+              //      "DATA DI NASCITA   ",
+              //      style: title,
+              //    ),
+              //    Text(
+              //      "${widget.user.birthdate} (${age} anni)",
+              //      style: data,
+              //    ),
+              //  ],
+              //),
+              //Gap(25.h),
+              //Row(
+              //  mainAxisAlignment: MainAxisAlignment.start,
+              //  children: [
+              //    Text(
+              //      "LUOGO DI NASCITA   ",
+              //      style: title,
+              //    ),
+              //    Text(
+              //      "${widget.user.birthplace}",
+              //      style: data,
+              //    ),
+              //  ],
+              //),
+              //Gap(25.h),
+              //Row(
+              //  mainAxisAlignment: MainAxisAlignment.start,
+              //  children: [
+              //    Text(
+              //      "RESIDENZA   ",
+              //      style: title,
+              //    ),
+              //    Text(
+              //      "${widget.user.address}",
+              //      style: data,
+              //    ),
+              //  ],
+              //),
+              //Gap(25.h),
+              //Row(
+              //  mainAxisAlignment: MainAxisAlignment.start,
+              //  children: [
+              //    Text(
+              //      "CITTA'   ",
+              //      style: title,
+              //    ),
+              //    Text(
+              //      "${widget.user.city}  (${widget.user.cap})",
+              //      style: data,
+              //    ),
+              //  ],
+              //),
+              //Gap(25.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [

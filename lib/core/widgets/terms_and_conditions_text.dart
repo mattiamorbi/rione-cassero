@@ -13,7 +13,7 @@ class TermsAndConditionsText extends StatelessWidget {
       text: TextSpan(
         children: [
           TextSpan(
-            text: 'Utilizzando UPPER, accetti le nostre',
+            text: 'Iscrivendoti al Rione Cassero, accetti i nostri',
             style: TextStyles.font11White400Weight,
           ),
           TextSpan(

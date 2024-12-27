@@ -218,7 +218,8 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
                                 //),
                                 title: Text('${user.name} ${user.surname}'),
                                 subtitle: Text(
-                                    'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                    //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                    'Email: ${user.email}'),
                               );
                             },
                           ),

@@ -37,18 +37,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           padding: const EdgeInsets.only(top: 10.0, right: 40, left: 40, bottom: 10),
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+
               children: [
-                Text(
-                  'Partecipa a RIONE CASSERO',
-                  style: TextStyle(color: ColorsManager.gray17, fontSize: 20),
-                ),
-                Gap(2.h),
-                Text(
-                  'Iscriviti ora per conoscere in anteprima i nostri eventi!',
-                  style: TextStyles.font14White400Weight,
-                ),
-                Gap(20.h),
+                SizedBox(height: 20),
+                SizedBox(width: 200, height: 200, child: Image(image: AssetImage("assets/images/cassero.jpeg"), fit: BoxFit.fitHeight ,)),
+                SizedBox(height: 20),
                 BlocConsumer<AppCubit, AppState>(
                   buildWhen: (previous, current) => previous != current,
                   listenWhen: (previous, current) => previous != current,

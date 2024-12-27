@@ -32,7 +32,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late String _qrData = "";
+  //late String _qrData = "";
   late bool _isAdmin = false;
   List<UpperEvent> _events = [];
   List<up.User> _users = [];
@@ -77,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     BlocProvider.of<AppCubit>(context);
     _loadUserLevel();
-    _loadQr();
-    _loadEvents();
+    //_loadQr();
+
     //_loadWhatsappLink();
     _listenCardNumber();
   }
@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
     cardSubscription =
         context.read<AppCubit>().watchCardNumber().listen((cardNumber) {
       if (_loggedUser.cardNumber == 0) _loadEvents();
-      _loadQr();
+      //_loadQr();
       setState(() {
         _loggedUser.cardNumber = cardNumber;
         //print("aggiunto utente totale ${_users.length}");
@@ -155,25 +155,31 @@ class _HomeScreenState extends State<HomeScreen> {
     //});
   }
 
-  void _loadQr() async {
-    var user = await context.read<AppCubit>().getUser();
-    _loggedUser = user;
-    setState(() {
-      _qrData = user.getQrData();
-      _isLoggedUserLoading = false;
-    });
-  }
+  //void _loadQr() async {
+  //  var user = await context.read<AppCubit>().getUser();
+  //  _loggedUser = user;
+  //  setState(() {
+  //    _qrData = user.getQrData();
+  //    _isLoggedUserLoading = false;
+  //  });
+  //}
+
 
   void _loadUserLevel() async {
+    var user = await context.read<AppCubit>().getUser();
+    _loggedUser = user;
     var level = await context.read<AppCubit>().getUserLevel();
     setState(() {
       _isAdmin = level == "admin";
     });
     if (_isAdmin)
       _loadUsers();
-    else
+
+    _loadEvents();
+
       setState(() {
         _isUsersLoading = false;
+        _isLoggedUserLoading = false;
       });
   }
 
@@ -195,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
     var tmpEvents = await context.read<AppCubit>().getUpperEvents();
 
     if (kDebugMode) {
-      print(tmpEvents.length);
+      print("TEMP EVENTS LENGTH ${tmpEvents.length}");
     }
 
     if (_isAdmin == false) {
@@ -205,13 +211,14 @@ class _HomeScreenState extends State<HomeScreen> {
         DateTime eDate =
             convertiStringaAData(event.date).add(Duration(days: 1));
         if (eDate.isAfter(DateTime.now()) || event.isToday!) {
-          if (_loggedUser.cardNumber != 0) _events.add(event);
+          //if (_loggedUser.cardNumber != 0) _events.add(event);
+          _events.add(event);
         }
       }
     } else _events = tmpEvents;
 
     if (kDebugMode) {
-      print(_events.length);
+      print("events length ${_events.length}");
     }
 
     //for (int i = 0; i < tmpEvents.length; i++) {
@@ -297,18 +304,48 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Visibility(
             visible: _events.isEmpty,
-            child: Expanded(
+            child: !_isAdmin ? Expanded(
                 child: Center(
                     child: Text(
               textAlign: TextAlign.center,
-              _loggedUser.cardNumber != 0
-                  ? "Nessun evento in programma"
-                  : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
+              //_loggedUser.cardNumber != 0 ?
+                  "Nessun evento in programma",
+              //    : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
                   color: ColorsManager.gray17),
-            ))),
+            ))) :
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        textAlign: TextAlign.center,
+                        //_loggedUser.cardNumber != 0 ?
+                        "Nessun evento in programma",
+                        //    : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            color: ColorsManager.gray17),
+                      ),
+                      Gap(20.h),
+                      GestureDetector(
+                        child: Icon(
+                          Icons.add,
+                          color: ColorsManager.gray17,
+                        ),
+                        onTap: () async {
+                          await context.pushNamed(Routes.newEventScreen,
+                              arguments: null);
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+                )
           ),
 //           Visibility(
 //             visible: _isAdmin ,
@@ -497,7 +534,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             title: Text('${user.name} ${user.surname}'),
                             subtitle: Text(
-                                'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                'Email: ${user.email}'),
                           );
                         },
                       ),
@@ -549,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _profileWidget() {
     if (_isLoggedUserLoading == false) {
-      if (qrTapMode == false) {
+      //if (qrTapMode == false) {
         return SingleChildScrollView(
           padding: EdgeInsets.all(8.0),
           physics: ClampingScrollPhysics(), // Consente solo scroll verticale
@@ -560,100 +598,100 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: 3,
               ),
-              Text(
-                "Mostra questo QR e un documento d'identità per entrare!",
-                style: TextStyle(fontSize: 16, color: ColorsManager.gray17),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Container(
-                width: 320,
-                height: 320,
-                decoration: BoxDecoration(
-                    color: ColorsManager.gray17_03,
-                    borderRadius: BorderRadius.circular(5)),
-                child: Center(
-                  child: SizedBox(
-                    width: 320,
-                    child: Center(
-                        child: _loggedUser.cardNumber != 0
-                            ? GestureDetector(
-                                onTap: _toggleTapQr,
-                                child: PrettyQrPlus(
-                                  data: _qrData,
-                                  size: 290,
-                                  elementColor: Colors.black,
-                                  roundEdges: false,
-                                  typeNumber: null,
-                                  //decoration: const PrettyQrDecoration(
-                                  //  background: ColorsManager.gray17,
-                                  //),
-                                ),
-                              )
-                            : Center(
-                                child: Text(
-                                  "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              )),
-                  ),
-                ),
-              ),
-              Container(
-                width: 320,
-                child: Center(
-                  child: Row(children: [
-                    Text(
-                      _loggedUser.uid!,
-                      style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
-                      textAlign: TextAlign.start,
-                    ),
-                    Gap(10.w),
-                    Visibility(
-                      visible: _loggedUser.cardNumber != 0,
-                      child: Expanded(
-                        child: Text(
-                          _loggedUser.cardNumber.toString(),
-                          style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
-                          textAlign: TextAlign.end,
-                        ),
-                      ),
-                    ),
-                  ]),
-                ),
-              ),
-              Gap(20.h),
-              Visibility(
-                visible: whatsappGroupLink != "" &&
-                    isMobileDevice() &&
-                    _loggedUser.cardNumber != 0,
-                child: GestureDetector(
-                  onTap: _redirectWhatsapp,
-                  child: Container(
-                    width: 320,
-                    height: 60,
-                    padding: const EdgeInsets.only(
-                        right: 8.0, left: 8.0, bottom: 2.0, top: 2.0),
-                    decoration: BoxDecoration(
-                        color: ColorsManager.gray17,
-                        borderRadius: BorderRadius.circular(5)),
-                    child: Row(
-                      children: [
-                        //Icon(Icons.message),
-                        Image(image: AssetImage("assets/images/whatsapp.gif")),
-                        Gap(15.w),
-                        Text("Unisciti al gruppo Whatsapp",
-                            style: TextStyle(fontWeight: FontWeight.normal)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              //Text(
+              //  "Mostra questo QR e un documento d'identità per entrare!",
+              //  style: TextStyle(fontSize: 16, color: ColorsManager.gray17),
+              //  textAlign: TextAlign.center,
+              //),
+              //SizedBox(
+              //  height: 20,
+              //),
+              //Container(
+              //  width: 320,
+              //  height: 320,
+              //  decoration: BoxDecoration(
+              //      color: ColorsManager.gray17_03,
+              //      borderRadius: BorderRadius.circular(5)),
+              //  child: Center(
+              //    child: SizedBox(
+              //      width: 320,
+              //      child: Center(
+              //          child: _loggedUser.cardNumber != 0
+              //              ? GestureDetector(
+              //                  onTap: _toggleTapQr,
+              //                  child: PrettyQrPlus(
+              //                    data: _qrData,
+              //                    size: 290,
+              //                    elementColor: Colors.black,
+              //                    roundEdges: false,
+              //                    typeNumber: null,
+              //                    //decoration: const PrettyQrDecoration(
+              //                    //  background: ColorsManager.gray17,
+              //                    //),
+              //                  ),
+              //                )
+              //              : Center(
+              //                  child: Text(
+              //                    "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
+              //                    textAlign: TextAlign.center,
+              //                    style: TextStyle(
+              //                      fontSize: 20,
+              //                    ),
+              //                  ),
+              //                )),
+              //    ),
+              //  ),
+              //),
+              //Container(
+              //  width: 320,
+              //  child: Center(
+              //    child: Row(children: [
+              //      Text(
+              //        _loggedUser.uid!,
+              //        style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
+              //        textAlign: TextAlign.start,
+              //      ),
+              //      Gap(10.w),
+              //      Visibility(
+              //        visible: _loggedUser.cardNumber != 0,
+              //        child: Expanded(
+              //          child: Text(
+              //            _loggedUser.cardNumber.toString(),
+              //            style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
+              //            textAlign: TextAlign.end,
+              //          ),
+              //        ),
+              //      ),
+              //    ]),
+              //  ),
+              //),
+              //Gap(20.h),
+              //Visibility(
+              //  visible: whatsappGroupLink != "" &&
+              //      isMobileDevice() &&
+              //      _loggedUser.cardNumber != 0,
+              //  child: GestureDetector(
+              //    onTap: _redirectWhatsapp,
+              //    child: Container(
+              //      width: 320,
+              //      height: 60,
+              //      padding: const EdgeInsets.only(
+              //          right: 8.0, left: 8.0, bottom: 2.0, top: 2.0),
+              //      decoration: BoxDecoration(
+              //          color: ColorsManager.gray17,
+              //          borderRadius: BorderRadius.circular(5)),
+              //      child: Row(
+              //        children: [
+              //          //Icon(Icons.message),
+              //          Image(image: AssetImage("assets/images/whatsapp.gif")),
+              //          Gap(15.w),
+              //          Text("Unisciti al gruppo Whatsapp",
+              //              style: TextStyle(fontWeight: FontWeight.normal)),
+              //        ],
+              //      ),
+              //    ),
+              //  ),
+              //),
               Gap(30.h),
               Align(
                 alignment: AlignmentDirectional.bottomCenter,
@@ -671,26 +709,26 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         );
-      } else {
-        return Container(
-          color: ColorsManager.gray17,
-          child: Center(
-            child: GestureDetector(
-              onTap: _toggleTapQr,
-              child: PrettyQrPlus(
-                data: _qrData,
-                size: MediaQuery.of(context).size.width - 10,
-                elementColor: Colors.black,
-                roundEdges: false,
-                typeNumber: null,
-                //decoration: const PrettyQrDecoration(
-                //  background: ColorsManager.gray17,
-                //),
-              ),
-            ),
-          ),
-        );
-      }
+      //} else {
+      //  return Container(
+      //    color: ColorsManager.gray17,
+      //    child: Center(
+      //      child: GestureDetector(
+      //        onTap: _toggleTapQr,
+      //        child: PrettyQrPlus(
+      //          data: _qrData,
+      //          size: MediaQuery.of(context).size.width - 10,
+      //          elementColor: Colors.black,
+      //          roundEdges: false,
+      //          typeNumber: null,
+      //          //decoration: const PrettyQrDecoration(
+      //          //  background: ColorsManager.gray17,
+      //          //),
+      //        ),
+      //      ),
+      //    ),
+      //  );
+      //}
     } else {
       return Center(
         child: Image(image: AssetImage("assets/images/loading.gif")),

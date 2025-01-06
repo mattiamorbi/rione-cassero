@@ -58,8 +58,6 @@ class AppCubit extends Cubit<AppState> {
     emit(UserSignedOut());
   }
 
-
-
   Future<void> signUpWithEmail(up.User user, String password) async {
     emit(AuthLoading());
     try {
@@ -80,7 +78,8 @@ class AppCubit extends Cubit<AppState> {
 
   // Funzione per ottenere un nuovo indice incrementale
   Future<int> getNewIndex() async {
-    final DocumentReference counterDoc = firebase.collection('cardsNumber').doc('index');
+    final DocumentReference counterDoc =
+        firebase.collection('cardsNumber').doc('index');
 
     return firebase.runTransaction((transaction) async {
       // Recupera il contatore attuale
@@ -118,6 +117,79 @@ class AppCubit extends Cubit<AppState> {
     await eventsParticipants
         .doc(_auth.currentUser!.uid)
         .set({'booked': true, 'presence': tempData.presence});
+  }
+
+  Future<void> bookEventCassero(
+      String eventId, String bookName, int bookNumber) async {
+    //var tempData = await getParticipantData(eventId, user);
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
+
+    // Filtra per il documento che contiene l'uid dell'utente corrente
+    final querySnapshot = await eventsParticipants
+        .orderBy(FieldPath.documentId)
+        .startAt([_auth.currentUser!.uid]) // Inizia con il prefisso specificato
+        .get();
+
+    // Restituisci il numero di documenti trovati
+    int number = querySnapshot.docs.length;
+
+    await eventsParticipants
+        .doc("${_auth.currentUser!.uid}_$number")
+        .set({'uid': _auth.currentUser!.uid, 'bookUserName':_auth.currentUser!.displayName!, 'name': bookName, 'number': bookNumber});
+        //.set({'name': bookName, 'number': bookNumber});
+  }
+
+  Future<List<ParticipantDataCassero>> getBookEventCassero(
+      String eventId, bool admin) async {
+    List<ParticipantDataCassero> myBooks = [];
+    //var tempData = await getParticipantData(eventId, user);
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
+
+    // Filtra per il documento che contiene l'uid dell'utente corrente
+    var querySnapshot = null;
+    if (!admin) {
+      querySnapshot = await eventsParticipants
+          .orderBy(FieldPath.documentId)
+          .startAt(
+              [_auth.currentUser!.uid]) // Inizia con il prefisso specificato
+          .get();
+    } else {
+      querySnapshot =
+          await eventsParticipants.orderBy(FieldPath.documentId).get();
+    }
+
+    for (var doc in querySnapshot.docs) {
+      //var event = UpperEvent.fromJson(doc.data());
+      //print(doc.id);
+      var bookInfo = ParticipantDataCassero.fromJson(doc.data());
+      //bookInfo?.uid = doc.id.split("_")[0];
+      //bookInfo?.bookUserName = _auth.currentUser!.displayName!;
+      myBooks.add(bookInfo!);
+    }
+
+    return myBooks;
+  }
+
+
+
+  Stream<List<ParticipantDataCassero?>> getBookEventCasseroStream(
+      String eventId, bool admin) async* {
+    final snapshotStream =
+    firebase.collection('events').doc(eventId).collection("participants").snapshots();
+
+    await for (final snapshot in snapshotStream) {
+      final bookList = snapshot.docs.map((doc) {
+        if (!admin) {
+          // questo non funziona
+          if (doc.id.startsWith(_auth.currentUser!.uid)) return ParticipantDataCassero.fromJson(doc.data());
+        } else return ParticipantDataCassero.fromJson(doc.data());
+        return null;
+      }).toList();
+
+      yield bookList;
+    }
   }
 
   Future<void> unBookEvent(String eventId, up.User? user) async {
@@ -300,23 +372,28 @@ class AppCubit extends Cubit<AppState> {
 
   Stream<List<up.User>> getUsers() async* {
     // Precarica i ruoli in una mappa
-    final rolesSnapshot = await FirebaseFirestore.instance.collection('roles').get();
-    final rolesMap = {for (var doc in rolesSnapshot.docs) doc.id: doc.data()['name']};
+    final rolesSnapshot =
+        await FirebaseFirestore.instance.collection('roles').get();
+    final rolesMap = {
+      for (var doc in rolesSnapshot.docs) doc.id: doc.data()['name']
+    };
 
     // Ottieni il flusso degli utenti
-    final snapshotStream = FirebaseFirestore.instance.collection('users').snapshots();
+    final snapshotStream =
+        FirebaseFirestore.instance.collection('users').snapshots();
 
     await for (final snapshot in snapshotStream) {
       final userList = snapshot.docs.map((doc) {
-        final roleName = rolesMap[doc.id] ?? ''; // Recupera il ruolo dalla mappa
+        final roleName =
+            rolesMap[doc.id] ?? ''; // Recupera il ruolo dalla mappa
         final isAdmin = (roleName == 'admin');
-        return up.User.fromJson(doc.data(), parUid: doc.id, parIsAdmin: isAdmin);
+        return up.User.fromJson(doc.data(),
+            parUid: doc.id, parIsAdmin: isAdmin);
       }).toList();
 
       yield userList;
     }
   }
-
 
   Future<List<up.User>?> getEventsParticipant(
       String eventId, List<up.User> allUsers) async {

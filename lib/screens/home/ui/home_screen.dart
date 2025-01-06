@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _listenCardNumber() {
     cardSubscription =
         context.read<AppCubit>().watchCardNumber().listen((cardNumber) {
-      if (_loggedUser.cardNumber == 0) _loadEvents();
+      //if (_loggedUser.cardNumber == 0) _loadEvents();
       //_loadQr();
       setState(() {
         _loggedUser.cardNumber = cardNumber;
@@ -205,8 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_isAdmin == false) {
+      _events.clear();
       // mostro solo eventi futuri
-      for (UpperEvent event in tmpEvents) {
+      //for (UpperEvent event in tmpEvents) {
+      for (int i = 0; i< tmpEvents.length; i++) {
+        var event = tmpEvents[i];
         event.checkTodayDate();
         DateTime eDate =
             convertiStringaAData(event.date).add(Duration(days: 1));

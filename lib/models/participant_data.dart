@@ -17,3 +17,27 @@ class ParticipantData {
     return {'booked': booked, 'presence': presence};
   }
 }
+
+class ParticipantDataCassero {
+  late String name;
+  String bookUserName;
+  int number;
+  String? uid;
+
+  ParticipantDataCassero({this.uid, required this.bookUserName, required this.name, required this.number});
+
+  static ParticipantDataCassero? fromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+
+    return ParticipantDataCassero(
+      uid: json['uid'] == null ? "" : json['uid']!,
+      bookUserName: json['bookUserName'] == null ? "" : json['bookUserName']!,
+      name: json['name'] == null ? "" : json['name']!,
+      number: json['number'] == null ? 0 : json['number']! as int,
+    );
+  }
+
+  Map<String, Object?> toJson() {
+    return {'uid': uid, 'bookUserName':bookUserName, 'name': name, 'number': number};
+  }
+}

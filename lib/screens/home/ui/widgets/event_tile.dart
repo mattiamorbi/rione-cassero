@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html' as html;
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_web_qrcode_scanner/flutter_web_qrcode_scanner.dart';
 import 'package:gap/gap.dart';
-import 'package:scroll_snap_list/scroll_snap_list.dart';
+import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/helpers/aes_helper.dart';
 import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
@@ -16,7 +18,7 @@ import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/routing/routes.dart';
 import 'package:rione_cassero/theming/colors.dart';
-import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
+import 'package:scroll_snap_list/scroll_snap_list.dart';
 
 // ignore: must_be_immutable
 class EventTile extends StatefulWidget {
@@ -48,17 +50,23 @@ class _EventTileState extends State<EventTile> {
 
   int _qrMode = 0;
   int _bookMode = 0;
+  int _editBookNameMode = 0;
+  String bookName = "";
+  int bookNumber = 1;
 
   List<UpperEvent> data = [];
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
 
   List<up.User>? _participantUsers = [];
+  List<ParticipantDataCassero?> _myEvents = [];
   List<up.User>? _bookedUsers = [];
   bool _loading = true;
 
   StreamSubscription<List<up.User>?>? _presenceSubscription;
   StreamSubscription<List<up.User>?>? _bookSubscription;
+
+  StreamSubscription<List<ParticipantDataCassero?>>? _eventBookSubscription;
 
   final TextEditingController _bookEventController = TextEditingController();
 
@@ -92,24 +100,17 @@ class _EventTileState extends State<EventTile> {
   //}
 
   void _loadEventSubscription(int index) {
-    _presenceSubscription = context
+    _eventBookSubscription?.cancel();
+    _eventBookSubscription = context
         .read<AppCubit>()
-        .getEventsParticipantStream(
-            widget.upperEvents[index].id!, widget.allUsers)
+        .getBookEventCasseroStream(
+            widget.upperEvents[index].id!, widget.isAdmin)
         .listen((snapshot) {
       setState(() {
-        _participantUsers = snapshot;
+        _myEvents = snapshot;
       });
     });
 
-    _bookSubscription = context
-        .read<AppCubit>()
-        .getEventsBookStream(widget.upperEvents[index].id!, widget.allUsers)
-        .listen((snapshot) {
-      setState(() {
-        _bookedUsers = snapshot;
-      });
-    });
   }
 
   Future<void> _onItemFocus(int index) async {
@@ -123,15 +124,19 @@ class _EventTileState extends State<EventTile> {
     });
 
     //print(_loggedUser.name);
-    _participantData = await context
-        .read<AppCubit>()
-        .getParticipantData(widget.upperEvents[index].id!, widget.loggedUser);
-    if (kDebugMode) {
-      print(_participantData.booked);
-      print(_participantData.presence);
-    }
-    _participantUsers?.clear();
-    _bookedUsers?.clear();
+    //_participantData = await context
+    //    .read<AppCubit>()
+    //    .getParticipantData(widget.upperEvents[index].id!, widget.loggedUser);
+    //if (kDebugMode) {
+    //  print(_participantData.booked);
+    //  print(_participantData.presence);
+    //}
+    //_participantUsers?.clear();
+    //_bookedUsers?.clear();
+
+    //_myEvents = await context
+    //    .read<AppCubit>()
+    //    .getBookEventCassero(widget.upperEvents[_focusedIndex].id!, widget.isAdmin);
 
     if (widget.isAdmin == true) {
       _presenceSubscription?.cancel();
@@ -165,8 +170,24 @@ class _EventTileState extends State<EventTile> {
   void _toggleBookMode() {
     setState(() {
       _bookMode = 1;
+      bookName = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
+      bookNumber = 1;
       _bookEventController.text = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
     });
+  }
+
+  void _editBookName() {
+    if (_editBookNameMode == 1) {
+      setState(() {
+        _editBookNameMode = 0;
+        bookName = _bookEventController.text;
+      });
+    } else {
+      setState(() {
+        _editBookNameMode = 1;
+        _bookEventController.text = bookName;
+      });
+    }
   }
 
   Future<void> _toggleBookEvent(int index) async {
@@ -248,9 +269,8 @@ class _EventTileState extends State<EventTile> {
               ),
             ),
             SizedBox(
-              height: 5,
+              height: 15,
             ),
-            _bookMode == 0 ?
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -269,11 +289,13 @@ class _EventTileState extends State<EventTile> {
                         (_participantData.booked)
                             ? "Non parteciperò"
                             : "Parteciperò",
-                        style: TextStyle(color: ColorsManager.gray17, fontSize: 18),
+                        style: TextStyle(
+                            color: ColorsManager.gray17, fontSize: 18),
                       ),
                     )
                   ]),
-                  onTap: () => _toggleBookMode(),//_toggleBookEvent(_focusedIndex),
+                  onTap: () =>
+                      _toggleBookMode(), //_toggleBookEvent(_focusedIndex),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
@@ -298,7 +320,11 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin & !_loading & (currentEvent.isToday! || (widget.loggedUser.name == 'Mattia' && widget.loggedUser.surname == 'Morbidelli' )),
+                  visible: widget.isAdmin &
+                      !_loading &
+                      (currentEvent.isToday! ||
+                          (widget.loggedUser.name == 'Mattia' &&
+                              widget.loggedUser.surname == 'Morbidelli')),
                   child: GestureDetector(
                     onTap: _enableQrMode,
                     child: Icon(
@@ -308,7 +334,11 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
                 Visibility(
-                  visible: widget.isAdmin & !_loading & (currentEvent.isToday! || (widget.loggedUser.name == 'Mattia' && widget.loggedUser.surname == 'Morbidelli' )),
+                  visible: widget.isAdmin &
+                      !_loading &
+                      (currentEvent.isToday! ||
+                          (widget.loggedUser.name == 'Mattia' &&
+                              widget.loggedUser.surname == 'Morbidelli')),
                   child: SizedBox(
                     width: 20,
                   ),
@@ -344,26 +374,7 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
               ],
-            ) :
-                Column(
-                  children: [
-                    Container(
-                      width: 300,
-                      height: 50,
-                      child: AppTextFormField(
-                        hint: "",
-                        validator: (value) {
-                          String enteredValue = (value ?? '').trim();
-                          _bookEventController.text = enteredValue;
-                          if (enteredValue.isEmpty) {
-                            return "Il valore non può essere nullo";
-                          }
-                        },
-                        controller: _bookEventController,
-                      ),
-                    )
-                  ],
-                )
+            )
           ],
         ),
       );
@@ -375,37 +386,69 @@ class _EventTileState extends State<EventTile> {
     }
   }
 
+  bool isMobileDevice() {
+    final userAgent = html.window.navigator.userAgent.toLowerCase();
+    final width = window.physicalSize.width / window.devicePixelRatio;
+
+    // Usa user agent per la verifica primaria
+    if (userAgent.contains('mobile') ||
+        userAgent.contains('android') ||
+        userAgent.contains('iphone')) {
+      return true;
+    }
+
+    // Verifica secondaria con larghezza schermo
+    return width < 600;
+  }
+
   Widget _buildListItem(BuildContext context, int index) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 5),
-      width: 400,
-      height: 400,
-      child: InkWell(
-        onTap: () {
-          sslKey.currentState!.focusToItem(index);
-        },
-        child: Stack(children: [
-          Center(child: Image(image: _image[index].image)),
-          Visibility(
-            visible: _participantData.booked &&
-                index == _focusedIndex &&
-                _loading == false,
-            child: Container(
-              padding: EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                "PRENOTATO",
-                style: TextStyle(
-                    color: ColorsManager.gray17,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
+    return GestureDetector(
+      onTap: () async => {
+
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 5),
+        width: isMobileDevice() ? window.display.size.width - 30 : 400,
+        height: isMobileDevice() ? window.display.size.width - 30 : 400,
+        child: InkWell(
+          onTap: () async {
+            sslKey.currentState!.focusToItem(index);
+            if (_myEvents.isNotEmpty)
+            {
+              await context.pushNamed(
+                Routes.viewBookScreen,
+                arguments: {
+                  'upperEvent': widget.upperEvents[index],
+                  'bookData': _myEvents,
+                  //'bookedUsers': _bookedUsers,
+                  //'participantsUsers': _participantUsers,
+                },
+              );
+            }
+          },
+          child: Stack(children: [
+            Center(child: Image(image: _image[index].image)),
+            Visibility(
+              visible: _myEvents.length > 0 &&
+                  index == _focusedIndex &&
+                  _loading == false,
+              child: Container(
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  "PRENOTATO x${getTotalBookPeople(_myEvents)}",
+                  style: TextStyle(
+                      color: ColorsManager.gray17,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-          ),
-        ]),
+          ]),
+        ),
       ),
     );
   }
@@ -551,7 +594,8 @@ class _EventTileState extends State<EventTile> {
                     ),
                     Text(
                       "${_user?.name} ${_user?.surname}",
-                      style: TextStyle(color: ColorsManager.gray17, fontSize: 24),
+                      style:
+                          TextStyle(color: ColorsManager.gray17, fontSize: 24),
                     ),
                   ],
                 ),
@@ -633,13 +677,14 @@ class _EventTileState extends State<EventTile> {
 
   @override
   Widget build(BuildContext context) {
-    if (_qrMode == 0) {
+    if (_bookMode == 0) {
       return Column(
         children: <Widget>[
           Expanded(
             child: ScrollSnapList(
               dynamicItemSize: true,
               margin: EdgeInsets.symmetric(vertical: 10),
+
               onItemFocus: (index) {
                 setState(() {
                   _focusedIndex = index;
@@ -648,13 +693,13 @@ class _EventTileState extends State<EventTile> {
               },
               //
               // },
-              itemSize: 410,
+              itemSize: isMobileDevice() ? window.display.size.width - 30 : 400,
               itemBuilder: _buildListItem,
               itemCount: data.length,
               key: sslKey,
               initialIndex: _focusedIndex as double,
               background: ColorsManager.gray17,
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.only(top: 8.0),
               //dynamicItemOpacity: 0.2,
               //listViewPadding: EdgeInsets.all(8.0),
             ),
@@ -663,16 +708,184 @@ class _EventTileState extends State<EventTile> {
         ],
       );
     } else {
-      return Container(
-        height: 400,
-        padding: EdgeInsets.only(bottom: 20),
-        width: MediaQuery.of(context).size.width - 20,
-        child: _qrCodeReaderWidget(),
+      // lettore di codici a barre
+      //return Container(
+      //  height: 400,
+      //  padding: EdgeInsets.only(bottom: 20),
+      //  width: MediaQuery.of(context).size.width - 20,
+      //  child: _qrCodeReaderWidget(),
+      //);
+      var currentEvent = data[_focusedIndex];
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 220,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 100,
+                  height: 200,
+                  child: Image(
+                      image: _image[_focusedIndex].image,
+                      fit: BoxFit.fitHeight),
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      currentEvent.title,
+                      style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: ColorsManager.gray17),
+                    ),
+                    Text(
+                      "${currentEvent.date} - ${currentEvent.time}",
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: ColorsManager.gray17),
+                    ),
+                    Text(
+                      currentEvent.place,
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: ColorsManager.gray17),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                    child: Text(
+                  "Aggiungi la tua prenotazione",
+                  style: TextStyle(
+                      color: Color.fromRGBO(50, 50, 50, 1), fontSize: 15),
+                )),
+                Gap(10.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _editBookNameMode == 0
+                          ? Text(
+                              bookName,
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 20),
+                            )
+                          : AppTextFormField(
+                              hint: "",
+                              validator: (value) {
+                                String enteredValue = (value ?? '').trim();
+                                _bookEventController.text = enteredValue;
+                                if (enteredValue.isEmpty) {
+                                  return "Il valore non può essere nullo";
+                                }
+                              },
+                              controller: _bookEventController,
+                            ),
+                    ),
+                    GestureDetector(
+                      child: Icon(
+                          _editBookNameMode == 0 ? Icons.edit : Icons.save,
+                          size: 20),
+                      onTap: _editBookName,
+                    )
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                      child: Icon(
+                        Icons.remove,
+                        size: 25,
+                      ),
+                      onTap: () => setState(() {
+                        bookNumber--;
+                        if (bookNumber <= 1) bookNumber = 1;
+                      }),
+                    ),
+                    Text(
+                      bookNumber.toString(),
+                      style: TextStyle(fontSize: 30),
+                    ),
+                    GestureDetector(
+                      child: Icon(
+                        Icons.add,
+                        size: 25,
+                      ),
+                      onTap: () => setState(() {
+                        bookNumber++;
+                      }),
+                    ),
+                  ],
+                ),
+                Gap(20.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      child: Icon(
+                        Icons.undo,
+                        size: 25,
+                      ),
+                      onTap: () => setState(() {
+                        _bookMode = 0;
+                      }),
+                    ),
+                    Gap(50.w),
+                    GestureDetector(
+                      child: Icon(Icons.save, size: 25),
+                      onTap: _bookEventSave,
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )
+        ],
       );
     }
   }
 
+  int getTotalBookPeople(List<ParticipantDataCassero?> list) {
+    int sum = 0;
+    for (var book in list) {
+      //var event = UpperEvent.fromJson(doc.data());
+      //print(doc.id);
+      if (book != null) sum += book.number;
+    }
+    return sum;
+  }
 
+  Future<void> _bookEventSave() async {
+    await context.read<AppCubit>().bookEventCassero(
+        widget.upperEvents[_focusedIndex].id!,
+        _bookEventController.text,
+        bookNumber);
+
+    //_myEvents = await context
+    //    .read<AppCubit>()
+    //    .getBookEventCassero(widget.upperEvents[_focusedIndex].id!, widget.isAdmin);
+
+    setState(() {
+      _bookMode = 0;
+    });
+  }
 
   Future<void> _loadImage(int index) async {
     try {
@@ -701,8 +914,8 @@ class _EventTileState extends State<EventTile> {
       arguments: {
         'upperEvent': widget.upperEvents[index],
         'allUsers': widget.allUsers,
-       //'bookedUsers': _bookedUsers,
-       //'participantsUsers': _participantUsers,
+        //'bookedUsers': _bookedUsers,
+        //'participantsUsers': _participantUsers,
       },
     );
   }

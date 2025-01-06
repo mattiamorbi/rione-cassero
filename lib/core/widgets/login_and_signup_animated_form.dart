@@ -578,7 +578,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           //if (!terms1Approval || !terms2Approval || !terms3Approval) return;
 
           // se il servizio web non funziona la prendo dal telefono con lo stesso formato per evitare comportamenti strani dell'app
-          widget.currentDate ?? DateTime.parse(DateTime.now().toString().split(".")[0]);
+          widget.currentDate ??= DateTime.parse(DateTime.now().toString().split(".")[0]);
 
           var user = up.User(
             name: capitalize(nameController.text),

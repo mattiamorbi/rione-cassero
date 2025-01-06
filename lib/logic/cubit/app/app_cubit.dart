@@ -174,18 +174,14 @@ class AppCubit extends Cubit<AppState> {
 
 
 
-  Stream<List<ParticipantDataCassero?>> getBookEventCasseroStream(
+  Stream<List<ParticipantDataCassero>> getBookEventCasseroStream(
       String eventId, bool admin) async* {
     final snapshotStream =
     firebase.collection('events').doc(eventId).collection("participants").snapshots();
 
     await for (final snapshot in snapshotStream) {
       final bookList = snapshot.docs.map((doc) {
-        if (!admin) {
-          // questo non funziona
-          if (doc.id.startsWith(_auth.currentUser!.uid)) return ParticipantDataCassero.fromJson(doc.data());
-        } else return ParticipantDataCassero.fromJson(doc.data());
-        return null;
+        return ParticipantDataCassero.fromJson(doc.data())!;
       }).toList();
 
       yield bookList;

@@ -112,7 +112,7 @@ class AppRouter {
               upperEvent: map['upperEvent'] as UpperEvent,
               //allUsers: map['allUsers'] as List<up.User>,
               //bookedUsers: map['bookedUsers'] as List<up.User>,
-              bookData: map['bookData'] as List<ParticipantDataCassero?>,
+              bookData: map['bookData'] as List<ParticipantDataCassero>,
             ),
           ),
         );

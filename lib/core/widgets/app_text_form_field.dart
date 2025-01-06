@@ -12,6 +12,7 @@ class AppTextFormField extends StatelessWidget {
   final bool? isObscureText;
   final bool? isDense;
   final TextEditingController? controller;
+  final TextAlign? textAlignment;
   final Function(String?) validator;
   const AppTextFormField({
     super.key,
@@ -23,6 +24,7 @@ class AppTextFormField extends StatelessWidget {
     this.controller,
     this.onChanged,
     this.focusNode,
+    this.textAlignment,
     required this.validator,
   });
   @override
@@ -33,6 +35,7 @@ class AppTextFormField extends StatelessWidget {
       validator: (value) {
         return validator(value);
       },
+      textAlign: textAlignment == null ? TextAlign.left : this.textAlignment!,
       onChanged: onChanged,
       controller: controller,
       decoration: InputDecoration(

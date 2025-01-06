@@ -53,28 +53,28 @@ class _EventTileState extends State<EventTile> {
   int _editBookNameMode = 0;
   String bookName = "";
   int bookNumber = 1;
+  int childBookNumber = 0;
 
   List<UpperEvent> data = [];
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
 
   List<up.User>? _participantUsers = [];
-  List<ParticipantDataCassero?> _myEvents = [];
+  List<ParticipantDataCassero> _myEvents = [];
   List<up.User>? _bookedUsers = [];
   bool _loading = true;
 
   StreamSubscription<List<up.User>?>? _presenceSubscription;
   StreamSubscription<List<up.User>?>? _bookSubscription;
 
-  StreamSubscription<List<ParticipantDataCassero?>>? _eventBookSubscription;
+  StreamSubscription<List<ParticipantDataCassero>>? _eventBookSubscription;
 
   final TextEditingController _bookEventController = TextEditingController();
 
   @override
   void dispose() {
     super.dispose();
-    _presenceSubscription?.cancel();
-    _bookSubscription?.cancel();
+    _eventBookSubscription?.cancel();
   }
 
   @override
@@ -107,10 +107,17 @@ class _EventTileState extends State<EventTile> {
             widget.upperEvents[index].id!, widget.isAdmin)
         .listen((snapshot) {
       setState(() {
-        _myEvents = snapshot;
+        if (widget.isAdmin) {
+          _myEvents = snapshot;
+        } else {
+          _myEvents.clear();
+          for (int i = 0; i < snapshot.length; i++) {
+            if (snapshot[i].uid == widget.loggedUser.uid)
+              _myEvents.add(snapshot[i]);
+          }
+        }
       });
     });
-
   }
 
   Future<void> _onItemFocus(int index) async {
@@ -138,19 +145,7 @@ class _EventTileState extends State<EventTile> {
     //    .read<AppCubit>()
     //    .getBookEventCassero(widget.upperEvents[_focusedIndex].id!, widget.isAdmin);
 
-    if (widget.isAdmin == true) {
-      _presenceSubscription?.cancel();
-      _bookSubscription?.cancel();
-
-      _loadEventSubscription(index);
-
-      // _participantUsers = await context
-      //     .read<AppCubit>()
-      //     .getEventsParticipant(widget.upperEvents[index].id!, widget.allUsers);
-      // _bookedUsers = await context
-      //     .read<AppCubit>()
-      //     .getEventsBook(widget.upperEvents[index].id!, widget.allUsers);
-    }
+    _loadEventSubscription(index);
 
     //DateTime oggi = DateTime.now();
     //DateTime domani = DateTime.now();
@@ -172,7 +167,9 @@ class _EventTileState extends State<EventTile> {
       _bookMode = 1;
       bookName = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
       bookNumber = 1;
-      _bookEventController.text = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
+      _editBookNameMode = 0;
+      _bookEventController.text =
+          "${widget.loggedUser.name} ${widget.loggedUser.surname}";
     });
   }
 
@@ -403,9 +400,7 @@ class _EventTileState extends State<EventTile> {
 
   Widget _buildListItem(BuildContext context, int index) {
     return GestureDetector(
-      onTap: () async => {
-
-      },
+      onTap: () async => {},
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 5),
         width: isMobileDevice() ? window.display.size.width - 30 : 400,
@@ -413,8 +408,7 @@ class _EventTileState extends State<EventTile> {
         child: InkWell(
           onTap: () async {
             sslKey.currentState!.focusToItem(index);
-            if (_myEvents.isNotEmpty)
-            {
+            if (_myEvents.isNotEmpty) {
               await context.pushNamed(
                 Routes.viewBookScreen,
                 arguments: {
@@ -716,153 +710,207 @@ class _EventTileState extends State<EventTile> {
       //  child: _qrCodeReaderWidget(),
       //);
       var currentEvent = data[_focusedIndex];
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 220,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 100,
-                  height: 200,
-                  child: Image(
-                      image: _image[_focusedIndex].image,
-                      fit: BoxFit.fitHeight),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      currentEvent.title,
-                      style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
-                          color: ColorsManager.gray17),
-                    ),
-                    Text(
-                      "${currentEvent.date} - ${currentEvent.time}",
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: ColorsManager.gray17),
-                    ),
-                    Text(
-                      currentEvent.place,
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: ColorsManager.gray17),
-                    ),
-                  ],
-                )
-              ],
+      return SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 220,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    height: 200,
+                    child: Image(
+                        image: _image[_focusedIndex].image,
+                        fit: BoxFit.fitHeight),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        currentEvent.title,
+                        style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: ColorsManager.gray17),
+                      ),
+                      Text(
+                        "${currentEvent.date} - ${currentEvent.time}",
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: ColorsManager.gray17),
+                      ),
+                      Text(
+                        currentEvent.place,
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: ColorsManager.gray17),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                    child: Text(
-                  "Aggiungi la tua prenotazione",
-                  style: TextStyle(
-                      color: Color.fromRGBO(50, 50, 50, 1), fontSize: 15),
-                )),
-                Gap(10.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _editBookNameMode == 0
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                      child: Text(
+                    "Aggiungi la tua prenotazione",
+                    style: TextStyle(
+                        color: Color.fromRGBO(50, 50, 50, 1), fontSize: 15),
+                  )),
+                  Gap(20.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _editBookNameMode == 0
                           ? Text(
                               bookName,
                               style:
                                   TextStyle(color: Colors.black, fontSize: 20),
                             )
-                          : AppTextFormField(
-                              hint: "",
-                              validator: (value) {
-                                String enteredValue = (value ?? '').trim();
-                                _bookEventController.text = enteredValue;
-                                if (enteredValue.isEmpty) {
-                                  return "Il valore non può essere nullo";
-                                }
-                              },
-                              controller: _bookEventController,
+                          : Center(
+                              child: Container(
+                                width: window.physicalSize.width /
+                                        window.devicePixelRatio -
+                                    100,
+                                child: AppTextFormField(
+                                  textAlignment: TextAlign.center,
+                                  hint: "",
+                                  validator: (value) {
+                                    String enteredValue = (value ?? '').trim();
+                                    _bookEventController.text = enteredValue;
+                                    if (enteredValue.isEmpty) {
+                                      return "Il valore non può essere nullo";
+                                    }
+                                  },
+                                  controller: _bookEventController,
+                                ),
+                              ),
                             ),
-                    ),
-                    GestureDetector(
-                      child: Icon(
-                          _editBookNameMode == 0 ? Icons.edit : Icons.save,
-                          size: 20),
-                      onTap: _editBookName,
-                    )
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      child: Icon(
-                        Icons.remove,
-                        size: 25,
+                      Visibility(
+                          visible: _editBookNameMode == 0, child: Gap(10.w)),
+                      Visibility(
+                        visible: _editBookNameMode == 0,
+                        child: GestureDetector(
+                          child: Icon(Icons.edit, size: 20),
+                          onTap: _editBookName,
+                        ),
+                      )
+                    ],
+                  ),
+                  Gap(15.h),
+                  Center(
+                      child: Text(
+                    "Adulti",
+                    style: TextStyle(fontSize: 15),
+                  )),
+                  Gap(5.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        child: Icon(
+                          Icons.remove,
+                          size: 25,
+                        ),
+                        onTap: () => setState(() {
+                          bookNumber--;
+                          if (bookNumber <= 1) bookNumber = 1;
+                        }),
                       ),
-                      onTap: () => setState(() {
-                        bookNumber--;
-                        if (bookNumber <= 1) bookNumber = 1;
-                      }),
-                    ),
-                    Text(
-                      bookNumber.toString(),
-                      style: TextStyle(fontSize: 30),
-                    ),
-                    GestureDetector(
-                      child: Icon(
-                        Icons.add,
-                        size: 25,
+                      Text(
+                        bookNumber.toString(),
+                        style: TextStyle(fontSize: 30),
                       ),
-                      onTap: () => setState(() {
-                        bookNumber++;
-                      }),
-                    ),
-                  ],
-                ),
-                Gap(20.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      child: Icon(
-                        Icons.undo,
-                        size: 25,
+                      GestureDetector(
+                        child: Icon(
+                          Icons.add,
+                          size: 25,
+                        ),
+                        onTap: () => setState(() {
+                          bookNumber++;
+                        }),
                       ),
-                      onTap: () => setState(() {
-                        _bookMode = 0;
-                      }),
-                    ),
-                    Gap(50.w),
-                    GestureDetector(
-                      child: Icon(Icons.save, size: 25),
-                      onTap: _bookEventSave,
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-        ],
+                    ],
+                  ),
+                  Gap(15.h),
+                  Center(
+                      child: Text(
+                    "Bambini",
+                    style: TextStyle(fontSize: 15),
+                  )),
+                  Gap(5.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        child: Icon(
+                          Icons.remove,
+                          size: 25,
+                        ),
+                        onTap: () => setState(() {
+                          childBookNumber--;
+                          if (childBookNumber <= 0) childBookNumber = 0;
+                        }),
+                      ),
+                      Text(
+                        childBookNumber.toString(),
+                        style: TextStyle(fontSize: 30),
+                      ),
+                      GestureDetector(
+                        child: Icon(
+                          Icons.add,
+                          size: 25,
+                        ),
+                        onTap: () => setState(() {
+                          childBookNumber++;
+                        }),
+                      ),
+                    ],
+                  ),
+                  Gap(20.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        child: Icon(
+                          Icons.undo,
+                          size: 25,
+                        ),
+                        onTap: () => setState(() {
+                          _bookMode = 0;
+                        }),
+                      ),
+                      Gap(50.w),
+                      GestureDetector(
+                        child: Icon(Icons.save, size: 25),
+                        onTap: _bookEventSave,
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       );
     }
   }
 
-  int getTotalBookPeople(List<ParticipantDataCassero?> list) {
+  int getTotalBookPeople(List<ParticipantDataCassero> list) {
     int sum = 0;
     for (var book in list) {
       //var event = UpperEvent.fromJson(doc.data());

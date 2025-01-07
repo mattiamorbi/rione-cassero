@@ -22,9 +22,10 @@ class ParticipantDataCassero {
   late String name;
   String bookUserName;
   int number;
+  int childrenNumber;
   String? uid;
 
-  ParticipantDataCassero({this.uid, required this.bookUserName, required this.name, required this.number});
+  ParticipantDataCassero({this.uid, required this.bookUserName, required this.name, required this.number, required this.childrenNumber});
 
   static ParticipantDataCassero? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
@@ -34,10 +35,11 @@ class ParticipantDataCassero {
       bookUserName: json['bookUserName'] == null ? "" : json['bookUserName']!,
       name: json['name'] == null ? "" : json['name']!,
       number: json['number'] == null ? 0 : json['number']! as int,
+      childrenNumber: json['childrenNumber'] == null ? 0 : json['childrenNumber']! as int,
     );
   }
 
   Map<String, Object?> toJson() {
-    return {'uid': uid, 'bookUserName':bookUserName, 'name': name, 'number': number};
+    return {'uid': uid, 'bookUserName':bookUserName, 'name': name, 'number': number, 'childrenNumber':childrenNumber};
   }
 }

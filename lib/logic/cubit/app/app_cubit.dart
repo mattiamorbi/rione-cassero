@@ -120,25 +120,42 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Future<void> bookEventCassero(
-      String eventId, String bookName, int bookNumber) async {
+      String eventId, String? eventUID, String bookName, int bookNumber, int childrenBookNumber) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
         firebase.collection('events').doc(eventId).collection("participants");
 
     // Filtra per il documento che contiene l'uid dell'utente corrente
     final querySnapshot = await eventsParticipants
-        .orderBy(FieldPath.documentId)
-        .startAt([_auth.currentUser!.uid]) // Inizia con il prefisso specificato
+        //.orderBy(FieldPath.documentId)
+        //.startAt([_auth.currentUser!.uid]) // Inizia con il prefisso specificato
         .get();
 
     // Restituisci il numero di documenti trovati
-    int number = querySnapshot.docs.length;
+    //int number = querySnapshot.docs.length;
 
     await eventsParticipants
-        .doc("${_auth.currentUser!.uid}_$number")
-        .set({'uid': _auth.currentUser!.uid, 'bookUserName':_auth.currentUser!.displayName!, 'name': bookName, 'number': bookNumber});
+        .doc(eventUID ?? eventUID)
+        .set({'uid': _auth.currentUser!.uid, 'bookUserName':_auth.currentUser!.displayName!, 'name': bookName, 'number': bookNumber, 'childrenNumber': childrenBookNumber});
         //.set({'name': bookName, 'number': bookNumber});
   }
+
+  Future<ParticipantDataCassero?> getSingleBookEventCassero(
+      String eventId, String participantsID) async {
+    List<ParticipantDataCassero> myBooks = [];
+    //var tempData = await getParticipantData(eventId, user);
+    var eventsParticipants =
+    firebase.collection('events').doc(eventId).collection("participants");
+
+      var querySnapshot = await eventsParticipants
+          .doc(participantsID)
+          .get();
+
+
+    return ParticipantDataCassero.fromJson(querySnapshot.data());
+  }
+
+
 
   Future<List<ParticipantDataCassero>> getBookEventCassero(
       String eventId, bool admin) async {

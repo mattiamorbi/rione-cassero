@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/models/participant_data.dart';
@@ -6,11 +7,14 @@ import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/theming/colors.dart';
 
+import '../../../logic/cubit/app/app_cubit.dart';
 import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
 class EventBookScreen extends StatefulWidget {
   UpperEvent upperEvent;
+  up.User loggedUser;
+  Image eventImage;
 
   //List<up.User> allUsers = [];
   List<ParticipantDataCassero> bookData = [];
@@ -19,7 +23,7 @@ class EventBookScreen extends StatefulWidget {
   //List<up.User> participantsUsers = [];
 
   EventBookScreen(
-      {super.key, required this.upperEvent, required this.bookData});
+      {super.key, required this.upperEvent, required this.bookData, required this.loggedUser, required this.eventImage});
 
   //required this.bookedUsers,
   //required this.participantsUsers});
@@ -110,13 +114,10 @@ class _EventBookScreenState extends State<EventBookScreen> {
   // Funzione per filtrare la lista degli utenti in base al testo inserito
   void filterUsers(String query) {
     List<ParticipantDataCassero> filtered = _totalJoinBook.where((book) {
-      if (book != null) {
         String fullName =
             '${book.name.toLowerCase()} ${book.bookUserName.toLowerCase()}';
 
         return fullName.contains(query.toLowerCase());
-      } else
-        return false;
     }).toList();
 
     setState(() {
@@ -129,7 +130,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
     for (var book in list) {
       //var event = UpperEvent.fromJson(doc.data());
       //print(doc.id);
-      if (book != null) sum += book.number;
+      sum += book.number;
     }
     return sum;
   }
@@ -207,12 +208,15 @@ class _EventBookScreenState extends State<EventBookScreen> {
                               Icons.bookmark_border,
                               color: Colors.black,
                             ),
-                            trailing: Text(
-                              "GESTISCI",
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                            trailing: GestureDetector(
+                              onTap: () => _manageBook(widget.bookData[index], index),
+                              child: Text(
+                                "GESTISCI",
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold),
+                              ),
                             ),
 
                             //trailing: GestureDetector(
@@ -234,16 +238,25 @@ class _EventBookScreenState extends State<EventBookScreen> {
     );
   }
 
-  void _showUser(up.User _user, UpperEvent _event) async {
+  void _manageBook(ParticipantDataCassero currentBookData, int index) async {
     await context.pushNamed(
-      Routes.viewUserPage,
+      Routes.manageBookScreen,
       arguments: {
-        'user': _user,
-        'event': _event,
+        'user': widget.loggedUser,
+        'event': widget.upperEvent,
+        'bookData': currentBookData,
+        'image':widget.eventImage,
       },
     );
+
+    widget.bookData[index] = await context
+        .read<AppCubit>()
+        .getSingleBookEventCassero(
+        widget.upperEvent.id!, currentBookData.uid!) as ParticipantDataCassero;
+
     setState(() {});
   }
+
 
   @override
   void dispose() {

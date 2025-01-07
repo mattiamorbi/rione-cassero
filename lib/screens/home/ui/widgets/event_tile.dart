@@ -60,7 +60,7 @@ class _EventTileState extends State<EventTile> {
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
 
   List<up.User>? _participantUsers = [];
-  List<ParticipantDataCassero> _myEvents = [];
+  List<ParticipantDataCassero> _currentEventBookData = [];
   List<up.User>? _bookedUsers = [];
   bool _loading = true;
 
@@ -108,12 +108,12 @@ class _EventTileState extends State<EventTile> {
         .listen((snapshot) {
       setState(() {
         if (widget.isAdmin) {
-          _myEvents = snapshot;
+          _currentEventBookData = snapshot;
         } else {
-          _myEvents.clear();
+          _currentEventBookData.clear();
           for (int i = 0; i < snapshot.length; i++) {
             if (snapshot[i].uid == widget.loggedUser.uid)
-              _myEvents.add(snapshot[i]);
+              _currentEventBookData.add(snapshot[i]);
           }
         }
       });
@@ -408,12 +408,14 @@ class _EventTileState extends State<EventTile> {
         child: InkWell(
           onTap: () async {
             sslKey.currentState!.focusToItem(index);
-            if (_myEvents.isNotEmpty) {
+            if (_currentEventBookData.isNotEmpty) {
               await context.pushNamed(
                 Routes.viewBookScreen,
                 arguments: {
-                  'upperEvent': widget.upperEvents[index],
-                  'bookData': _myEvents,
+                  'event': widget.upperEvents[index],
+                  'bookData': _currentEventBookData,
+                  'user': widget.loggedUser,
+                  'image':_image[_focusedIndex],
                   //'bookedUsers': _bookedUsers,
                   //'participantsUsers': _participantUsers,
                 },
@@ -423,7 +425,7 @@ class _EventTileState extends State<EventTile> {
           child: Stack(children: [
             Center(child: Image(image: _image[index].image)),
             Visibility(
-              visible: _myEvents.length > 0 &&
+              visible: _currentEventBookData.length > 0 &&
                   index == _focusedIndex &&
                   _loading == false,
               child: Container(
@@ -433,7 +435,7 @@ class _EventTileState extends State<EventTile> {
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(
-                  "PRENOTATO x${getTotalBookPeople(_myEvents)}",
+                  "PRENOTATO x${getTotalBookPeople(_currentEventBookData)}",
                   style: TextStyle(
                       color: ColorsManager.gray17,
                       fontSize: 18,
@@ -915,7 +917,7 @@ class _EventTileState extends State<EventTile> {
     for (var book in list) {
       //var event = UpperEvent.fromJson(doc.data());
       //print(doc.id);
-      if (book != null) sum += book.number;
+      sum += book.number;
     }
     return sum;
   }
@@ -923,8 +925,9 @@ class _EventTileState extends State<EventTile> {
   Future<void> _bookEventSave() async {
     await context.read<AppCubit>().bookEventCassero(
         widget.upperEvents[_focusedIndex].id!,
+        null,
         _bookEventController.text,
-        bookNumber);
+        bookNumber, childBookNumber);
 
     //_myEvents = await context
     //    .read<AppCubit>()

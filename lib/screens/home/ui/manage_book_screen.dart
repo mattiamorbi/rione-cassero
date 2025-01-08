@@ -1,18 +1,16 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/helpers/extensions.dart';
+import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
 import 'package:rione_cassero/models/participant_data.dart';
 import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/theming/colors.dart';
-import 'dart:ui';
-
-import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
-
-import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
 class ManageEventScreen extends StatefulWidget {
@@ -21,18 +19,18 @@ class ManageEventScreen extends StatefulWidget {
   Image eventImage;
   up.User loggedUser;
 
-  ManageEventScreen({super.key,
-    required this.upperEvent,
-    required this.bookData,
-    required this.eventImage,
-  required this.loggedUser});
+  ManageEventScreen(
+      {super.key,
+      required this.upperEvent,
+      required this.bookData,
+      required this.eventImage,
+      required this.loggedUser});
 
   @override
   State<ManageEventScreen> createState() => _ManageEventScreenState();
 }
 
 class _ManageEventScreenState extends State<ManageEventScreen> {
-
   int _editBookNameMode = 0;
   String bookName = "";
   int bookNumber = 1;
@@ -123,42 +121,44 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                     children: [
                       Center(
                           child: Text(
-                            "Modifica la tua prenotazione",
-                            style: TextStyle(
-                                color: Color.fromRGBO(50, 50, 50, 1),
-                                fontSize: 15),
-                          )),
+                        "Modifica la tua prenotazione",
+                        style: TextStyle(
+                            color: Color.fromRGBO(50, 50, 50, 1), fontSize: 15),
+                      )),
                       Gap(20.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           _editBookNameMode == 0
                               ? Text(
-                            bookName,
-                            style: TextStyle(color: Colors.black, fontSize: 20),
-                          )
+                                  bookName,
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 20),
+                                )
                               : Center(
-                            child: Container(
-                              width: window.physicalSize.width /
-                                  window.devicePixelRatio -
-                                  100,
-                              child: AppTextFormField(
-                                textAlignment: TextAlign.center,
-                                hint: "",
-                                validator: (value) {
-                                  String enteredValue = (value ?? '').trim();
-                                  _bookEventController.text = enteredValue;
-                                  if (enteredValue.isEmpty) {
-                                    return "Il valore non può essere nullo";
-                                  }
-                                },
-                                controller: _bookEventController,
-                              ),
-                            ),
-                          ),
+                                  child: Container(
+                                    width: window.physicalSize.width /
+                                            window.devicePixelRatio -
+                                        100,
+                                    child: AppTextFormField(
+                                      textAlignment: TextAlign.center,
+                                      hint: "",
+                                      validator: (value) {
+                                        String enteredValue =
+                                            (value ?? '').trim();
+                                        _bookEventController.text =
+                                            enteredValue;
+                                        if (enteredValue.isEmpty) {
+                                          return "Il valore non può essere nullo";
+                                        }
+                                      },
+                                      controller: _bookEventController,
+                                    ),
+                                  ),
+                                ),
                           Visibility(
-                              visible: _editBookNameMode == 0, child: Gap(
-                              10.w)),
+                              visible: _editBookNameMode == 0,
+                              child: Gap(10.w)),
                           Visibility(
                             visible: _editBookNameMode == 0,
                             child: GestureDetector(
@@ -171,9 +171,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                       Gap(15.h),
                       Center(
                           child: Text(
-                            "Adulti",
-                            style: TextStyle(fontSize: 15),
-                          )),
+                        "Adulti",
+                        style: TextStyle(fontSize: 15),
+                      )),
                       Gap(5.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -183,11 +183,10 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               Icons.remove,
                               size: 25,
                             ),
-                            onTap: () =>
-                                setState(() {
-                                  bookNumber--;
-                                  if (bookNumber <= 1) bookNumber = 1;
-                                }),
+                            onTap: () => setState(() {
+                              bookNumber--;
+                              if (bookNumber <= 1) bookNumber = 1;
+                            }),
                           ),
                           Text(
                             bookNumber.toString(),
@@ -198,19 +197,18 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               Icons.add,
                               size: 25,
                             ),
-                            onTap: () =>
-                                setState(() {
-                                  bookNumber++;
-                                }),
+                            onTap: () => setState(() {
+                              bookNumber++;
+                            }),
                           ),
                         ],
                       ),
                       Gap(15.h),
                       Center(
                           child: Text(
-                            "Bambini",
-                            style: TextStyle(fontSize: 15),
-                          )),
+                        "Bambini",
+                        style: TextStyle(fontSize: 15),
+                      )),
                       Gap(5.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -220,11 +218,10 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               Icons.remove,
                               size: 25,
                             ),
-                            onTap: () =>
-                                setState(() {
-                                  childBookNumber--;
-                                  if (childBookNumber <= 0) childBookNumber = 0;
-                                }),
+                            onTap: () => setState(() {
+                              childBookNumber--;
+                              if (childBookNumber <= 0) childBookNumber = 0;
+                            }),
                           ),
                           Text(
                             childBookNumber.toString(),
@@ -235,10 +232,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               Icons.add,
                               size: 25,
                             ),
-                            onTap: () =>
-                                setState(() {
-                                  childBookNumber++;
-                                }),
+                            onTap: () => setState(() {
+                              childBookNumber++;
+                            }),
                           ),
                         ],
                       ),
@@ -250,16 +246,14 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                           GestureDetector(
                             child: Icon(
                               Icons.delete,
-                              size: 25,
+                              size: 35,
+                              color: Colors.red,
                             ),
-                            onTap: () =>
-                                setState(() {
-                                  // cancella prenotazione
-                                }),
+                            onTap: _bookEventDelete,
                           ),
-                          Gap(50.w),
+                          Gap(100.w),
                           GestureDetector(
-                            child: Icon(Icons.save, size: 25),
+                            child: Icon(Icons.save, size: 35),
                             onTap: _bookEventSave,
                           ),
                         ],
@@ -269,7 +263,10 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                 )
               ],
             ),
-          ),),),);
+          ),
+        ),
+      ),
+    );
   }
 
   void _editBookName() {
@@ -289,13 +286,21 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   Future<void> _bookEventSave() async {
     await context.read<AppCubit>().bookEventCassero(
         widget.upperEvent.id!,
-        widget.bookData.uid,
+        widget.bookData.eventUid,
         _bookEventController.text,
-        bookNumber, childBookNumber);
+        bookNumber,
+        childBookNumber);
 
     context.pop();
   }
 
+  Future<void> _bookEventDelete() async {
+    await context
+        .read<AppCubit>()
+        .deleteBookEventCassero(widget.upperEvent.id!, widget.bookData.eventUid);
+
+    context.pop();
+  }
 
   @override
   void dispose() {

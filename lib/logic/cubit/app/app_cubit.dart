@@ -119,25 +119,40 @@ class AppCubit extends Cubit<AppState> {
         .set({'booked': true, 'presence': tempData.presence});
   }
 
-  Future<void> bookEventCassero(
-      String eventId, String? eventUID, String bookName, int bookNumber, int childrenBookNumber) async {
+  Future<void> bookEventCassero(String eventId, String? eventUID,
+      String bookName, int bookNumber, int childrenBookNumber) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
         firebase.collection('events').doc(eventId).collection("participants");
 
-    // Filtra per il documento che contiene l'uid dell'utente corrente
-    final querySnapshot = await eventsParticipants
-        //.orderBy(FieldPath.documentId)
-        //.startAt([_auth.currentUser!.uid]) // Inizia con il prefisso specificato
-        .get();
+    late var docRef;
+    if (eventUID == null) {
+      docRef = eventsParticipants.doc();
+    } else {
+      docRef = eventsParticipants.doc(eventUID);
+    }
+    final docId = docRef.id;
 
-    // Restituisci il numero di documenti trovati
-    //int number = querySnapshot.docs.length;
+    await docRef.set({
+      'uid': _auth.currentUser!.uid,
+      'eventUid': docId,
+      'bookUserName': _auth.currentUser!.displayName!,
+      'name': bookName,
+      'number': bookNumber,
+      'childrenNumber': childrenBookNumber,
+      'date': FieldValue.serverTimestamp(),
+    });
+  }
 
-    await eventsParticipants
-        .doc(eventUID ?? eventUID)
-        .set({'uid': _auth.currentUser!.uid, 'bookUserName':_auth.currentUser!.displayName!, 'name': bookName, 'number': bookNumber, 'childrenNumber': childrenBookNumber});
-        //.set({'name': bookName, 'number': bookNumber});
+  //.set({'name': bookName, 'number': bookNumber});
+
+  Future<void> deleteBookEventCassero(String eventId, String eventUID) async {
+    //var tempData = await getParticipantData(eventId, user);
+    var eventsParticipants =
+        firebase.collection('events').doc(eventId).collection("participants");
+
+    await eventsParticipants.doc(eventUID).delete();
+    //.set({'name': bookName, 'number': bookNumber});
   }
 
   Future<ParticipantDataCassero?> getSingleBookEventCassero(
@@ -145,17 +160,12 @@ class AppCubit extends Cubit<AppState> {
     List<ParticipantDataCassero> myBooks = [];
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-    firebase.collection('events').doc(eventId).collection("participants");
+        firebase.collection('events').doc(eventId).collection("participants");
 
-      var querySnapshot = await eventsParticipants
-          .doc(participantsID)
-          .get();
-
+    var querySnapshot = await eventsParticipants.doc(participantsID).get();
 
     return ParticipantDataCassero.fromJson(querySnapshot.data());
   }
-
-
 
   Future<List<ParticipantDataCassero>> getBookEventCassero(
       String eventId, bool admin) async {
@@ -189,12 +199,13 @@ class AppCubit extends Cubit<AppState> {
     return myBooks;
   }
 
-
-
   Stream<List<ParticipantDataCassero>> getBookEventCasseroStream(
       String eventId, bool admin) async* {
-    final snapshotStream =
-    firebase.collection('events').doc(eventId).collection("participants").snapshots();
+    final snapshotStream = firebase
+        .collection('events')
+        .doc(eventId)
+        .collection("participants")
+        .snapshots();
 
     await for (final snapshot in snapshotStream) {
       final bookList = snapshot.docs.map((doc) {

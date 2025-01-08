@@ -249,10 +249,17 @@ class _EventBookScreenState extends State<EventBookScreen> {
       },
     );
 
-    widget.bookData[index] = await context
-        .read<AppCubit>()
-        .getSingleBookEventCassero(
-        widget.upperEvent.id!, currentBookData.uid!) as ParticipantDataCassero;
+    try {
+      widget.bookData[index] = await context
+          .read<AppCubit>()
+          .getSingleBookEventCassero(
+          widget.upperEvent.id!,
+          currentBookData.eventUid) as ParticipantDataCassero;
+    } catch (e) {
+      if (e.toString().contains("Null")) {
+        widget.bookData.remove(widget.bookData[index]);
+      }
+    }
 
     setState(() {});
   }

@@ -43,21 +43,21 @@ class User {
 
   User.fromJson(Map<String, dynamic> json, {String? parUid, bool? parIsAdmin})
       : this(
-          uid: json['uid']! as String,
-          name: json['name']! as String,
-          surname: json['surname']! as String,
-          email: json['email'] as String,
-          //address: json['address'] as String,
-          //birthdate: json['birthdate'] as String,
-          //birthplace: json['birthplace'] as String,
-          //cap: json['cap'] as String,
-          //city: json['city'] as String,
-          telephone: json['telephone'] as String,
-          cardNumber: json['cardNumber'] as int,
-          signUpDate: json['signUpDate'] as String,
-          isAdmin: parIsAdmin != null ? parIsAdmin : false,
-          id: parUid != null ? parUid : null,
-        );
+    uid: json['uid']! as String,
+    name: json['name']! as String,
+    surname: json['surname']! as String,
+    email: json['email'] as String,
+    //address: json['address'] as String,
+    //birthdate: json['birthdate'] as String,
+    //birthplace: json['birthplace'] as String,
+    //cap: json['cap'] as String,
+    //city: json['city'] as String,
+    telephone: json['telephone'] as String,
+    cardNumber: json['cardNumber'] as int,
+    signUpDate: json['signUpDate'] as String,
+    isAdmin: parIsAdmin != null ? parIsAdmin : false,
+    id: parUid != null ? parUid : null,
+  );
 
 
   int getAge() {

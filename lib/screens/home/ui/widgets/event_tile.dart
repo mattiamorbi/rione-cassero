@@ -68,6 +68,7 @@ class _EventTileState extends State<EventTile> {
   StreamSubscription<List<up.User>?>? _bookSubscription;
 
   StreamSubscription<List<ParticipantDataCassero>>? _eventBookSubscription;
+  late int totalBookedPlaces;
 
   final TextEditingController _bookEventController = TextEditingController();
 
@@ -101,6 +102,7 @@ class _EventTileState extends State<EventTile> {
 
   void _loadEventSubscription(int index) {
     _eventBookSubscription?.cancel();
+    totalBookedPlaces = 0;
     _eventBookSubscription = context
         .read<AppCubit>()
         .getBookEventCasseroStream(
@@ -109,11 +111,17 @@ class _EventTileState extends State<EventTile> {
       setState(() {
         if (widget.isAdmin) {
           _currentEventBookData = snapshot;
+          totalBookedPlaces = 0;
+          for (int i = 0; i < snapshot.length; i++) {
+            totalBookedPlaces += snapshot[i].number;
+          }
         } else {
           _currentEventBookData.clear();
+          totalBookedPlaces = 0;
           for (int i = 0; i < snapshot.length; i++) {
             if (snapshot[i].uid == widget.loggedUser.uid)
               _currentEventBookData.add(snapshot[i]);
+            totalBookedPlaces += snapshot[i].number;
           }
         }
       });
@@ -221,7 +229,7 @@ class _EventTileState extends State<EventTile> {
     if (data.length > _focusedIndex) {
       var currentEvent = data[_focusedIndex];
       return SizedBox(
-        height: 150,
+        height: 200,
         child: Column(
           children: [
             Text(
@@ -245,6 +253,18 @@ class _EventTileState extends State<EventTile> {
                   fontWeight: FontWeight.bold,
                   color: ColorsManager.gray17),
             ),
+            currentEvent.bookingLimit != null ?
+            Visibility(
+              visible: currentEvent.bookingLimit != null &&
+                  currentEvent.bookingLimit! > 0,
+              child: Text(
+                "Posti rimanenti ${currentEvent.bookingLimit! - totalBookedPlaces}",
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red),
+              ),
+            ) : SizedBox.shrink(),
             Visibility(
               visible: widget.isAdmin & !_loading,
               child: Text(
@@ -415,7 +435,7 @@ class _EventTileState extends State<EventTile> {
                   'event': widget.upperEvents[index],
                   'bookData': _currentEventBookData,
                   'user': widget.loggedUser,
-                  'image':_image[_focusedIndex],
+                  'image': _image[_focusedIndex],
                   //'bookedUsers': _bookedUsers,
                   //'participantsUsers': _participantUsers,
                 },
@@ -724,11 +744,11 @@ class _EventTileState extends State<EventTile> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(
-                    width: 100,
+                    width: 200,
                     height: 200,
                     child: Image(
                         image: _image[_focusedIndex].image,
-                        fit: BoxFit.fitHeight),
+                        fit: BoxFit.fitWidth),
                   ),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -927,7 +947,8 @@ class _EventTileState extends State<EventTile> {
         widget.upperEvents[_focusedIndex].id!,
         null,
         _bookEventController.text,
-        bookNumber, childBookNumber);
+        bookNumber,
+        childBookNumber);
 
     //_myEvents = await context
     //    .read<AppCubit>()

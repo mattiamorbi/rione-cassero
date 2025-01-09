@@ -114,10 +114,10 @@ class _EventBookScreenState extends State<EventBookScreen> {
   // Funzione per filtrare la lista degli utenti in base al testo inserito
   void filterUsers(String query) {
     List<ParticipantDataCassero> filtered = _totalJoinBook.where((book) {
-        String fullName =
-            '${book.name.toLowerCase()} ${book.bookUserName.toLowerCase()}';
+      String fullName =
+          '${book.name.toLowerCase()} ${book.bookUserName.toLowerCase()}';
 
-        return fullName.contains(query.toLowerCase());
+      return fullName.contains(query.toLowerCase());
     }).toList();
 
     setState(() {
@@ -179,57 +179,57 @@ class _EventBookScreenState extends State<EventBookScreen> {
                 child: _filteredBook.isEmpty
                     ? Center(child: Text('Nessuna prenotazione trovata'))
                     : ListView.builder(
-                        itemCount: _filteredBook.length,
-                        itemBuilder: (context, index) {
-                          final user = _filteredBook[index];
-                          return ListTile(
-                            tileColor: ColorsManager.background,
-                            textColor: Colors.black,
-                            subtitleTextStyle: TextStyle(
-                              fontSize: 12,
-                              color: Colors.black38,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              //<-- SEE HERE
-                              side: BorderSide(
-                                  width: 0, color: ColorsManager.background),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            //onTap: () => _showUser(user, widget.upperEvent),
-                            //leading: Icon(
-                            //  Icons.person_outline,
-                            //  color: user.state == 'booked'
-                            //      ? Colors.orange
-                            //      : user.state == 'joined'
-                            //          ? Colors.green
-                            //          : Colors.black,
-                            //),
-                            leading: Icon(
-                              Icons.bookmark_border,
-                              color: Colors.black,
-                            ),
-                            trailing: GestureDetector(
-                              onTap: () => _manageBook(widget.bookData[index], index),
-                              child: Text(
-                                "GESTISCI",
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-
-                            //trailing: GestureDetector(
-                            //  child: Icon(Icons.delete, color: Colors.red),
-                            //  onTap: () {},
-                            //),
-                            title: Text(user.number > 1 ? "${user.name} (${user.number} persone)" : "${user.name} (${user.number} persona)"),
-                            subtitle: Text(
-                                //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
-                                'Effettuata da: ${user.bookUserName}'),
-                          );
-                        },
+                  itemCount: _filteredBook.length,
+                  itemBuilder: (context, index) {
+                    final user = _filteredBook[index];
+                    return ListTile(
+                      tileColor: ColorsManager.background,
+                      textColor: Colors.black,
+                      subtitleTextStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black38,
                       ),
+                      shape: RoundedRectangleBorder(
+                        //<-- SEE HERE
+                        side: BorderSide(
+                            width: 0, color: ColorsManager.background),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      //onTap: () => _showUser(user, widget.upperEvent),
+                      //leading: Icon(
+                      //  Icons.person_outline,
+                      //  color: user.state == 'booked'
+                      //      ? Colors.orange
+                      //      : user.state == 'joined'
+                      //          ? Colors.green
+                      //          : Colors.black,
+                      //),
+                      leading: Icon(
+                        Icons.bookmark_border,
+                        color: Colors.black,
+                      ),
+                      trailing: GestureDetector(
+                        onTap: () => _manageBook(widget.bookData[index], index),
+                        child: Text(
+                          "GESTISCI",
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+
+                      //trailing: GestureDetector(
+                      //  child: Icon(Icons.delete, color: Colors.red),
+                      //  onTap: () {},
+                      //),
+                      title: Text(user.number > 1 ? "${user.name} (${user.number} persone)" : "${user.name} (${user.number} persona)"),
+                      subtitle: Text(
+                        //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                          'Effettuata da: ${user.bookUserName}'),
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -250,18 +250,23 @@ class _EventBookScreenState extends State<EventBookScreen> {
     );
 
     try {
-      widget.bookData[index] = await context
+      final updated =  await context
           .read<AppCubit>()
           .getSingleBookEventCassero(
           widget.upperEvent.id!,
           currentBookData.eventUid) as ParticipantDataCassero;
+      setState(() {
+        widget.bookData[index] = updated;
+      });
+
     } catch (e) {
-      if (e.toString().contains("Null")) {
-        widget.bookData.remove(widget.bookData[index]);
-      }
+      setState(() {
+        widget.bookData.removeAt(index);
+      });
+
     }
 
-    setState(() {});
+
   }
 
 

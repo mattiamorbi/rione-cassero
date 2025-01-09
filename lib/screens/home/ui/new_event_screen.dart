@@ -12,7 +12,6 @@ import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/theming/colors.dart';
 
-import '../../../helpers/date_time_helper.dart';
 import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
@@ -35,6 +34,10 @@ class _NewEventScreenState extends State<NewEventScreen> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _placeController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _childrenPriceController =
+      TextEditingController();
+  final TextEditingController _bookingLimitController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -47,6 +50,16 @@ class _NewEventScreenState extends State<NewEventScreen> {
       _dateController.text = widget.upperEvent!.date;
       _timeController.text = widget.upperEvent!.time;
       _placeController.text = widget.upperEvent!.place;
+      _bookingLimitController.text = widget.upperEvent!.bookingLimit == null
+          ? ""
+          : widget.upperEvent!.bookingLimit.toString();
+      _priceController.text = widget.upperEvent!.price == null
+          ? ""
+          : widget.upperEvent!.price.toString();
+      _childrenPriceController.text = widget.upperEvent!.childrenPrice == null
+          ? ""
+          : widget.upperEvent!.childrenPrice.toString();
+
       _loadEventImage();
     }
     //print(widget.upperEvent!.id);
@@ -100,7 +113,9 @@ class _NewEventScreenState extends State<NewEventScreen> {
         // Usa DateTime per validare
         try {
           final parsedDate = DateTime(year, month, day);
-          if (parsedDate.day != day || parsedDate.month != month || parsedDate.year != year) {
+          if (parsedDate.day != day ||
+              parsedDate.month != month ||
+              parsedDate.year != year) {
             return 'Data non valida';
           }
         } catch (e) {
@@ -121,6 +136,21 @@ class _NewEventScreenState extends State<NewEventScreen> {
         String enteredValue = (value ?? '').trim();
         controller.text = enteredValue;
         if (enteredValue.isEmpty) {
+          return errorMessage;
+        }
+      },
+      controller: controller,
+    );
+  }
+
+  Widget numericField(TextEditingController controller, String placeholder,
+      String errorMessage) {
+    return AppTextFormField(
+      hint: placeholder,
+      validator: (value) {
+        String enteredValue = (value ?? '').trim();
+        controller.text = enteredValue;
+        if (enteredValue.isEmpty || int.tryParse(enteredValue) == null) {
           return errorMessage;
         }
       },
@@ -177,12 +207,16 @@ class _NewEventScreenState extends State<NewEventScreen> {
           }
 
           var newUpperEvent = UpperEvent(
-              title: _titleController.text,
-              description: _descriptionController.text,
-              date: _dateController.text,
-              time: _timeController.text,
-              place: _placeController.text,
-              imagePath: "images/${_pickedImage!.name}");
+            title: _titleController.text,
+            description: _descriptionController.text,
+            date: _dateController.text,
+            time: _timeController.text,
+            place: _placeController.text,
+            imagePath: "images/${_pickedImage!.name}",
+            price: int.parse(_priceController.text),
+            childrenPrice: int.parse(_childrenPriceController.text),
+            bookingLimit: int.parse(_bookingLimitController.text),
+          );
 
           print("4--");
 
@@ -216,7 +250,10 @@ class _NewEventScreenState extends State<NewEventScreen> {
             id: id,
             imagePath: _pickedImage == null
                 ? widget.upperEvent!.imagePath
-                : "images/${_pickedImage!.name}");
+                : "images/${_pickedImage!.name}",
+            price: int.parse(_priceController.text),
+            childrenPrice: int.parse(_childrenPriceController.text),
+            bookingLimit: int.parse(_bookingLimitController.text));
 
         try {
           await events.doc(id).set(upperEvent.toJson());
@@ -231,8 +268,6 @@ class _NewEventScreenState extends State<NewEventScreen> {
 
       context.pushNamed(Routes.homeScreen, arguments: 0);
     }
-
-
   }
 
   Widget _newEventScreen(BuildContext context) {
@@ -274,9 +309,17 @@ class _NewEventScreenState extends State<NewEventScreen> {
                     genericField(
                         _placeController, "Luogo", "Inserisci un luogo valido"),
                     Gap(20.w),
+                    numericField(_bookingLimitController, "Posti",
+                        "Inserisci il limite delle prenotazioni"),
+                    Gap(20.w),
+                    numericField(_priceController, "Prezzo",
+                        "Inserisci un prezzo valido"),
+                    Gap(20.w),
+                    numericField(_childrenPriceController, "Prezzo bambini",
+                        "Inserisci un prezzo valido"),
+                    Gap(20.w),
                   ],
                 ),
-
               ),
               Visibility(
                 visible: _webImage.length > 1,
@@ -299,7 +342,9 @@ class _NewEventScreenState extends State<NewEventScreen> {
                           height: 50,
                           child: Icon(
                             Icons.image,
-                            color: _noImage == true ? Colors.red : ColorsManager.gray17,
+                            color: _noImage == true
+                                ? Colors.red
+                                : ColorsManager.gray17,
                           )),
                       onTap: _loadImage),
                   SizedBox(
@@ -332,5 +377,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
     _dateController.dispose();
     _timeController.dispose();
     _placeController.dispose();
+    _priceController.dispose();
+    _childrenPriceController.dispose();
+    _bookingLimitController.dispose();
   }
 }

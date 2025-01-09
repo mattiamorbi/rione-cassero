@@ -10,6 +10,9 @@ class UpperEvent {
   final String time;
   final String place;
   final String imagePath;
+  int? price;
+  int? childrenPrice;
+  int? bookingLimit;
   String? id;
   bool? isToday;
 
@@ -25,6 +28,9 @@ class UpperEvent {
     this.id,
     this.isToday,
     this.date_time,
+    this.price,
+    this.childrenPrice,
+    this.bookingLimit,
   });
 
   DateTime getDate() => DateTimeHelper.getDateTime(date);
@@ -73,6 +79,9 @@ Future<Uint8List?> getEventImage() async {
           place: json['place']! as String,
           imagePath: json['imagePath']! as String,
           date_time: DateTimeHelper.getDateTime(json['date']! as String),
+          price: json['price'] == null ? null : json['price']  as int,
+          childrenPrice: json['childrenPrice'] == null ? null : json['childrenPrice']  as int,
+          bookingLimit: json['bookingLimit'] == null ? null : json['bookingLimit']  as int,
         );
 
   Map<String, Object?> toJson() {
@@ -83,6 +92,9 @@ Future<Uint8List?> getEventImage() async {
       'time': time,
       'place': place,
       'imagePath': imagePath,
+      'price': price,
+      'childrenPrice': childrenPrice,
+      'bookingLimit': bookingLimit,
     };
   }
 

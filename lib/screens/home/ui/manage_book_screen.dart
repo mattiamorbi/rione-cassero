@@ -77,12 +77,13 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: 100,
+                        width: 200,
                         height: 200,
                         child: Image(
                             image: widget.eventImage.image,
-                            fit: BoxFit.fitHeight),
+                            fit: BoxFit.fill),
                       ),
+                      Gap(15.w),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,

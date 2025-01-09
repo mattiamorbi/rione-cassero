@@ -79,7 +79,7 @@ class AppCubit extends Cubit<AppState> {
   // Funzione per ottenere un nuovo indice incrementale
   Future<int> getNewIndex() async {
     final DocumentReference counterDoc =
-        firebase.collection('cardsNumber').doc('index');
+    firebase.collection('cardsNumber').doc('index');
 
     return firebase.runTransaction((transaction) async {
       // Recupera il contatore attuale
@@ -113,7 +113,7 @@ class AppCubit extends Cubit<AppState> {
   Future<void> bookEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants
         .doc(_auth.currentUser!.uid)
         .set({'booked': true, 'presence': tempData.presence});
@@ -123,7 +123,7 @@ class AppCubit extends Cubit<AppState> {
       String bookName, int bookNumber, int childrenBookNumber) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
 
     late var docRef;
     if (eventUID == null) {
@@ -149,7 +149,7 @@ class AppCubit extends Cubit<AppState> {
   Future<void> deleteBookEventCassero(String eventId, String eventUID) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
 
     await eventsParticipants.doc(eventUID).delete();
     //.set({'name': bookName, 'number': bookNumber});
@@ -160,7 +160,7 @@ class AppCubit extends Cubit<AppState> {
     List<ParticipantDataCassero> myBooks = [];
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
 
     var querySnapshot = await eventsParticipants.doc(participantsID).get();
 
@@ -172,7 +172,7 @@ class AppCubit extends Cubit<AppState> {
     List<ParticipantDataCassero> myBooks = [];
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
 
     // Filtra per il documento che contiene l'uid dell'utente corrente
     var querySnapshot = null;
@@ -180,11 +180,11 @@ class AppCubit extends Cubit<AppState> {
       querySnapshot = await eventsParticipants
           .orderBy(FieldPath.documentId)
           .startAt(
-              [_auth.currentUser!.uid]) // Inizia con il prefisso specificato
+          [_auth.currentUser!.uid]) // Inizia con il prefisso specificato
           .get();
     } else {
       querySnapshot =
-          await eventsParticipants.orderBy(FieldPath.documentId).get();
+      await eventsParticipants.orderBy(FieldPath.documentId).get();
     }
 
     for (var doc in querySnapshot.docs) {
@@ -219,7 +219,7 @@ class AppCubit extends Cubit<AppState> {
   Future<void> unBookEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants
         .doc(_auth.currentUser!.uid)
         .set({'booked': false, 'presence': tempData.presence});
@@ -228,7 +228,7 @@ class AppCubit extends Cubit<AppState> {
   Future<void> joinEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants
         .doc(user!.uid)
         .set({'booked': tempData.booked, 'presence': true});
@@ -237,7 +237,7 @@ class AppCubit extends Cubit<AppState> {
   Future<void> unJoinEvent(String eventId, up.User? user) async {
     var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants
         .doc(_auth.currentUser!.uid)
         .set({'booked': tempData.booked, 'presence': false});
@@ -246,7 +246,7 @@ class AppCubit extends Cubit<AppState> {
   Future<ParticipantData> getParticipantData(
       String eventId, up.User? user) async {
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
     var doc = await eventsParticipants.doc(user?.uid!).get();
     return ParticipantData.fromJson(doc.data()) ??
         ParticipantData(booked: false, presence: false);
@@ -305,7 +305,7 @@ class AppCubit extends Cubit<AppState> {
     // Accede al documento tramite l'ID `uid` e controlla il campo `cardNumber`
     return FirebaseFirestore.instance
         .collection(
-            'users') // sostituisci 'your_collection' con il nome della tua collezione
+        'users') // sostituisci 'your_collection' con il nome della tua collezione
         .doc(_auth.currentUser!.uid)
         .snapshots()
         .map((snapshot) {
@@ -324,7 +324,7 @@ class AppCubit extends Cubit<AppState> {
 
     var eventsCollection = firebase.collection("events");
     await eventsCollection.get().then(
-      (querySnapshot) {
+          (querySnapshot) {
         for (var doc in querySnapshot.docs) {
           var event = UpperEvent.fromJson(doc.data());
           event.id = doc.id;
@@ -347,7 +347,7 @@ class AppCubit extends Cubit<AppState> {
 
     var usersCollection = firebase.collection("users");
     await usersCollection.get().then(
-      (querySnapshot) async {
+          (querySnapshot) async {
         for (var doc in querySnapshot.docs) {
           if (kDebugMode) {
             print(doc.data());
@@ -397,14 +397,14 @@ class AppCubit extends Cubit<AppState> {
   Stream<List<up.User>> getUsers() async* {
     // Precarica i ruoli in una mappa
     final rolesSnapshot =
-        await FirebaseFirestore.instance.collection('roles').get();
+    await FirebaseFirestore.instance.collection('roles').get();
     final rolesMap = {
       for (var doc in rolesSnapshot.docs) doc.id: doc.data()['name']
     };
 
     // Ottieni il flusso degli utenti
     final snapshotStream =
-        FirebaseFirestore.instance.collection('users').snapshots();
+    FirebaseFirestore.instance.collection('users').snapshots();
 
     await for (final snapshot in snapshotStream) {
       final userList = snapshot.docs.map((doc) {
@@ -424,9 +424,9 @@ class AppCubit extends Cubit<AppState> {
     List<up.User> participantList = [];
 
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants.get().then(
-      (querySnapshot) {
+          (querySnapshot) {
         for (var doc in querySnapshot.docs) {
           var data = ParticipantData.fromJson(doc.data());
           if (data?.presence == true) {
@@ -497,9 +497,9 @@ class AppCubit extends Cubit<AppState> {
     List<up.User> participantList = [];
 
     var eventsParticipants =
-        firebase.collection('events').doc(eventId).collection("participants");
+    firebase.collection('events').doc(eventId).collection("participants");
     await eventsParticipants.get().then(
-      (querySnapshot) {
+          (querySnapshot) {
         for (var doc in querySnapshot.docs) {
           var data = ParticipantData.fromJson(doc.data());
           if (data?.booked == true) {

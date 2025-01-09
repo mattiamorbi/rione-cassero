@@ -47,7 +47,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   //TextEditingController cityController = TextEditingController();
   TextEditingController telephoneController = TextEditingController();
   TextEditingController passwordConfirmationController =
-      TextEditingController();
+  TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 

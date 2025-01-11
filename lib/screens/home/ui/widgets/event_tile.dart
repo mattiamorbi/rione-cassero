@@ -60,22 +60,24 @@ class _EventTileState extends State<EventTile> {
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
 
   List<up.User>? _participantUsers = [];
-  List<ParticipantDataCassero> _currentEventBookData = [];
+  List<List<ParticipantDataCassero>> _currentEventBookData = [];
   List<up.User>? _bookedUsers = [];
   bool _loading = true;
 
   StreamSubscription<List<up.User>?>? _presenceSubscription;
   StreamSubscription<List<up.User>?>? _bookSubscription;
 
-  StreamSubscription<List<ParticipantDataCassero>>? _eventBookSubscription;
-  late int totalBookedPlaces;
+  List<StreamSubscription<List<ParticipantDataCassero>>?>
+      _eventBookSubscription = [];
+  late List<int> totalBookedPlaces = [];
 
   final TextEditingController _bookEventController = TextEditingController();
 
   @override
   void dispose() {
     super.dispose();
-    _eventBookSubscription?.cancel();
+    for (int i = 0; i < _eventBookSubscription.length; i++)
+      _eventBookSubscription[i]!.cancel();
   }
 
   @override
@@ -93,76 +95,63 @@ class _EventTileState extends State<EventTile> {
       _loadImage(i);
     }
 
-    _onItemFocus(0);
+    _loadEventsSubscription();
+
+    //_onItemsLoad();
   }
 
   //void _loadLoggedUser() async {
   //  _loggedUser = await context.read<AppCubit>().getUser();
   //}
 
-  void _loadEventSubscription(int index) {
-    _eventBookSubscription?.cancel();
-    totalBookedPlaces = 0;
-    _eventBookSubscription = context
-        .read<AppCubit>()
-        .getBookEventCasseroStream(
-            widget.upperEvents[index].id!, widget.isAdmin)
-        .listen((snapshot) {
-      setState(() {
-        if (widget.isAdmin) {
-          _currentEventBookData = snapshot;
-          totalBookedPlaces = 0;
-          for (int i = 0; i < snapshot.length; i++) {
-            totalBookedPlaces += snapshot[i].number;
-          }
-        } else {
-          _currentEventBookData.clear();
-          totalBookedPlaces = 0;
-          for (int i = 0; i < snapshot.length; i++) {
-            if (snapshot[i].uid == widget.loggedUser.uid)
-              _currentEventBookData.add(snapshot[i]);
-            totalBookedPlaces += snapshot[i].number;
-          }
-        }
-      });
-    });
-  }
-
-  Future<void> _onItemFocus(int index) async {
-    if (kDebugMode) {
-      print(index);
-    }
+  Future<void> _loadEventsSubscription() async{
 
     setState(() {
       _loading = true;
       _qrMode = 0;
     });
 
-    //print(_loggedUser.name);
-    //_participantData = await context
-    //    .read<AppCubit>()
-    //    .getParticipantData(widget.upperEvents[index].id!, widget.loggedUser);
-    //if (kDebugMode) {
-    //  print(_participantData.booked);
-    //  print(_participantData.presence);
-    //}
-    //_participantUsers?.clear();
-    //_bookedUsers?.clear();
+    //totalBookedPlaces = 0;
 
-    //_myEvents = await context
-    //    .read<AppCubit>()
-    //    .getBookEventCassero(widget.upperEvents[_focusedIndex].id!, widget.isAdmin);
 
-    _loadEventSubscription(index);
+      // Inizializza _currentEventBookData come una lista di liste vuote
+      _currentEventBookData = List.generate(widget.upperEvents.length, (_) => []);
+      totalBookedPlaces = List.generate(widget.upperEvents.length, (_) => 0);
 
-    //DateTime oggi = DateTime.now();
-    //DateTime domani = DateTime.now();
+      for (int i = 0; i < widget.upperEvents.length; i++) {
+        // Ottieni lo stream per ogni evento
+        final stream = context
+            .read<AppCubit>()
+            .getBookEventCasseroStream(widget.upperEvents[i].id!, widget.isAdmin);
+
+        // Ascolta lo stream e gestisci i dati
+        final subscription = stream.listen((snapshot) {
+          setState(() {
+            totalBookedPlaces[i] = 0;
+
+            // Aggiorna i dati per l'amministratore o l'utente normale
+            _currentEventBookData[i].clear();
+            for (var item in snapshot) {
+              if (widget.isAdmin || item.uid == widget.loggedUser.uid) {
+                _currentEventBookData[i].add(item);
+              }
+              totalBookedPlaces[i] += item.number;
+            }
+          });
+        });
+
+        // Aggiungi la subscription alla lista
+        _eventBookSubscription.add(subscription);
+      }
+
 
     setState(() {
       _loading = false;
       _qrMode = 0;
     });
+
   }
+
 
   void _enableQrMode() {
     setState(() {
@@ -170,7 +159,7 @@ class _EventTileState extends State<EventTile> {
     });
   }
 
-  void _toggleBookMode() {
+  void _toggleBookMode(int index) {
     setState(() {
       _bookMode = 1;
       bookName = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
@@ -178,6 +167,7 @@ class _EventTileState extends State<EventTile> {
       _editBookNameMode = 0;
       _bookEventController.text =
           "${widget.loggedUser.name} ${widget.loggedUser.surname}";
+      _focusedIndex = index;
     });
   }
 
@@ -225,9 +215,9 @@ class _EventTileState extends State<EventTile> {
         .getParticipantData(widget.upperEvents[index].id!, user);
   }
 
-  Widget _buildItemDetail() {
-    if (data.length > _focusedIndex) {
-      var currentEvent = data[_focusedIndex];
+  Widget _buildItemDetail(int index) {
+    if (data.length > index) {
+      var currentEvent = data[index];
       return SizedBox(
         height: 200,
         child: Column(
@@ -253,18 +243,36 @@ class _EventTileState extends State<EventTile> {
                   fontWeight: FontWeight.bold,
                   color: ColorsManager.gray17),
             ),
-            currentEvent.bookingLimit != null ?
-            Visibility(
-              visible: currentEvent.bookingLimit != null &&
-                  currentEvent.bookingLimit! > 0,
+            Gap(10.h),
+            _currentEventBookData.isNotEmpty && index < _currentEventBookData.length &&
+                _loading == false ?
+            Container(
+              padding: EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(5),
+              ),
               child: Text(
-                "Posti rimanenti ${currentEvent.bookingLimit! - totalBookedPlaces}",
+                "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
                 style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red),
+                    color: ColorsManager.gray17,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
             ) : SizedBox.shrink(),
+            currentEvent.bookingLimit != null
+                ? Visibility(
+                    visible: currentEvent.bookingLimit != null &&
+                        currentEvent.bookingLimit! > 0,
+                    child: Text(
+                      "Posti rimanenti ${currentEvent.bookingLimit! - totalBookedPlaces[index]}",
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red),
+                    ),
+                  )
+                : SizedBox.shrink(),
             Visibility(
               visible: widget.isAdmin & !_loading,
               child: Text(
@@ -312,7 +320,7 @@ class _EventTileState extends State<EventTile> {
                     )
                   ]),
                   onTap: () =>
-                      _toggleBookMode(), //_toggleBookEvent(_focusedIndex),
+                      _toggleBookMode(index), //_toggleBookEvent(_focusedIndex),
                 ),
                 Visibility(
                   visible: widget.isAdmin,
@@ -327,7 +335,7 @@ class _EventTileState extends State<EventTile> {
                       Icons.edit,
                       color: Colors.orange,
                     ),
-                    onTap: () => _editEvent(_focusedIndex),
+                    onTap: () => _editEvent(index),
                   ),
                 ),
                 Visibility(
@@ -363,7 +371,7 @@ class _EventTileState extends State<EventTile> {
                 Visibility(
                   visible: widget.isAdmin & !_loading,
                   child: GestureDetector(
-                    onTap: () => _viewParticipants(_focusedIndex),
+                    onTap: () => _viewParticipants(index),
                     child: Icon(
                       Icons.menu,
                       color: Colors.orange,
@@ -444,25 +452,23 @@ class _EventTileState extends State<EventTile> {
           },
           child: Stack(children: [
             Center(child: Image(image: _image[index].image)),
-            Visibility(
-              visible: _currentEventBookData.length > 0 &&
-                  index == _focusedIndex &&
-                  _loading == false,
-              child: Container(
-                padding: EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  "PRENOTATO x${getTotalBookPeople(_currentEventBookData)}",
-                  style: TextStyle(
-                      color: ColorsManager.gray17,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
-                ),
+            index < _currentEventBookData.length &&
+                index == _focusedIndex &&
+                _loading == false ?
+            Container(
+              padding: EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(5),
               ),
-            ),
+              child: Text(
+                "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
+                style: TextStyle(
+                    color: ColorsManager.gray17,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
+            ) : SizedBox.shrink(),
           ]),
         ),
       ),
@@ -555,7 +561,7 @@ class _EventTileState extends State<EventTile> {
                   //setState(() {
                   //  _qrMode = 0;
                   //});
-                  _onItemFocus(_focusedIndex);
+                  //_onItemFocus(_focusedIndex);
                 },
                 child: Icon(
                   Icons.arrow_back,
@@ -694,35 +700,77 @@ class _EventTileState extends State<EventTile> {
   @override
   Widget build(BuildContext context) {
     if (_bookMode == 0) {
-      return Column(
-        children: <Widget>[
-          Expanded(
-            child: ScrollSnapList(
-              dynamicItemSize: true,
-              margin: EdgeInsets.symmetric(vertical: 10),
-
-              onItemFocus: (index) {
-                setState(() {
-                  _focusedIndex = index;
-                });
-                _onItemFocus(index);
-              },
-              //
-              // },
-              itemSize: isMobileDevice() ? window.display.size.width - 30 : 400,
-              itemBuilder: _buildListItem,
-              itemCount: data.length,
-              key: sslKey,
-              initialIndex: _focusedIndex as double,
-              background: ColorsManager.gray17,
-              padding: EdgeInsets.only(top: 8.0),
-              //dynamicItemOpacity: 0.2,
-              //listViewPadding: EdgeInsets.all(8.0),
-            ),
-          ),
-          _buildItemDetail(),
-        ],
+      return SizedBox(
+        height: 200,
+        child: PageView.builder(
+          controller: PageController(viewportFraction: 0.8),
+          // Mostra il 80% di una card
+          itemCount: widget.upperEvents.length,
+          itemBuilder: (context, index) {
+            return Container(
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              child: Card(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Center(child: GestureDetector(
+                          onTap: () async {
+                            if (_currentEventBookData[index].isNotEmpty) {
+                              await context.pushNamed(
+                                Routes.viewBookScreen,
+                                arguments: {
+                                  'event': widget.upperEvents[index],
+                                  'bookData': _currentEventBookData[index],
+                                  'user': widget.loggedUser,
+                                  'image': _image[index],
+                                  //'bookedUsers': _bookedUsers,
+                                  //'participantsUsers': _participantUsers,
+                                },
+                              );
+                            }
+                          },
+                              child: Image(width: 200, height: 200, image: _image[index].image))),
+                      Gap(15.h),
+                      _buildItemDetail(index),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       );
+      //return Column(
+      //  children: <Widget>[
+      //    Expanded(
+      //      child: ScrollSnapList(
+      //        dynamicItemSize: true,
+      //        margin: EdgeInsets.symmetric(vertical: 10),
+//
+      //        onItemFocus: (index) {
+      //          setState(() {
+      //            _focusedIndex = index;
+      //          });
+      //          _onItemFocus(index);
+      //        },
+      //        //
+      //        // },
+      //        itemSize: isMobileDevice() ? window.display.size.width - 30 : 400,
+      //        itemBuilder: _buildListItem,
+      //        itemCount: data.length,
+      //        key: sslKey,
+      //        initialIndex: _focusedIndex as double,
+      //        background: ColorsManager.gray17,
+      //        padding: EdgeInsets.only(top: 8.0),
+      //        //dynamicItemOpacity: 0.2,
+      //        //listViewPadding: EdgeInsets.all(8.0),
+      //      ),
+      //    ),
+      //    _buildItemDetail(),
+      //  ],
+      //);
     } else {
       // lettore di codici a barre
       //return Container(

@@ -73,6 +73,8 @@ class _EventTileState extends State<EventTile> {
 
   final TextEditingController _bookEventController = TextEditingController();
 
+  bool _isEventDetailVisible = true;
+
   @override
   void dispose() {
     super.dispose();
@@ -104,8 +106,7 @@ class _EventTileState extends State<EventTile> {
   //  _loggedUser = await context.read<AppCubit>().getUser();
   //}
 
-  Future<void> _loadEventsSubscription() async{
-
+  Future<void> _loadEventsSubscription() async {
     setState(() {
       _loading = true;
       _qrMode = 0;
@@ -113,45 +114,41 @@ class _EventTileState extends State<EventTile> {
 
     //totalBookedPlaces = 0;
 
+    // Inizializza _currentEventBookData come una lista di liste vuote
+    _currentEventBookData = List.generate(widget.upperEvents.length, (_) => []);
+    totalBookedPlaces = List.generate(widget.upperEvents.length, (_) => 0);
 
-      // Inizializza _currentEventBookData come una lista di liste vuote
-      _currentEventBookData = List.generate(widget.upperEvents.length, (_) => []);
-      totalBookedPlaces = List.generate(widget.upperEvents.length, (_) => 0);
+    for (int i = 0; i < widget.upperEvents.length; i++) {
+      // Ottieni lo stream per ogni evento
+      final stream = context
+          .read<AppCubit>()
+          .getBookEventCasseroStream(widget.upperEvents[i].id!, widget.isAdmin);
 
-      for (int i = 0; i < widget.upperEvents.length; i++) {
-        // Ottieni lo stream per ogni evento
-        final stream = context
-            .read<AppCubit>()
-            .getBookEventCasseroStream(widget.upperEvents[i].id!, widget.isAdmin);
+      // Ascolta lo stream e gestisci i dati
+      final subscription = stream.listen((snapshot) {
+        setState(() {
+          totalBookedPlaces[i] = 0;
 
-        // Ascolta lo stream e gestisci i dati
-        final subscription = stream.listen((snapshot) {
-          setState(() {
-            totalBookedPlaces[i] = 0;
-
-            // Aggiorna i dati per l'amministratore o l'utente normale
-            _currentEventBookData[i].clear();
-            for (var item in snapshot) {
-              if (widget.isAdmin || item.uid == widget.loggedUser.uid) {
-                _currentEventBookData[i].add(item);
-              }
-              totalBookedPlaces[i] += item.number;
+          // Aggiorna i dati per l'amministratore o l'utente normale
+          _currentEventBookData[i].clear();
+          for (var item in snapshot) {
+            if (widget.isAdmin || item.uid == widget.loggedUser.uid) {
+              _currentEventBookData[i].add(item);
             }
-          });
+            totalBookedPlaces[i] += item.number;
+          }
         });
+      });
 
-        // Aggiungi la subscription alla lista
-        _eventBookSubscription.add(subscription);
-      }
-
+      // Aggiungi la subscription alla lista
+      _eventBookSubscription.add(subscription);
+    }
 
     setState(() {
       _loading = false;
       _qrMode = 0;
     });
-
   }
-
 
   void _enableQrMode() {
     setState(() {
@@ -218,109 +215,126 @@ class _EventTileState extends State<EventTile> {
   Widget _buildItemDetail(int index) {
     if (data.length > index) {
       var currentEvent = data[index];
-      return SizedBox(
-        height: 200,
-        child: Column(
-          children: [
-            Text(
-              currentEvent.title,
-              style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: ColorsManager.gray17),
-            ),
-            Text(
-              "${currentEvent.date} - ${currentEvent.time}",
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: ColorsManager.gray17),
-            ),
-            Text(
-              currentEvent.place,
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: ColorsManager.gray17),
-            ),
-            Gap(10.h),
-            _currentEventBookData.isNotEmpty && index < _currentEventBookData.length &&
-                _loading == false ?
-            Container(
-              padding: EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
-                style: TextStyle(
-                    color: ColorsManager.gray17,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
-              ),
-            ) : SizedBox.shrink(),
-            currentEvent.bookingLimit != null
-                ? Visibility(
-                    visible: currentEvent.bookingLimit != null &&
-                        currentEvent.bookingLimit! > 0,
-                    child: Text(
-                      "Posti rimanenti ${currentEvent.bookingLimit! - totalBookedPlaces[index]}",
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red),
-                    ),
-                  )
-                : SizedBox.shrink(),
-            Visibility(
-              visible: widget.isAdmin & !_loading,
-              child: Text(
-                "Prenotate  ${_bookedUsers?.length}",
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange),
-              ),
-            ),
-            Visibility(
-              visible: widget.isAdmin & !_loading,
-              child: Text(
-                "Entrate  ${_participantUsers?.length}",
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange),
-              ),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Row(
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            currentEvent.title,
+            style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.gray17),
+          ),
+          Text(
+            "${currentEvent.date} - ${currentEvent.time}",
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.gray17),
+          ),
+          Text(
+            currentEvent.place,
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.gray17),
+          ),
+          Gap(10.h),
+          _currentEventBookData[index].isNotEmpty &&
+                  index < _currentEventBookData.length &&
+                  _loading == false
+              ? Container(
+                  padding: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
+                    style: TextStyle(
+                        color: ColorsManager.gray17,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
+              : SizedBox.shrink(),
+          currentEvent.bookingLimit != null
+              ? Visibility(
+                  visible: currentEvent.bookingLimit != null &&
+                      currentEvent.bookingLimit! > 0,
+                  child: Text(
+                    "Posti rimanenti ${currentEvent.bookingLimit! - totalBookedPlaces[index]}",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red),
+                  ),
+                )
+              : SizedBox.shrink(),
+          SizedBox(
+            height: 5,
+          ),
+          Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 GestureDetector(
-                  child: Row(children: [
-                    Icon(
-                      (_participantData.booked)
-                          ? Icons.person_remove_alt_1
-                          : Icons.person_add_alt_1,
-                      color: ColorsManager.gray17,
-                    ),
-                    Visibility(visible: !widget.isAdmin, child: Gap(5.w)),
-                    Visibility(
-                      visible: !widget.isAdmin,
-                      child: Text(
-                        (_participantData.booked)
-                            ? "Non parteciperò"
-                            : "Parteciperò",
-                        style: TextStyle(
-                            color: ColorsManager.gray17, fontSize: 18),
-                      ),
-                    )
-                  ]),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.person_add_alt_1,
+                          color: ColorsManager.gray17,
+                        ),
+                        Visibility(visible: !widget.isAdmin, child: Gap(5.w)),
+                        Visibility(
+                          visible: !widget.isAdmin,
+                          child: Text(
+                            "Aggiungi prenotazione",
+                            style: TextStyle(
+                                color: ColorsManager.gray17, fontSize: 18),
+                          ),
+                        )
+                      ]),
                   onTap: () =>
                       _toggleBookMode(index), //_toggleBookEvent(_focusedIndex),
+                ),
+                Gap(10.h),
+                GestureDetector(
+                  child: Visibility(
+                    visible: _currentEventBookData[index].isNotEmpty,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.settings,
+                            color: ColorsManager.gray17,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Gestisci prenotazioni",
+                            style: TextStyle(
+                                color: ColorsManager.gray17, fontSize: 18),
+                          )
+                        ]),
+                  ),
+                  onTap: () async {
+                    if (_currentEventBookData[index].isNotEmpty) {
+                      await context.pushNamed(
+                        Routes.viewBookScreen,
+                        arguments: {
+                          'event': widget.upperEvents[index],
+                          'bookData': _currentEventBookData[index],
+                          'user': widget.loggedUser,
+                          'image': _image[index],
+                          //'bookedUsers': _bookedUsers,
+                          //'participantsUsers': _participantUsers,
+                        },
+                      );
+                    }
+                  },
                 ),
                 Visibility(
                   visible: widget.isAdmin,
@@ -399,9 +413,9 @@ class _EventTileState extends State<EventTile> {
                   ),
                 ),
               ],
-            )
-          ],
-        ),
+            ),
+          )
+        ],
       );
     } else {
       return SizedBox(
@@ -453,22 +467,23 @@ class _EventTileState extends State<EventTile> {
           child: Stack(children: [
             Center(child: Image(image: _image[index].image)),
             index < _currentEventBookData.length &&
-                index == _focusedIndex &&
-                _loading == false ?
-            Container(
-              padding: EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
-                style: TextStyle(
-                    color: ColorsManager.gray17,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
-              ),
-            ) : SizedBox.shrink(),
+                    index == _focusedIndex &&
+                    _loading == false
+                ? Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
+                      style: TextStyle(
+                          color: ColorsManager.gray17,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  )
+                : SizedBox.shrink(),
           ]),
         ),
       ),
@@ -700,77 +715,63 @@ class _EventTileState extends State<EventTile> {
   @override
   Widget build(BuildContext context) {
     if (_bookMode == 0) {
-      return SizedBox(
-        height: 200,
-        child: PageView.builder(
-          controller: PageController(viewportFraction: 0.8),
-          // Mostra il 80% di una card
-          itemCount: widget.upperEvents.length,
-          itemBuilder: (context, index) {
-            return Container(
-              margin: EdgeInsets.symmetric(horizontal: 10),
+      return PageView.builder(
+        controller: PageController(viewportFraction: 0.8),
+        // Mostra l'80% di una card
+        itemCount: widget.upperEvents.length,
+        itemBuilder: (context, index) {
+          return Container(
+            height: 500,
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            child: GestureDetector(
+              onDoubleTap: () {
+                setState(() {
+                  _isEventDetailVisible =
+                      !_isEventDetailVisible; // Nasconde il pannello quando si preme
+                });
+              },
               child: Card(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Center(child: GestureDetector(
-                          onTap: () async {
-                            if (_currentEventBookData[index].isNotEmpty) {
-                              await context.pushNamed(
-                                Routes.viewBookScreen,
-                                arguments: {
-                                  'event': widget.upperEvents[index],
-                                  'bookData': _currentEventBookData[index],
-                                  'user': widget.loggedUser,
-                                  'image': _image[index],
-                                  //'bookedUsers': _bookedUsers,
-                                  //'participantsUsers': _participantUsers,
-                                },
-                              );
-                            }
-                          },
-                              child: Image(width: 200, height: 200, image: _image[index].image))),
-                      Gap(15.h),
-                      _buildItemDetail(index),
-                    ],
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Container(
+                  width: 300,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    image: DecorationImage(
+                      image: _image[index].image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: Visibility(
+                    visible: _isEventDetailVisible,
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 300,
+                            height: 230,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.8),
+                              // Bianco semi-trasparente
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: _buildItemDetail(index),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       );
-      //return Column(
-      //  children: <Widget>[
-      //    Expanded(
-      //      child: ScrollSnapList(
-      //        dynamicItemSize: true,
-      //        margin: EdgeInsets.symmetric(vertical: 10),
-//
-      //        onItemFocus: (index) {
-      //          setState(() {
-      //            _focusedIndex = index;
-      //          });
-      //          _onItemFocus(index);
-      //        },
-      //        //
-      //        // },
-      //        itemSize: isMobileDevice() ? window.display.size.width - 30 : 400,
-      //        itemBuilder: _buildListItem,
-      //        itemCount: data.length,
-      //        key: sslKey,
-      //        initialIndex: _focusedIndex as double,
-      //        background: ColorsManager.gray17,
-      //        padding: EdgeInsets.only(top: 8.0),
-      //        //dynamicItemOpacity: 0.2,
-      //        //listViewPadding: EdgeInsets.all(8.0),
-      //      ),
-      //    ),
-      //    _buildItemDetail(),
-      //  ],
-      //);
     } else {
       // lettore di codici a barre
       //return Container(

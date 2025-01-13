@@ -238,8 +238,8 @@ class _EventBookScreenState extends State<EventBookScreen> {
     );
   }
 
-  void _manageBook(ParticipantDataCassero currentBookData, int index) async {
-    await context.pushNamed(
+  Future<void> _manageBook(ParticipantDataCassero currentBookData, int index) async {
+    final result = await Navigator.pushNamed(context,
       Routes.manageBookScreen,
       arguments: {
         'user': widget.loggedUser,
@@ -249,7 +249,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
       },
     );
 
-    try {
+    if (result == 'edit') {
       final updated =  await context
           .read<AppCubit>()
           .getSingleBookEventCassero(
@@ -258,15 +258,11 @@ class _EventBookScreenState extends State<EventBookScreen> {
       setState(() {
         widget.bookData[index] = updated;
       });
-
-    } catch (e) {
+    } else if (result == 'delete'){
       setState(() {
         widget.bookData.removeAt(index);
       });
-
     }
-
-
   }
 
 

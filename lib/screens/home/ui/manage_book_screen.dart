@@ -292,7 +292,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
         bookNumber,
         childBookNumber);
 
-    context.pop();
+    Navigator.pop(context, 'edit');
   }
 
   Future<void> _bookEventDelete() async {
@@ -300,7 +300,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
         .read<AppCubit>()
         .deleteBookEventCassero(widget.upperEvent.id!, widget.bookData.eventUid);
 
-    context.pop();
+    Navigator.pop(context, 'delete');
   }
 
   @override

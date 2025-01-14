@@ -75,6 +75,8 @@ class _EventTileState extends State<EventTile> {
 
   bool _isEventDetailVisible = true;
 
+  bool _imageLoading = true;
+
   @override
   void dispose() {
     super.dispose();
@@ -88,6 +90,7 @@ class _EventTileState extends State<EventTile> {
 
     for (int i = 0; i < widget.upperEvents.length; i++) {
       _image.add(Image(image: AssetImage("assets/images/loading.gif")));
+      //_image[0].image.toString();
     }
 
     //_loadLoggedUser();
@@ -97,9 +100,13 @@ class _EventTileState extends State<EventTile> {
       _loadImage(i);
     }
 
+
+
     _loadEventsSubscription();
 
     //_onItemsLoad();
+
+
   }
 
   //void _loadLoggedUser() async {
@@ -288,14 +295,11 @@ class _EventTileState extends State<EventTile> {
                           Icons.person_add_alt_1,
                           color: ColorsManager.gray17,
                         ),
-                        Visibility(visible: !widget.isAdmin, child: Gap(5.w)),
-                        Visibility(
-                          visible: !widget.isAdmin,
-                          child: Text(
-                            "Aggiungi prenotazione",
-                            style: TextStyle(
-                                color: ColorsManager.gray17, fontSize: 18),
-                          ),
+                        Gap(5.w),
+                        Text(
+                          "Aggiungi prenotazione",
+                          style: TextStyle(
+                              color: ColorsManager.gray17, fontSize: 18),
                         )
                       ]),
                   onTap: () =>
@@ -314,7 +318,7 @@ class _EventTileState extends State<EventTile> {
                           ),
                           Gap(5.w),
                           Text(
-                            "Gestisci prenotazioni",
+                            "Gestisci prenotazione",
                             style: TextStyle(
                                 color: ColorsManager.gray17, fontSize: 18),
                           )
@@ -345,10 +349,20 @@ class _EventTileState extends State<EventTile> {
                 Visibility(
                   visible: widget.isAdmin & !_loading,
                   child: GestureDetector(
-                    child: Icon(
-                      Icons.edit,
-                      color: Colors.orange,
-                    ),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.edit,
+                            color: Colors.orange,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Modifica evento",
+                            style: TextStyle(
+                                color: Colors.orange, fontSize: 18),
+                          )
+                        ]),
                     onTap: () => _editEvent(index),
                   ),
                 ),
@@ -365,11 +379,35 @@ class _EventTileState extends State<EventTile> {
                           (widget.loggedUser.name == 'Mattia' &&
                               widget.loggedUser.surname == 'Morbidelli')),
                   child: GestureDetector(
-                    onTap: _enableQrMode,
-                    child: Icon(
-                      Icons.qr_code,
-                      color: Colors.orange,
-                    ),
+                    onTap: () async {
+                      if (_currentEventBookData[index].isNotEmpty) {
+                        await context.pushNamed(
+                          Routes.viewBookScreen,
+                          arguments: {
+                            'event': widget.upperEvents[index],
+                            'bookData': _currentEventBookData[index],
+                            'user': widget.loggedUser,
+                            'image': _image[index],
+                            //'bookedUsers': _bookedUsers,
+                            //'participantsUsers': _participantUsers,
+                          },
+                        );
+                      }
+                    },
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.monetization_on_outlined,
+                            color: Colors.orange,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Gestisci ingresso",
+                            style: TextStyle(
+                                color: Colors.orange, fontSize: 18),
+                          )
+                        ]),
                   ),
                 ),
                 Visibility(
@@ -382,29 +420,39 @@ class _EventTileState extends State<EventTile> {
                     width: 20,
                   ),
                 ),
+                //Visibility(
+                //  visible: widget.isAdmin & !_loading,
+                //  child: GestureDetector(
+                //    onTap: () => _viewParticipants(index),
+                //    child: Icon(
+                //      Icons.menu,
+                //      color: Colors.orange,
+                //    ),
+                //  ),
+                //),
+                //Visibility(
+                //  visible: widget.isAdmin,
+                //  child: SizedBox(
+                //    width: 20,
+                //  ),
+                //),
                 Visibility(
                   visible: widget.isAdmin & !_loading,
                   child: GestureDetector(
-                    onTap: () => _viewParticipants(index),
-                    child: Icon(
-                      Icons.menu,
-                      color: Colors.orange,
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: widget.isAdmin,
-                  child: SizedBox(
-                    width: 20,
-                  ),
-                ),
-                Visibility(
-                  visible: widget.isAdmin & !_loading,
-                  child: GestureDetector(
-                    child: Icon(
-                      Icons.add,
-                      color: Colors.orange,
-                    ),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add,
+                            color: Colors.orange,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Aggiungi evento",
+                            style: TextStyle(
+                                color: Colors.orange, fontSize: 18),
+                          )
+                        ]),
                     onTap: () async {
                       await context.pushNamed(Routes.newEventScreen,
                           arguments: null);
@@ -742,7 +790,7 @@ class _EventTileState extends State<EventTile> {
                     borderRadius: BorderRadius.circular(16),
                     image: DecorationImage(
                       image: _image[index].image,
-                      fit: BoxFit.cover,
+                      fit: _image[index].image.toString().contains("loading.gif") ? BoxFit.contain : BoxFit.cover,
                     ),
                   ),
                   child: Visibility(
@@ -750,16 +798,19 @@ class _EventTileState extends State<EventTile> {
                     child: Stack(
                       children: [
                         Center(
-                          child: Container(
-                            width: 300,
-                            height: 230,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.8),
-                              // Bianco semi-trasparente
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              child: _buildItemDetail(index),
+                          child: Visibility(
+                            visible: !_image[index].image.toString().contains("loading.gif"),
+                            child: Container(
+                              width: 300,
+                              height: widget.isAdmin ? 300 : 230,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                // Bianco semi-trasparente
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: _buildItemDetail(index),
+                              ),
                             ),
                           ),
                         ),
@@ -797,8 +848,9 @@ class _EventTileState extends State<EventTile> {
                     height: 200,
                     child: Image(
                         image: _image[_focusedIndex].image,
-                        fit: BoxFit.fitWidth),
+                        fit: BoxFit.scaleDown),
                   ),
+                  Gap(15.w),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -806,7 +858,7 @@ class _EventTileState extends State<EventTile> {
                       Text(
                         currentEvent.title,
                         style: TextStyle(
-                            fontSize: 25,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: ColorsManager.gray17),
                       ),
@@ -1021,6 +1073,12 @@ class _EventTileState extends State<EventTile> {
         print('Error loading image: $e');
       }
     }
+
+    //if (index == widget.upperEvents.length - 1) {
+    //  setState(() {
+    //    _imageLoading = false;
+    //  });
+    //}
   }
 
   Future<void> _editEvent(int index) async {

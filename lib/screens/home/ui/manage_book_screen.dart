@@ -81,7 +81,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                         height: 200,
                         child: Image(
                             image: widget.eventImage.image,
-                            fit: BoxFit.fill),
+                            fit: BoxFit.scaleDown),
                       ),
                       Gap(15.w),
                       Column(
@@ -91,7 +91,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                           Text(
                             currentEvent.title,
                             style: TextStyle(
-                                fontSize: 25,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: ColorsManager.gray17),
                           ),
@@ -292,7 +292,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
         bookNumber,
         childBookNumber);
 
-    Navigator.pop(context, 'edit');
+    Navigator.pop(context);
   }
 
   Future<void> _bookEventDelete() async {
@@ -300,7 +300,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
         .read<AppCubit>()
         .deleteBookEventCassero(widget.upperEvent.id!, widget.bookData.eventUid);
 
-    Navigator.pop(context, 'delete');
+    Navigator.pop(context);
   }
 
   @override

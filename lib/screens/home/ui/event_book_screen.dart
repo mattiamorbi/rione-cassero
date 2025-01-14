@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
-import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/models/participant_data.dart';
 import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/theming/colors.dart';
 
-import '../../../logic/cubit/app/app_cubit.dart';
 import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
@@ -23,7 +22,11 @@ class EventBookScreen extends StatefulWidget {
   //List<up.User> participantsUsers = [];
 
   EventBookScreen(
-      {super.key, required this.upperEvent, required this.bookData, required this.loggedUser, required this.eventImage});
+      {super.key,
+      required this.upperEvent,
+      required this.bookData,
+      required this.loggedUser,
+      required this.eventImage});
 
   //required this.bookedUsers,
   //required this.participantsUsers});
@@ -33,7 +36,7 @@ class EventBookScreen extends StatefulWidget {
 }
 
 class _EventBookScreenState extends State<EventBookScreen> {
-  List<ParticipantDataCassero> _totalJoinBook = [];
+  //List<ParticipantDataCassero> _totalJoinBook = [];
   List<ParticipantDataCassero> _filteredBook = [];
 
   //List<up.User?>? bookedUsers = [];
@@ -51,7 +54,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
     super.initState();
 
     _filteredBook = widget.bookData;
-    _totalJoinBook = widget.bookData;
+    //_totalJoinBook = widget.bookData;
 
     //_loadEventSubscription();
 
@@ -113,7 +116,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
 
   // Funzione per filtrare la lista degli utenti in base al testo inserito
   void filterUsers(String query) {
-    List<ParticipantDataCassero> filtered = _totalJoinBook.where((book) {
+    List<ParticipantDataCassero> filtered = widget.bookData.where((book) {
       String fullName =
           '${book.name.toLowerCase()} ${book.bookUserName.toLowerCase()}';
 
@@ -131,6 +134,16 @@ class _EventBookScreenState extends State<EventBookScreen> {
       //var event = UpperEvent.fromJson(doc.data());
       //print(doc.id);
       sum += book.number;
+    }
+    return sum;
+  }
+
+  int getTotalBookChild(List<ParticipantDataCassero> list) {
+    int sum = 0;
+    for (var book in list) {
+      //var event = UpperEvent.fromJson(doc.data());
+      //print(doc.id);
+      sum += book.childrenNumber;
     }
     return sum;
   }
@@ -172,64 +185,85 @@ class _EventBookScreenState extends State<EventBookScreen> {
                 ),
               ),
               Text(
-                "Prenotazioni: ${widget.bookData.length} / Persone totali: ${getTotalBookPeople(widget.bookData)}",
+                "Prenotazioni: ${widget.bookData.length}",
                 style: TextStyle(color: ColorsManager.gray17),
               ),
+              Text(
+                "Persone totali: ${getTotalBookPeople(widget.bookData)}",
+                style: TextStyle(color: ColorsManager.gray17),
+              ),
+              Text(
+                "Bambini totali: ${getTotalBookChild(widget.bookData)}",
+                style: TextStyle(color: ColorsManager.gray17),
+              ),
+              widget.upperEvent.price != null && widget.upperEvent.childrenPrice != null
+                  ? Text(
+                      "Incasso previsto: ${(widget.upperEvent.price! * getTotalBookPeople(widget.bookData)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(widget.bookData))} €",
+                      style: TextStyle(color: ColorsManager.gray17),
+                    )
+                  : SizedBox.shrink(),
+              Gap(15.h),
               Expanded(
                 child: _filteredBook.isEmpty
                     ? Center(child: Text('Nessuna prenotazione trovata'))
-                    : ListView.builder(
-                  itemCount: _filteredBook.length,
-                  itemBuilder: (context, index) {
-                    final user = _filteredBook[index];
-                    return ListTile(
-                      tileColor: ColorsManager.background,
-                      textColor: Colors.black,
-                      subtitleTextStyle: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black38,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        //<-- SEE HERE
-                        side: BorderSide(
-                            width: 0, color: ColorsManager.background),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      //onTap: () => _showUser(user, widget.upperEvent),
-                      //leading: Icon(
-                      //  Icons.person_outline,
-                      //  color: user.state == 'booked'
-                      //      ? Colors.orange
-                      //      : user.state == 'joined'
-                      //          ? Colors.green
-                      //          : Colors.black,
-                      //),
-                      leading: Icon(
-                        Icons.bookmark_border,
-                        color: Colors.black,
-                      ),
-                      trailing: GestureDetector(
-                        onTap: () => _manageBook(widget.bookData[index], index),
-                        child: Text(
-                          "GESTISCI",
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold),
+                    : Container(
+                        color: ColorsManager.background,
+                        child: ListView.builder(
+                          itemCount: _filteredBook.length,
+                          itemBuilder: (context, index) {
+                            final user = _filteredBook[index];
+                            return ListTile(
+                              tileColor: ColorsManager.background,
+                              textColor: Colors.black,
+                              subtitleTextStyle: TextStyle(
+                                fontSize: 12,
+                                color: Colors.black38,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                //<-- SEE HERE
+                                side: BorderSide(
+                                    width: 0, color: ColorsManager.background),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              //onTap: () => _showUser(user, widget.upperEvent),
+                              //leading: Icon(
+                              //  Icons.person_outline,
+                              //  color: user.state == 'booked'
+                              //      ? Colors.orange
+                              //      : user.state == 'joined'
+                              //          ? Colors.green
+                              //          : Colors.black,
+                              //),
+                              leading: Icon(
+                                Icons.bookmark_border,
+                                color: Colors.black,
+                              ),
+                              trailing: GestureDetector(
+                                onTap: () =>
+                                    _manageBook(widget.bookData[index], index),
+                                child: Text(
+                                  "GESTISCI",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+
+                              //trailing: GestureDetector(
+                              //  child: Icon(Icons.delete, color: Colors.red),
+                              //  onTap: () {},
+                              //),
+                              title: Text(user.number > 1
+                                  ? "${user.name} (${user.number} persone)"
+                                  : "${user.name} (${user.number} persona)"),
+                              subtitle: Text(
+                                  //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                  'Effettuata da: ${user.bookUserName}'),
+                            );
+                          },
                         ),
                       ),
-
-                      //trailing: GestureDetector(
-                      //  child: Icon(Icons.delete, color: Colors.red),
-                      //  onTap: () {},
-                      //),
-                      title: Text(user.number > 1 ? "${user.name} (${user.number} persone)" : "${user.name} (${user.number} persona)"),
-                      subtitle: Text(
-                        //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
-                          'Effettuata da: ${user.bookUserName}'),
-                    );
-                  },
-                ),
               ),
             ],
           ),
@@ -238,33 +272,32 @@ class _EventBookScreenState extends State<EventBookScreen> {
     );
   }
 
-  Future<void> _manageBook(ParticipantDataCassero currentBookData, int index) async {
-    final result = await Navigator.pushNamed(context,
+  Future<void> _manageBook(
+      ParticipantDataCassero currentBookData, int index) async {
+    await Navigator.pushNamed(
+      context,
       Routes.manageBookScreen,
       arguments: {
         'user': widget.loggedUser,
         'event': widget.upperEvent,
         'bookData': currentBookData,
-        'image':widget.eventImage,
+        'image': widget.eventImage,
       },
     );
 
-    if (result == 'edit') {
-      final updated =  await context
-          .read<AppCubit>()
-          .getSingleBookEventCassero(
-          widget.upperEvent.id!,
-          currentBookData.eventUid) as ParticipantDataCassero;
-      setState(() {
-        widget.bookData[index] = updated;
-      });
-    } else if (result == 'delete'){
-      setState(() {
-        widget.bookData.removeAt(index);
-      });
-    }
-  }
+    //if (result == 'edit') {
+    //  final updated = await context.read<AppCubit>().getSingleBookEventCassero(
+    //          widget.upperEvent.id!, currentBookData.eventUid)
+    //      as ParticipantDataCassero;
+    //  setState(() {
+    //    widget.bookData[index] = updated;
+    //  });
+    //} else if (result == 'delete') {
+    //  setState(() {});
+    //}
 
+    setState(() {});
+  }
 
   @override
   void dispose() {

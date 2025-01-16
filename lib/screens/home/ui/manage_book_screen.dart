@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
-import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
 import 'package:rione_cassero/models/participant_data.dart';
 import 'package:rione_cassero/models/upper_event.dart';
@@ -37,6 +36,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   int childBookNumber = 0;
 
   final TextEditingController _bookEventController = TextEditingController();
+  final TextEditingController _allergyNoteController = TextEditingController();
+  bool allergy = false;
+  final formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -45,6 +47,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
     bookName = widget.bookData.name;
     bookNumber = widget.bookData.number;
     childBookNumber = widget.bookData.childrenNumber;
+
+    allergy = widget.bookData.allergy ?? false;
+    _allergyNoteController.text = widget.bookData.allergyNote ?? "";
 
     _bookEventController.text = bookName;
   }
@@ -116,150 +121,242 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                          child: Text(
-                        "Modifica la tua prenotazione",
-                        style: TextStyle(
-                            color: Color.fromRGBO(50, 50, 50, 1), fontSize: 15),
-                      )),
-                      Gap(20.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _editBookNameMode == 0
-                              ? Text(
-                                  bookName,
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 20),
-                                )
-                              : Center(
-                                  child: Container(
-                                    width: window.physicalSize.width /
-                                            window.devicePixelRatio -
-                                        100,
-                                    child: AppTextFormField(
-                                      textAlignment: TextAlign.center,
-                                      hint: "",
-                                      validator: (value) {
-                                        String enteredValue =
-                                            (value ?? '').trim();
-                                        _bookEventController.text =
-                                            enteredValue;
-                                        if (enteredValue.isEmpty) {
-                                          return "Il valore non può essere nullo";
-                                        }
-                                      },
-                                      controller: _bookEventController,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                            child: Text(
+                          "Modifica la tua prenotazione",
+                          style: TextStyle(
+                              color: Color.fromRGBO(50, 50, 50, 1),
+                              fontSize: 15),
+                        )),
+                        Gap(20.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _editBookNameMode == 0
+                                ? Text(
+                                    bookName,
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 20),
+                                  )
+                                : Center(
+                                    child: Container(
+                                      width: window.physicalSize.width /
+                                              window.devicePixelRatio -
+                                          100,
+                                      child: AppTextFormField(
+                                        textAlignment: TextAlign.center,
+                                        hint: "",
+                                        validator: (value) {
+                                          String enteredValue =
+                                              (value ?? '').trim();
+                                          _bookEventController.text =
+                                              enteredValue;
+                                          if (enteredValue.isEmpty) {
+                                            return "Il valore non può essere nullo";
+                                          }
+                                        },
+                                        controller: _bookEventController,
+                                      ),
                                     ),
                                   ),
-                                ),
-                          Visibility(
+                            Visibility(
+                                visible: _editBookNameMode == 0,
+                                child: Gap(10.w)),
+                            Visibility(
                               visible: _editBookNameMode == 0,
-                              child: Gap(10.w)),
-                          Visibility(
-                            visible: _editBookNameMode == 0,
-                            child: GestureDetector(
-                              child: Icon(Icons.edit, size: 20),
-                              onTap: _editBookName,
+                              child: GestureDetector(
+                                child: Icon(Icons.edit, size: 20),
+                                onTap: _editBookName,
+                              ),
+                            )
+                          ],
+                        ),
+                        Gap(15.h),
+                        Center(
+                            child: Text(
+                          "Adulti",
+                          style: TextStyle(fontSize: 15),
+                        )),
+                        Gap(5.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            GestureDetector(
+                              child: Icon(
+                                Icons.remove,
+                                size: 25,
+                              ),
+                              onTap: () => setState(() {
+                                bookNumber--;
+                                if (bookNumber <= 1) bookNumber = 1;
+                              }),
                             ),
-                          )
-                        ],
-                      ),
-                      Gap(15.h),
-                      Center(
-                          child: Text(
-                        "Adulti",
-                        style: TextStyle(fontSize: 15),
-                      )),
-                      Gap(5.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          GestureDetector(
-                            child: Icon(
-                              Icons.remove,
-                              size: 25,
+                            Text(
+                              bookNumber.toString(),
+                              style: TextStyle(fontSize: 30),
                             ),
-                            onTap: () => setState(() {
-                              bookNumber--;
-                              if (bookNumber <= 1) bookNumber = 1;
-                            }),
-                          ),
-                          Text(
-                            bookNumber.toString(),
-                            style: TextStyle(fontSize: 30),
-                          ),
-                          GestureDetector(
-                            child: Icon(
-                              Icons.add,
-                              size: 25,
+                            GestureDetector(
+                              child: Icon(
+                                Icons.add,
+                                size: 25,
+                              ),
+                              onTap: () => setState(() {
+                                bookNumber++;
+                              }),
                             ),
-                            onTap: () => setState(() {
-                              bookNumber++;
-                            }),
-                          ),
-                        ],
-                      ),
-                      Gap(15.h),
-                      Center(
-                          child: Text(
-                        "Bambini",
-                        style: TextStyle(fontSize: 15),
-                      )),
-                      Gap(5.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          GestureDetector(
-                            child: Icon(
-                              Icons.remove,
-                              size: 25,
+                          ],
+                        ),
+                        Gap(15.h),
+                        Center(
+                            child: Text(
+                          "Bambini",
+                          style: TextStyle(fontSize: 15),
+                        )),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            GestureDetector(
+                              child: Icon(
+                                Icons.remove,
+                                size: 25,
+                              ),
+                              onTap: () => setState(() {
+                                childBookNumber--;
+                                if (childBookNumber <= 0) childBookNumber = 0;
+                              }),
                             ),
-                            onTap: () => setState(() {
-                              childBookNumber--;
-                              if (childBookNumber <= 0) childBookNumber = 0;
-                            }),
-                          ),
-                          Text(
-                            childBookNumber.toString(),
-                            style: TextStyle(fontSize: 30),
-                          ),
-                          GestureDetector(
-                            child: Icon(
-                              Icons.add,
-                              size: 25,
+                            Text(
+                              childBookNumber.toString(),
+                              style: TextStyle(fontSize: 30),
                             ),
-                            onTap: () => setState(() {
-                              childBookNumber++;
-                            }),
-                          ),
-                        ],
-                      ),
-                      Gap(20.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          GestureDetector(
-                            child: Icon(
-                              Icons.delete,
-                              size: 35,
-                              color: Colors.red,
+                            GestureDetector(
+                              child: Icon(
+                                Icons.add,
+                                size: 25,
+                              ),
+                              onTap: () => setState(() {
+                                childBookNumber++;
+                              }),
                             ),
-                            onTap: _bookEventDelete,
+                          ],
+                        ),
+                        Gap(15.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Intolleranze",
+                                style: TextStyle(fontSize: 22)),
+                            Gap(40.w),
+                            GestureDetector(
+                              onTap: () => setState(() {
+                                allergy = true;
+                              }),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    allergy
+                                        ? Icons.check_circle_outline
+                                        : Icons.circle_outlined,
+                                    size: 25,
+                                  ),
+                                  Text("SI", style: TextStyle(fontSize: 22)),
+                                ],
+                              ),
+                            ),
+                            Gap(30.w),
+                            GestureDetector(
+                              onTap: () => setState(() {
+                                allergy = false;
+                                _allergyNoteController.text = "";
+                              }),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    !allergy
+                                        ? Icons.check_circle_outline
+                                        : Icons.circle_outlined,
+                                    size: 25,
+                                  ),
+                                  Text("NO", style: TextStyle(fontSize: 22)),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        Gap(10.h),
+                        Visibility(
+                          visible: allergy,
+                          child: AppTextFormField(
+                            textAlignment: TextAlign.center,
+                            hint: "",
+                            validator: (value) {
+                              String enteredValue = (value ?? '');
+                              _allergyNoteController.text = enteredValue;
+                              if (enteredValue.isEmpty) {
+                                return "Il valore non può essere nullo";
+                              }
+                            },
+                            controller: _allergyNoteController,
                           ),
-                          Gap(100.w),
-                          GestureDetector(
-                            child: Icon(Icons.save, size: 35),
-                            onTap: _bookEventSave,
-                          ),
-                        ],
-                      )
-                    ],
+                        ),
+                        Gap(20.h),
+                        Gap(5.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            GestureDetector(
+                              child: Icon(
+                                Icons.remove,
+                                size: 25,
+                              ),
+                              onTap: () => setState(() {
+                                childBookNumber--;
+                                if (childBookNumber <= 0) childBookNumber = 0;
+                              }),
+                            ),
+                            Text(
+                              childBookNumber.toString(),
+                              style: TextStyle(fontSize: 30),
+                            ),
+                            GestureDetector(
+                              child: Icon(
+                                Icons.add,
+                                size: 25,
+                              ),
+                              onTap: () => setState(() {
+                                childBookNumber++;
+                              }),
+                            ),
+                          ],
+                        ),
+                        Gap(20.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              child: Icon(
+                                Icons.delete,
+                                size: 35,
+                                color: Colors.red,
+                              ),
+                              onTap: _bookEventDelete,
+                            ),
+                            Gap(100.w),
+                            GestureDetector(
+                              child: Icon(Icons.save, size: 35),
+                              onTap: _bookEventSave,
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 )
               ],
@@ -285,20 +382,26 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   }
 
   Future<void> _bookEventSave() async {
-    await context.read<AppCubit>().bookEventCassero(
-        widget.upperEvent.id!,
-        widget.bookData.eventUid,
-        _bookEventController.text,
-        bookNumber,
-        childBookNumber);
+    if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
+        (allergy && _allergyNoteController.text.length == 0)) {
+      formKey.currentState!.validate();
+    } else {
+      await context.read<AppCubit>().bookEventCassero(
+          widget.upperEvent.id!,
+          widget.bookData.eventUid,
+          _bookEventController.text,
+          bookNumber,
+          childBookNumber,
+          allergy,
+          _allergyNoteController.text);
 
-    Navigator.pop(context);
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _bookEventDelete() async {
-    await context
-        .read<AppCubit>()
-        .deleteBookEventCassero(widget.upperEvent.id!, widget.bookData.eventUid);
+    await context.read<AppCubit>().deleteBookEventCassero(
+        widget.upperEvent.id!, widget.bookData.eventUid);
 
     Navigator.pop(context);
   }
@@ -306,5 +409,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   @override
   void dispose() {
     super.dispose();
+    _bookEventController.dispose();
+    _allergyNoteController.dispose();
   }
 }

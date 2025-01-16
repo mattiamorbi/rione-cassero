@@ -21,12 +21,11 @@ class EventBookScreen extends StatefulWidget {
   //List<up.User> bookedUsers = [];
   //List<up.User> participantsUsers = [];
 
-  EventBookScreen(
-      {super.key,
-      required this.upperEvent,
-      required this.bookData,
-      required this.loggedUser,
-      required this.eventImage});
+  EventBookScreen({super.key,
+    required this.upperEvent,
+    required this.bookData,
+    required this.loggedUser,
+    required this.eventImage});
 
   //required this.bookedUsers,
   //required this.participantsUsers});
@@ -43,6 +42,8 @@ class _EventBookScreenState extends State<EventBookScreen> {
   //List<up.User?>? participantsUsers = [];
 
   final TextEditingController _searchController = TextEditingController();
+
+  bool _allergyFilter = false;
 
   //bool _isUsersLoading = true;
 
@@ -120,7 +121,9 @@ class _EventBookScreenState extends State<EventBookScreen> {
       String fullName =
           '${book.name.toLowerCase()} ${book.bookUserName.toLowerCase()}';
 
-      return fullName.contains(query.toLowerCase());
+      bool result = fullName.contains(query.toLowerCase());
+      if (_allergyFilter) result = result && book.allergy == true;
+      return result;
     }).toList();
 
     setState(() {
@@ -188,82 +191,104 @@ class _EventBookScreenState extends State<EventBookScreen> {
                 "Prenotazioni: ${widget.bookData.length}",
                 style: TextStyle(color: ColorsManager.gray17),
               ),
-              Text(
-                "Persone totali: ${getTotalBookPeople(widget.bookData)}",
-                style: TextStyle(color: ColorsManager.gray17),
+              Visibility(
+                visible: widget.loggedUser.isAdmin!,
+                child: Text(
+                  "Persone totali: ${getTotalBookPeople(widget.bookData)}",
+                  style: TextStyle(color: ColorsManager.gray17),
+                ),
               ),
-              Text(
-                "Bambini totali: ${getTotalBookChild(widget.bookData)}",
-                style: TextStyle(color: ColorsManager.gray17),
+              Visibility(
+                visible: widget.loggedUser.isAdmin!,
+                child: Text(
+                  "Bambini totali: ${getTotalBookChild(widget.bookData)}",
+                  style: TextStyle(color: ColorsManager.gray17),
+                ),
               ),
-              widget.upperEvent.price != null && widget.upperEvent.childrenPrice != null
-                  ? Text(
-                      "Incasso previsto: ${(widget.upperEvent.price! * getTotalBookPeople(widget.bookData)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(widget.bookData))} €",
-                      style: TextStyle(color: ColorsManager.gray17),
-                    )
-                  : SizedBox.shrink(),
+              Visibility(
+                visible: widget.loggedUser.isAdmin! &&
+                    widget.upperEvent.price != null &&
+                    widget.upperEvent.childrenPrice != null,
+                child: Text(
+                  "Incasso previsto: ${(widget.upperEvent.price! *
+                      getTotalBookPeople(widget.bookData)) +
+                      (widget.upperEvent.childrenPrice! *
+                          getTotalBookChild(widget.bookData))} €",
+                  style: TextStyle(color: ColorsManager.gray17),
+                ),
+              ),
+              GestureDetector(
+                  onTap: () =>
+                      setState(() {
+                        _allergyFilter = !_allergyFilter;
+                        filterUsers(_searchController.text);
+                      }),
+                  child: Icon(_allergyFilter ? Icons.no_food : Icons.no_food_outlined, size: 30)),
               Gap(15.h),
               Expanded(
                 child: _filteredBook.isEmpty
                     ? Center(child: Text('Nessuna prenotazione trovata'))
                     : Container(
-                        color: ColorsManager.background,
-                        child: ListView.builder(
-                          itemCount: _filteredBook.length,
-                          itemBuilder: (context, index) {
-                            final user = _filteredBook[index];
-                            return ListTile(
-                              tileColor: ColorsManager.background,
-                              textColor: Colors.black,
-                              subtitleTextStyle: TextStyle(
-                                fontSize: 12,
-                                color: Colors.black38,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                //<-- SEE HERE
-                                side: BorderSide(
-                                    width: 0, color: ColorsManager.background),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              //onTap: () => _showUser(user, widget.upperEvent),
-                              //leading: Icon(
-                              //  Icons.person_outline,
-                              //  color: user.state == 'booked'
-                              //      ? Colors.orange
-                              //      : user.state == 'joined'
-                              //          ? Colors.green
-                              //          : Colors.black,
-                              //),
-                              leading: Icon(
-                                Icons.bookmark_border,
-                                color: Colors.black,
-                              ),
-                              trailing: GestureDetector(
-                                onTap: () =>
-                                    _manageBook(widget.bookData[index], index),
-                                child: Text(
-                                  "GESTISCI",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-
-                              //trailing: GestureDetector(
-                              //  child: Icon(Icons.delete, color: Colors.red),
-                              //  onTap: () {},
-                              //),
-                              title: Text(user.number > 1
-                                  ? "${user.name} (${user.number} persone)"
-                                  : "${user.name} (${user.number} persona)"),
-                              subtitle: Text(
-                                  //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
-                                  'Effettuata da: ${user.bookUserName}'),
-                            );
-                          },
+                  color: ColorsManager.background,
+                  child: ListView.builder(
+                    itemCount: _filteredBook.length,
+                    itemBuilder: (context, index) {
+                      final user = _filteredBook[index];
+                      return ListTile(
+                        tileColor: ColorsManager.background,
+                        textColor: Colors.black,
+                        subtitleTextStyle: TextStyle(
+                          fontSize: 12,
+                          color: Colors.black38,
                         ),
-                      ),
+                        shape: RoundedRectangleBorder(
+                          //<-- SEE HERE
+                          side: BorderSide(
+                              width: 0, color: ColorsManager.background),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        //onTap: () => _showUser(user, widget.upperEvent),
+                        //leading: Icon(
+                        //  Icons.person_outline,
+                        //  color: user.state == 'booked'
+                        //      ? Colors.orange
+                        //      : user.state == 'joined'
+                        //          ? Colors.green
+                        //          : Colors.black,
+                        //),
+                        leading: Icon(
+                          _filteredBook[index].allergy != null &&
+                              _filteredBook[index].allergy == true
+                              ? Icons.no_food
+                              : Icons.bookmark_border,
+                          color: Colors.black,
+                        ),
+                        trailing: GestureDetector(
+                          onTap: () =>
+                              _manageBook(_filteredBook[index], index),
+                          child: Text(
+                            "GESTISCI",
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+
+                        //trailing: GestureDetector(
+                        //  child: Icon(Icons.delete, color: Colors.red),
+                        //  onTap: () {},
+                        //),
+                        title: Text(user.number > 1
+                            ? "${user.name} (${user.number} persone)"
+                            : "${user.name} (${user.number} persona)"),
+                        subtitle: Text(
+                          //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                            'Effettuata da: ${user.bookUserName}'),
+                      );
+                    },
+                  ),
+                ),
               ),
             ],
           ),
@@ -272,8 +297,8 @@ class _EventBookScreenState extends State<EventBookScreen> {
     );
   }
 
-  Future<void> _manageBook(
-      ParticipantDataCassero currentBookData, int index) async {
+  Future<void> _manageBook(ParticipantDataCassero currentBookData,
+      int index) async {
     await Navigator.pushNamed(
       context,
       Routes.manageBookScreen,

@@ -120,7 +120,7 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Future<void> bookEventCassero(String eventId, String? eventUID,
-      String bookName, int bookNumber, int childrenBookNumber) async {
+      String bookName, int bookNumber, int childrenBookNumber, bool? allergy, String? allergyNote) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
     firebase.collection('events').doc(eventId).collection("participants");
@@ -141,6 +141,8 @@ class AppCubit extends Cubit<AppState> {
       'number': bookNumber,
       'childrenNumber': childrenBookNumber,
       'date': FieldValue.serverTimestamp(),
+      'allergy': allergy,
+      'allergyNote': allergyNote,
     });
   }
 

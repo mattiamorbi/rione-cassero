@@ -171,6 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
     var level = await context.read<AppCubit>().getUserLevel();
     setState(() {
       _isAdmin = level == "admin";
+      _loggedUser.isAdmin = true;
     });
     if (_isAdmin)
       _loadUsers();

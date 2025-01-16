@@ -115,6 +115,8 @@ class AppRouter {
               loggedUser: map['user'] as up.User,
               eventImage: map['image'] as Image,
               bookData: map['bookData'] as List<ParticipantDataCassero>,
+              isMoneyScreen: map['isMoneyScreen'] as bool,
+
             ),
           ),
         );
@@ -130,6 +132,7 @@ class AppRouter {
               bookData: map['bookData'] as ParticipantDataCassero,
               loggedUser: map['user'] as up.User,
               eventImage: map['image'] as Image,
+              isNewBook: map['isNewBook'] as bool,
             ),
           ),
         );

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,13 +18,15 @@ class ManageEventScreen extends StatefulWidget {
   ParticipantDataCassero bookData;
   Image eventImage;
   up.User loggedUser;
+  bool isNewBook;
 
   ManageEventScreen(
       {super.key,
       required this.upperEvent,
       required this.bookData,
       required this.eventImage,
-      required this.loggedUser});
+      required this.loggedUser,
+      required this.isNewBook});
 
   @override
   State<ManageEventScreen> createState() => _ManageEventScreenState();
@@ -61,7 +64,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
         backgroundColor: ColorsManager.background,
         appBar: AppBar(
           title: Text(
-            "${widget.upperEvent.title} - Gestisci",
+            widget.isNewBook
+                ? "${widget.upperEvent.title} - Prenotazione"
+                : "${widget.upperEvent.title} - Gestisci",
             style: TextStyle(fontSize: 24, color: ColorsManager.gray17),
           ),
           foregroundColor: ColorsManager.gray17,
@@ -129,7 +134,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                       children: [
                         Center(
                             child: Text(
-                          "Modifica la tua prenotazione",
+                          widget.isNewBook
+                              ? "Aggiungi una prenotazione"
+                              : "Modifica la tua prenotazione",
                           style: TextStyle(
                               color: Color.fromRGBO(50, 50, 50, 1),
                               fontSize: 15),
@@ -289,11 +296,17 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                             )
                           ],
                         ),
-                        Gap(10.h),
+                        Gap(20.h),
+                        Visibility(
+                            visible: allergy,
+                            child: Text(
+                              "Inserisci qui le tue note sulle intolleranze",
+                              style: TextStyle(fontSize: 15),
+                            )),
                         Visibility(
                           visible: allergy,
                           child: AppTextFormField(
-                            textAlignment: TextAlign.center,
+                            textAlignment: TextAlign.left,
                             hint: "",
                             validator: (value) {
                               String enteredValue = (value ?? '');
@@ -305,56 +318,38 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                             controller: _allergyNoteController,
                           ),
                         ),
-                        Gap(20.h),
-                        Gap(5.h),
+                        Gap(40.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            GestureDetector(
-                              child: Icon(
-                                Icons.remove,
-                                size: 25,
-                              ),
-                              onTap: () => setState(() {
-                                childBookNumber--;
-                                if (childBookNumber <= 0) childBookNumber = 0;
-                              }),
-                            ),
-                            Text(
-                              childBookNumber.toString(),
-                              style: TextStyle(fontSize: 30),
-                            ),
-                            GestureDetector(
-                              child: Icon(
-                                Icons.add,
-                                size: 25,
-                              ),
-                              onTap: () => setState(() {
-                                childBookNumber++;
-                              }),
-                            ),
-                          ],
-                        ),
-                        Gap(20.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             GestureDetector(
                               child: Icon(
-                                Icons.delete,
+                                Icons.undo,
                                 size: 35,
-                                color: Colors.red,
+                                color: Colors.black,
                               ),
-                              onTap: _bookEventDelete,
+                              onTap: _bookEventUndo,
                             ),
-                            Gap(100.w),
+                            Visibility(
+                              visible: !widget.isNewBook,
+                              child: GestureDetector(
+                                child: Icon(
+                                  Icons.delete,
+                                  size: 35,
+                                  color: Colors.red,
+                                ),
+                                onTap: _bookEventDelete,
+                              ),
+                            ),
+                            //Gap(100.w),
                             GestureDetector(
                               child: Icon(Icons.save, size: 35),
                               onTap: _bookEventSave,
                             ),
                           ],
-                        )
+                        ),
+                        Gap(40.h),
                       ],
                     ),
                   ),
@@ -388,20 +383,50 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
     } else {
       await context.read<AppCubit>().bookEventCassero(
           widget.upperEvent.id!,
-          widget.bookData.eventUid,
+          widget.isNewBook ? null : widget.bookData.eventUid,
           _bookEventController.text,
           bookNumber,
           childBookNumber,
           allergy,
           _allergyNoteController.text);
 
+      if (widget.isNewBook) {
+        await AwesomeDialog(
+          context: context,
+          dialogType: DialogType.success,
+          animType: AnimType.topSlide,
+          title: 'Prenotazione confermata',
+          desc: "Grazie ${_bookEventController.text}, ti aspettiamo!",
+        ).show();
+      } else {
+        await AwesomeDialog(
+          context: context,
+          dialogType: DialogType.success,
+          animType: AnimType.topSlide,
+          title: 'Prenotazione modificata',
+          desc: "Dati aggiornati con successo",
+        ).show();
+      }
+
       Navigator.pop(context);
     }
+  }
+
+  void _bookEventUndo() {
+    Navigator.pop(context);
   }
 
   Future<void> _bookEventDelete() async {
     await context.read<AppCubit>().deleteBookEventCassero(
         widget.upperEvent.id!, widget.bookData.eventUid);
+
+    await AwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      animType: AnimType.topSlide,
+      title: 'Prenotazione cancellata',
+      desc: "Ci dispiace per la tua disdetta",
+    ).show();
 
     Navigator.pop(context);
   }

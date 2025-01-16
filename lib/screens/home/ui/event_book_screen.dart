@@ -14,6 +14,7 @@ class EventBookScreen extends StatefulWidget {
   UpperEvent upperEvent;
   up.User loggedUser;
   Image eventImage;
+  bool isMoneyScreen;
 
   //List<up.User> allUsers = [];
   List<ParticipantDataCassero> bookData = [];
@@ -21,11 +22,13 @@ class EventBookScreen extends StatefulWidget {
   //List<up.User> bookedUsers = [];
   //List<up.User> participantsUsers = [];
 
-  EventBookScreen({super.key,
-    required this.upperEvent,
-    required this.bookData,
-    required this.loggedUser,
-    required this.eventImage});
+  EventBookScreen(
+      {super.key,
+      required this.upperEvent,
+      required this.bookData,
+      required this.loggedUser,
+      required this.eventImage,
+      required this.isMoneyScreen});
 
   //required this.bookedUsers,
   //required this.participantsUsers});
@@ -131,22 +134,34 @@ class _EventBookScreenState extends State<EventBookScreen> {
     });
   }
 
-  int getTotalBookPeople(List<ParticipantDataCassero> list) {
+  int calcTotalBook(ParticipantDataCassero book) {
+    int total = book.number + book.childrenNumber;
+    return (total);
+  }
+
+  int calcNotPaied(ParticipantDataCassero book) {
+    int total = book.number + book.childrenNumber;
+    int paied = book.paied ?? 0;
+    int chPaied = book.childrenPaied ?? 0;
+    return (total - paied - chPaied);
+  }
+
+  int getTotalBookPeople(List<ParticipantDataCassero> list, bool paied) {
     int sum = 0;
     for (var book in list) {
       //var event = UpperEvent.fromJson(doc.data());
       //print(doc.id);
-      sum += book.number;
+      sum += paied ? book.paied ?? 0 : book.number;
     }
     return sum;
   }
 
-  int getTotalBookChild(List<ParticipantDataCassero> list) {
+  int getTotalBookChild(List<ParticipantDataCassero> list, bool paied) {
     int sum = 0;
     for (var book in list) {
       //var event = UpperEvent.fromJson(doc.data());
       //print(doc.id);
-      sum += book.childrenNumber;
+      sum += paied ? book.childrenPaied ?? 0 : book.childrenNumber;
     }
     return sum;
   }
@@ -158,7 +173,9 @@ class _EventBookScreenState extends State<EventBookScreen> {
         backgroundColor: ColorsManager.background,
         appBar: AppBar(
           title: Text(
-            "${widget.upperEvent.title} - Prenotazioni",
+            widget.isMoneyScreen
+                ? "${widget.upperEvent.title} - Cassa"
+                : "${widget.upperEvent.title} - Prenotazioni",
             style: TextStyle(fontSize: 24, color: ColorsManager.gray17),
           ),
           foregroundColor: ColorsManager.gray17,
@@ -169,126 +186,154 @@ class _EventBookScreenState extends State<EventBookScreen> {
           padding: EdgeInsets.only(left: 10, right: 10),
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SingleChildScrollView(
-                  child: AppTextFormField(
-                    hint: "Cerca",
-                    validator: (value) {},
-                    controller: _searchController,
-                    isObscureText: false,
-                    suffixIcon: Icon(
-                      Icons.search,
-                      color: Colors.black38,
+              Container(
+                color: ColorsManager.background,
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SingleChildScrollView(
+                        child: AppTextFormField(
+                          hint: "Cerca",
+                          validator: (value) {},
+                          controller: _searchController,
+                          isObscureText: false,
+                          suffixIcon: Icon(
+                            Icons.search,
+                            color: Colors.black38,
+                          ),
+                          onChanged: (value) {
+                            filterUsers(value);
+                          },
+                        ),
+                      ),
                     ),
-                    onChanged: (value) {
-                      filterUsers(value);
-                    },
-                  ),
+                    Text(
+                      "Prenotazioni: ${widget.bookData.length}",
+                      style: TextStyle(color: ColorsManager.gray17),
+                    ),
+                    Visibility(
+                      visible: widget.loggedUser.isAdmin!,
+                      child: Text(
+                        "Persone totali: ${getTotalBookPeople(widget.bookData, false)}",
+                        style: TextStyle(color: ColorsManager.gray17),
+                      ),
+                    ),
+                    Visibility(
+                      visible: widget.loggedUser.isAdmin!,
+                      child: Text(
+                        "Bambini totali: ${getTotalBookChild(widget.bookData, false)}",
+                        style: TextStyle(color: ColorsManager.gray17),
+                      ),
+                    ),
+                    Visibility(
+                      visible: widget.loggedUser.isAdmin! &&
+                          widget.upperEvent.price != null &&
+                          widget.upperEvent.childrenPrice != null,
+                      child: Text(
+                        "Incasso previsto: ${(widget.upperEvent.price! * getTotalBookPeople(widget.bookData, false)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(widget.bookData, false))} €",
+                        style: TextStyle(color: ColorsManager.gray17),
+                      ),
+                    ),
+                    Visibility(
+                      visible: widget.loggedUser.isAdmin! &&
+                          widget.upperEvent.price != null &&
+                          widget.upperEvent.childrenPrice != null,
+                      child: Text(
+                        "Incasso attuale: ${(widget.upperEvent.price! * getTotalBookPeople(widget.bookData, true)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(widget.bookData, true))} €",
+                        style: TextStyle(color: ColorsManager.gray17),
+                      ),
+                    ),
+                    Gap(10.h),
+                    Visibility(
+                      visible:
+                          widget.loggedUser.isAdmin! && !widget.isMoneyScreen,
+                      child: GestureDetector(
+                          onTap: () => setState(() {
+                                _allergyFilter = !_allergyFilter;
+                                filterUsers(_searchController.text);
+                              }),
+                          child: Icon(
+                              _allergyFilter
+                                  ? Icons.no_food
+                                  : Icons.no_food_outlined,
+                              size: 30)),
+                    ),
+                    Gap(15.h),
+                  ],
                 ),
               ),
-              Text(
-                "Prenotazioni: ${widget.bookData.length}",
-                style: TextStyle(color: ColorsManager.gray17),
-              ),
-              Visibility(
-                visible: widget.loggedUser.isAdmin!,
-                child: Text(
-                  "Persone totali: ${getTotalBookPeople(widget.bookData)}",
-                  style: TextStyle(color: ColorsManager.gray17),
-                ),
-              ),
-              Visibility(
-                visible: widget.loggedUser.isAdmin!,
-                child: Text(
-                  "Bambini totali: ${getTotalBookChild(widget.bookData)}",
-                  style: TextStyle(color: ColorsManager.gray17),
-                ),
-              ),
-              Visibility(
-                visible: widget.loggedUser.isAdmin! &&
-                    widget.upperEvent.price != null &&
-                    widget.upperEvent.childrenPrice != null,
-                child: Text(
-                  "Incasso previsto: ${(widget.upperEvent.price! *
-                      getTotalBookPeople(widget.bookData)) +
-                      (widget.upperEvent.childrenPrice! *
-                          getTotalBookChild(widget.bookData))} €",
-                  style: TextStyle(color: ColorsManager.gray17),
-                ),
-              ),
-              GestureDetector(
-                  onTap: () =>
-                      setState(() {
-                        _allergyFilter = !_allergyFilter;
-                        filterUsers(_searchController.text);
-                      }),
-                  child: Icon(_allergyFilter ? Icons.no_food : Icons.no_food_outlined, size: 30)),
-              Gap(15.h),
               Expanded(
                 child: _filteredBook.isEmpty
                     ? Center(child: Text('Nessuna prenotazione trovata'))
-                    : Container(
-                  color: ColorsManager.background,
-                  child: ListView.builder(
-                    itemCount: _filteredBook.length,
-                    itemBuilder: (context, index) {
-                      final user = _filteredBook[index];
-                      return ListTile(
-                        tileColor: ColorsManager.background,
-                        textColor: Colors.black,
-                        subtitleTextStyle: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black38,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          //<-- SEE HERE
-                          side: BorderSide(
-                              width: 0, color: ColorsManager.background),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        //onTap: () => _showUser(user, widget.upperEvent),
-                        //leading: Icon(
-                        //  Icons.person_outline,
-                        //  color: user.state == 'booked'
-                        //      ? Colors.orange
-                        //      : user.state == 'joined'
-                        //          ? Colors.green
-                        //          : Colors.black,
-                        //),
-                        leading: Icon(
-                          _filteredBook[index].allergy != null &&
-                              _filteredBook[index].allergy == true
-                              ? Icons.no_food
-                              : Icons.bookmark_border,
-                          color: Colors.black,
-                        ),
-                        trailing: GestureDetector(
-                          onTap: () =>
-                              _manageBook(_filteredBook[index], index),
-                          child: Text(
-                            "GESTISCI",
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
+                    : ListView.builder(
+                        itemCount: _filteredBook.length,
+                        itemBuilder: (context, index) {
+                          final user = _filteredBook[index];
+                          int notPaied = calcNotPaied(user);
+                          int totalBook = calcTotalBook(user);
+                          return ListTile(
+                            tileColor: !widget.isMoneyScreen
+                                ? ColorsManager.background
+                                : notPaied > 0
+                                    ? Colors.amberAccent
+                                    : Colors.green,
+                            textColor: Colors.black,
+                            subtitleTextStyle: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black38,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              //<-- SEE HERE
+                              side: BorderSide(
+                                  width: 0, color: ColorsManager.background),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            //onTap: () => _showUser(user, widget.upperEvent),
+                            //leading: Icon(
+                            //  Icons.person_outline,
+                            //  color: user.state == 'booked'
+                            //      ? Colors.orange
+                            //      : user.state == 'joined'
+                            //          ? Colors.green
+                            //          : Colors.black,
+                            //),
+                            leading: Icon(
+                              _filteredBook[index].allergy != null &&
+                                      _filteredBook[index].allergy == true
+                                  ? Icons.no_food
+                                  : Icons.bookmark_border,
+                              color: Colors.black,
+                            ),
+                            trailing: GestureDetector(
+                              onTap: () =>
+                                  _manageBook(_filteredBook[index], index),
+                              child: Text(
+                                widget.isMoneyScreen ? "PAGAMENTO" : "GESTISCI",
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
 
-                        //trailing: GestureDetector(
-                        //  child: Icon(Icons.delete, color: Colors.red),
-                        //  onTap: () {},
-                        //),
-                        title: Text(user.number > 1
-                            ? "${user.name} (${user.number} persone)"
-                            : "${user.name} (${user.number} persona)"),
-                        subtitle: Text(
-                          //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
-                            'Effettuata da: ${user.bookUserName}'),
-                      );
-                    },
-                  ),
-                ),
+                            //trailing: GestureDetector(
+                            //  child: Icon(Icons.delete, color: Colors.red),
+                            //  onTap: () {},
+                            //),
+                            title: widget.isMoneyScreen ? Text(
+                                "${user.name} (${totalBook - notPaied} / ${totalBook})") : Text(totalBook > 1
+                                ? "${user.name} (${totalBook} persone)"
+                                : "${user.name} (${totalBook} persona)"),
+                            subtitle: Text(
+                                //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                widget.isMoneyScreen
+                                    ? 'Prenotazione effettuata da: ${user.bookUserName}'
+                                    : 'Effettuata da: ${user.bookUserName}'),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -297,8 +342,9 @@ class _EventBookScreenState extends State<EventBookScreen> {
     );
   }
 
-  Future<void> _manageBook(ParticipantDataCassero currentBookData,
-      int index) async {
+
+  Future<void> _manageBook(
+      ParticipantDataCassero currentBookData, int index) async {
     await Navigator.pushNamed(
       context,
       Routes.manageBookScreen,
@@ -307,6 +353,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
         'event': widget.upperEvent,
         'bookData': currentBookData,
         'image': widget.eventImage,
+        'isNewBook': false,
       },
     );
 

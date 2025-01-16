@@ -18,6 +18,8 @@ class UpperEvent {
 
   DateTime? date_time;
 
+  bool? bookable;
+
   UpperEvent({
     required this.title,
     required this.description,

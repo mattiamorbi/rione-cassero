@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
@@ -12,6 +13,7 @@ import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/theming/colors.dart';
 
+import '../../../logic/cubit/app/app_cubit.dart';
 import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
@@ -28,6 +30,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
   XFile? _pickedImage;
   Uint8List _webImage = Uint8List(0);
   bool _noImage = false;
+  bool bookable = true;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -265,8 +268,15 @@ class _NewEventScreenState extends State<NewEventScreen> {
         widget.upperEvent = upperEvent;
         print("fatto");
       }
-
-      context.pushNamed(Routes.homeScreen, arguments: 0);
+      try {
+        await context.read<AppCubit>().updateBookPermission(
+            widget.upperEvent!.id!, bookable);
+      }on Exception catch (e) {
+        if (kDebugMode) {
+          print("Error while updateBookRooles! $e");
+        }
+      }
+      context.pop();
     }
   }
 
@@ -318,6 +328,47 @@ class _NewEventScreenState extends State<NewEventScreen> {
                     numericField(_childrenPriceController, "Prezzo bambini",
                         "Inserisci un prezzo valido"),
                     Gap(20.w),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("Prenotazioni aperte",
+                            style: TextStyle(fontSize: 22)),
+                        Gap(40.w),
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            bookable = true;
+                          }),
+                          child: Row(
+                            children: [
+                              Icon(
+                                bookable
+                                    ? Icons.check_circle_outline
+                                    : Icons.circle_outlined,
+                                size: 25,
+                              ),
+                              Text("SI", style: TextStyle(fontSize: 22)),
+                            ],
+                          ),
+                        ),
+                        Gap(30.w),
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            bookable = false;
+                          }),
+                          child: Row(
+                            children: [
+                              Icon(
+                                !bookable
+                                    ? Icons.check_circle_outline
+                                    : Icons.circle_outlined,
+                                size: 25,
+                              ),
+                              Text("NO", style: TextStyle(fontSize: 22)),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   ],
                 ),
               ),

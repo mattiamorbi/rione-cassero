@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:ui';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_web_qrcode_scanner/flutter_web_qrcode_scanner.dart';
 import 'package:gap/gap.dart';
-import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/helpers/aes_helper.dart';
 import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
@@ -49,7 +49,8 @@ class _EventTileState extends State<EventTile> {
       ParticipantData(booked: false, presence: false);
 
   int _qrMode = 0;
-  int _bookMode = 0;
+
+  //int _bookMode = 0;
   int _editBookNameMode = 0;
   String bookName = "";
   int bookNumber = 1;
@@ -65,10 +66,11 @@ class _EventTileState extends State<EventTile> {
   bool _loading = true;
 
   StreamSubscription<List<up.User>?>? _presenceSubscription;
-  StreamSubscription<List<up.User>?>? _bookSubscription;
+  StreamSubscription<List<BookPermission>>? _bookPermission;
 
   List<StreamSubscription<List<ParticipantDataCassero>>?>
       _eventBookSubscription = [];
+
   late List<int> totalBookedPlaces = [];
 
   final TextEditingController _bookEventController = TextEditingController();
@@ -128,10 +130,26 @@ class _EventTileState extends State<EventTile> {
     totalBookedPlaces = List.generate(widget.upperEvents.length, (_) => 0);
 
     for (int i = 0; i < widget.upperEvents.length; i++) {
+      print(widget.isAdmin);
       // Ottieni lo stream per ogni evento
-      final stream = context
-          .read<AppCubit>()
-          .getBookEventCasseroStream(widget.upperEvents[i].id!, widget.isAdmin);
+      final stream = context.read<AppCubit>().getBookEventCasseroStream(
+          widget.upperEvents[i].id!, widget.loggedUser.uid!, widget.isAdmin);
+
+      // Ascolta lo stream e gestisci i dati
+      //final subscription = stream.listen((snapshot) {
+      //  setState(() {
+      //    totalBookedPlaces[i] = 0;
+      //
+      //    // Aggiorna i dati per l'amministratore o l'utente normale
+      //    _currentEventBookData[i].clear();
+      //    for (var item in snapshot) {
+      //      if (widget.isAdmin || item.uid == widget.loggedUser.uid) {
+      //        _currentEventBookData[i].add(item);
+      //      }
+      //      totalBookedPlaces[i] += item.number;
+      //    }
+      //  });
+      //});
 
       // Ascolta lo stream e gestisci i dati
       final subscription = stream.listen((snapshot) {
@@ -141,10 +159,9 @@ class _EventTileState extends State<EventTile> {
           // Aggiorna i dati per l'amministratore o l'utente normale
           _currentEventBookData[i].clear();
           for (var item in snapshot) {
-            if (widget.isAdmin || item.uid == widget.loggedUser.uid) {
-              _currentEventBookData[i].add(item);
-            }
-            totalBookedPlaces[i] += item.number;
+            _currentEventBookData[i].add(item);
+
+            if (widget.isAdmin) totalBookedPlaces[i] += item.number;
           }
         });
       });
@@ -152,6 +169,20 @@ class _EventTileState extends State<EventTile> {
       // Aggiungi la subscription alla lista
       _eventBookSubscription.add(subscription);
     }
+
+    final permissionStream =
+        context.read<AppCubit>().getBookPermissionCasseroStream();
+    _bookPermission = permissionStream.listen((snapshot) {
+      for (int i = 0; i < snapshot.length; i++) {
+        for (int y = 0; y < widget.upperEvents.length; y++) {
+          if (snapshot[i].eventID == widget.upperEvents[y].id) {
+            widget.upperEvents[y].bookable = snapshot[i].bookable;
+          }
+        }
+      }
+
+      setState(() {});
+    });
 
     setState(() {
       _loading = false;
@@ -165,18 +196,45 @@ class _EventTileState extends State<EventTile> {
     });
   }
 
-  void _toggleBookMode(int index) {
-    setState(() {
-      _bookMode = 1;
-      bookName = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
-      bookNumber = 1;
-      _editBookNameMode = 0;
-      _bookEventController.text =
-          "${widget.loggedUser.name} ${widget.loggedUser.surname}";
-      _focusedIndex = index;
-      _allergyNoteController.text = "";
-      allergy = false;
-    });
+  void _toggleBookMode(int index) async {
+    await Navigator.pushNamed(
+      context,
+      Routes.manageBookScreen,
+      arguments: {
+        'user': widget.loggedUser,
+        'event': widget.upperEvents[index],
+        'bookData': ParticipantDataCassero(
+            name: "${widget.loggedUser.name} ${widget.loggedUser.surname}",
+            number: 1,
+            childrenNumber: 0,
+            eventUid: widget.upperEvents[index].id!,
+            bookUserName:
+                "${widget.loggedUser.name} ${widget.loggedUser.surname}"),
+        'image': _image[index],
+        'isNewBook': true,
+      },
+    );
+    //setState(() {
+    //  _bookMode = 1;
+    //  bookName = "${widget.loggedUser.name} ${widget.loggedUser.surname}";
+    //  bookNumber = 1;
+    //  _editBookNameMode = 0;
+    //  _bookEventController.text =
+    //      "${widget.loggedUser.name} ${widget.loggedUser.surname}";
+    //  _focusedIndex = index;
+    //  _allergyNoteController.text = "";
+    //  allergy = false;
+    //});
+  }
+
+  void _errorBookMode(int index) async {
+    await AwesomeDialog(
+      context: context,
+      dialogType: DialogType.error,
+      animType: AnimType.topSlide,
+      title: 'Prenotazioni chiuse',
+      desc: "Chiedi informazioni agli organizzatori dell'evento",
+    ).show();
   }
 
   void _editBookName() {
@@ -273,7 +331,8 @@ class _EventTileState extends State<EventTile> {
           currentEvent.bookingLimit != null
               ? Visibility(
                   visible: currentEvent.bookingLimit != null &&
-                      currentEvent.bookingLimit! > 0,
+                      currentEvent.bookingLimit! > 0 &&
+                      widget.isAdmin,
                   child: Text(
                     "Posti rimanenti ${currentEvent.bookingLimit! - totalBookedPlaces[index]}",
                     style: TextStyle(
@@ -291,23 +350,47 @@ class _EventTileState extends State<EventTile> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                GestureDetector(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_add_alt_1,
-                          color: ColorsManager.gray17,
-                        ),
-                        Gap(5.w),
-                        Text(
-                          "Aggiungi prenotazione",
-                          style: TextStyle(
-                              color: ColorsManager.gray17, fontSize: 18),
-                        )
-                      ]),
-                  onTap: () =>
-                      _toggleBookMode(index), //_toggleBookEvent(_focusedIndex),
+                Visibility(
+                  visible: widget.upperEvents[index].bookable == true,
+                  child: GestureDetector(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.person_add_alt_1,
+                            color: ColorsManager.gray17,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Aggiungi prenotazione",
+                            style: TextStyle(
+                                color: ColorsManager.gray17, fontSize: 18),
+                          )
+                        ]),
+                    onTap: () =>
+                        _toggleBookMode(index), //_toggleBookEvent(_focusedIndex),
+                  ),
+                ),
+                Visibility(
+                  visible: widget.upperEvents[index].bookable == false,
+                  child: GestureDetector(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.person_add_disabled_rounded,
+                            color: ColorsManager.gray17,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Prenotazioni bloccate",
+                            style: TextStyle(
+                                color: ColorsManager.gray17, fontSize: 18),
+                          )
+                        ]),
+                    onTap: () =>
+                        _errorBookMode(index), //_toggleBookEvent(_focusedIndex),
+                  ),
                 ),
                 Gap(10.h),
                 GestureDetector(
@@ -337,6 +420,7 @@ class _EventTileState extends State<EventTile> {
                           'bookData': _currentEventBookData[index],
                           'user': widget.loggedUser,
                           'image': _image[index],
+                          'isMoneyScreen':false,
                           //'bookedUsers': _bookedUsers,
                           //'participantsUsers': _participantUsers,
                         },
@@ -392,6 +476,7 @@ class _EventTileState extends State<EventTile> {
                             'bookData': _currentEventBookData[index],
                             'user': widget.loggedUser,
                             'image': _image[index],
+                            'isMoneyScreen':true,
                             //'bookedUsers': _bookedUsers,
                             //'participantsUsers': _participantUsers,
                           },
@@ -766,338 +851,71 @@ class _EventTileState extends State<EventTile> {
 
   @override
   Widget build(BuildContext context) {
-    if (_bookMode == 0) {
-      return PageView.builder(
-        controller: PageController(viewportFraction: 0.8),
-        // Mostra l'80% di una card
-        itemCount: widget.upperEvents.length,
-        itemBuilder: (context, index) {
-          return Container(
-            height: 500,
-            margin: EdgeInsets.symmetric(horizontal: 10),
-            child: GestureDetector(
-              onDoubleTap: () {
-                setState(() {
-                  _isEventDetailVisible =
-                      !_isEventDetailVisible; // Nasconde il pannello quando si preme
-                });
-              },
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
+    return PageView.builder(
+      controller: PageController(viewportFraction: 0.8),
+      // Mostra l'80% di una card
+      itemCount: widget.upperEvents.length,
+      itemBuilder: (context, index) {
+        return Container(
+          height: 500,
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          child: GestureDetector(
+            onDoubleTap: () {
+              setState(() {
+                _isEventDetailVisible =
+                    !_isEventDetailVisible; // Nasconde il pannello quando si preme
+              });
+            },
+            child: Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Container(
+                width: 300,
+                height: 200,
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                ),
-                child: Container(
-                  width: 300,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: DecorationImage(
-                      image: _image[index].image,
-                      fit:
-                          _image[index].image.toString().contains("loading.gif")
-                              ? BoxFit.contain
-                              : BoxFit.cover,
-                    ),
+                  image: DecorationImage(
+                    image: _image[index].image,
+                    fit: _image[index].image.toString().contains("loading.gif")
+                        ? BoxFit.contain
+                        : BoxFit.cover,
                   ),
-                  child: Visibility(
-                    visible: _isEventDetailVisible,
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Visibility(
-                            visible: !_image[index]
-                                .image
-                                .toString()
-                                .contains("loading.gif"),
-                            child: Container(
-                              width: 300,
-                              height: widget.isAdmin ? 300 : 230,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
-                                // Bianco semi-trasparente
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: _buildItemDetail(index),
-                              ),
+                ),
+                child: Visibility(
+                  visible: _isEventDetailVisible,
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Visibility(
+                          visible: !_image[index]
+                              .image
+                              .toString()
+                              .contains("loading.gif"),
+                          child: Container(
+                            width: 300,
+                            height: widget.isAdmin ? 300 : 230,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.8),
+                              // Bianco semi-trasparente
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: _buildItemDetail(index),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      // lettore di codici a barre
-      //return Container(
-      //  height: 400,
-      //  padding: EdgeInsets.only(bottom: 20),
-      //  width: MediaQuery.of(context).size.width - 20,
-      //  child: _qrCodeReaderWidget(),
-      //);
-      var currentEvent = data[_focusedIndex];
-      return SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 220,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 200,
-                    height: 200,
-                    child: Image(
-                        image: _image[_focusedIndex].image,
-                        fit: BoxFit.scaleDown),
-                  ),
-                  Gap(15.w),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        currentEvent.title,
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: ColorsManager.gray17),
-                      ),
-                      Text(
-                        "${currentEvent.date} - ${currentEvent.time}",
-                        style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: ColorsManager.gray17),
-                      ),
-                      Text(
-                        currentEvent.place,
-                        style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: ColorsManager.gray17),
                       ),
                     ],
-                  )
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                        child: Text(
-                      "Aggiungi la tua prenotazione",
-                      style: TextStyle(
-                          color: Color.fromRGBO(50, 50, 50, 1), fontSize: 15),
-                    )),
-                    Gap(20.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _editBookNameMode == 0
-                            ? Text(
-                                bookName,
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 20),
-                              )
-                            : Center(
-                                child: Container(
-                                  width: window.physicalSize.width /
-                                          window.devicePixelRatio -
-                                      100,
-                                  child: AppTextFormField(
-                                    textAlignment: TextAlign.center,
-                                    hint: "",
-                                    validator: (value) {
-                                      String enteredValue = (value ?? '');
-                                      _bookEventController.text = enteredValue;
-                                      if (enteredValue.isEmpty) {
-                                        return "Il valore non può essere nullo";
-                                      }
-                                    },
-                                    controller: _bookEventController,
-                                  ),
-                                ),
-                              ),
-                        Visibility(
-                            visible: _editBookNameMode == 0, child: Gap(10.w)),
-                        Visibility(
-                          visible: _editBookNameMode == 0,
-                          child: GestureDetector(
-                            child: Icon(Icons.edit, size: 20),
-                            onTap: _editBookName,
-                          ),
-                        )
-                      ],
-                    ),
-                    Gap(15.h),
-                    Center(
-                        child: Text(
-                      "Adulti",
-                      style: TextStyle(fontSize: 15),
-                    )),
-                    Gap(5.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        GestureDetector(
-                          child: Icon(
-                            Icons.remove,
-                            size: 25,
-                          ),
-                          onTap: () => setState(() {
-                            bookNumber--;
-                            if (bookNumber <= 1) bookNumber = 1;
-                          }),
-                        ),
-                        Text(
-                          bookNumber.toString(),
-                          style: TextStyle(fontSize: 30),
-                        ),
-                        GestureDetector(
-                          child: Icon(
-                            Icons.add,
-                            size: 25,
-                          ),
-                          onTap: () => setState(() {
-                            bookNumber++;
-                          }),
-                        ),
-                      ],
-                    ),
-                    Gap(15.h),
-                    Center(
-                        child: Text(
-                      "Bambini",
-                      style: TextStyle(fontSize: 15),
-                    )),
-                    Gap(5.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        GestureDetector(
-                          child: Icon(
-                            Icons.remove,
-                            size: 25,
-                          ),
-                          onTap: () => setState(() {
-                            childBookNumber--;
-                            if (childBookNumber <= 0) childBookNumber = 0;
-                          }),
-                        ),
-                        Text(
-                          childBookNumber.toString(),
-                          style: TextStyle(fontSize: 30),
-                        ),
-                        GestureDetector(
-                          child: Icon(
-                            Icons.add,
-                            size: 25,
-                          ),
-                          onTap: () => setState(() {
-                            childBookNumber++;
-                          }),
-                        ),
-                      ],
-                    ),
-                    Gap(15.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Intolleranze", style: TextStyle(fontSize: 22)),
-                        Gap(40.w),
-                        GestureDetector(
-                          onTap: () => setState(() {
-                            allergy = true;
-                          }),
-                          child: Row(
-                            children: [
-                              Icon(
-                                allergy ? Icons.check_circle_outline : Icons.circle_outlined,
-                                size: 25,
-                              ),
-                              Text("SI", style: TextStyle(fontSize: 22)),
-                            ],
-                          ),
-                        ),
-                        Gap(30.w),
-                        GestureDetector(
-                          onTap: () => setState(() {
-                            allergy = false;
-                            _allergyNoteController.text = "";
-                          }),
-                          child: Row(
-                            children: [
-                              Icon(
-                                !allergy ? Icons.check_circle_outline : Icons.circle_outlined,
-                                size: 25,
-                              ),
-                              Text("NO", style: TextStyle(fontSize: 22)),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    Gap(10.h),
-                    Visibility(
-                      visible: allergy,
-                      child: AppTextFormField(
-                        textAlignment: TextAlign.center,
-                        hint: "",
-                        validator: (value) {
-                          String enteredValue = (value ?? '');
-                          _allergyNoteController.text = enteredValue;
-                          if (enteredValue.isEmpty) {
-                            return "Il valore non può essere nullo";
-                          }
-                        },
-                        controller: _allergyNoteController,
-                      ),
-                    ),
-                    Gap(20.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          child: Icon(
-                            Icons.undo,
-                            size: 25,
-                          ),
-                          onTap: () => setState(() {
-                            _bookMode = 0;
-                          }),
-                        ),
-                        Gap(50.w),
-                        GestureDetector(
-                          child: Icon(Icons.save, size: 25),
-                          onTap: _bookEventSave,
-                        ),
-                      ],
-                    )
-                  ],
+                  ),
                 ),
               ),
-            )
-          ],
-        ),
-      );
-    }
+            ),
+          ),
+        );
+      },
+    );
   }
 
   int getTotalBookPeople(List<ParticipantDataCassero> list) {
@@ -1108,30 +926,6 @@ class _EventTileState extends State<EventTile> {
       sum += book.number;
     }
     return sum;
-  }
-
-  Future<void> _bookEventSave() async {
-    if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
-        (allergy && _allergyNoteController.text.length == 0)) {
-      formKey.currentState!.validate();
-    } else {
-      await context.read<AppCubit>().bookEventCassero(
-          widget.upperEvents[_focusedIndex].id!,
-          null,
-          _bookEventController.text,
-          bookNumber,
-          childBookNumber,
-          allergy,
-          _allergyNoteController.text);
-
-      //_myEvents = await context
-      //    .read<AppCubit>()
-      //    .getBookEventCassero(widget.upperEvents[_focusedIndex].id!, widget.isAdmin);
-
-      setState(() {
-        _bookMode = 0;
-      });
-    }
   }
 
   Future<void> _loadImage(int index) async {

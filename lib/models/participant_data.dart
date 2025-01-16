@@ -31,7 +31,21 @@ class ParticipantDataCassero {
   bool? allergy;
   String? allergyNote;
 
-  ParticipantDataCassero({this.uid, required this.bookUserName, required this.name, required this.number, required this.childrenNumber, required this.eventUid, this.date, this.allergy, this.allergyNote });
+  int? paied;
+  int? childrenPaied;
+
+  ParticipantDataCassero(
+      {this.uid,
+      required this.bookUserName,
+      required this.name,
+      required this.number,
+      required this.childrenNumber,
+      required this.eventUid,
+      this.date,
+      this.allergy,
+      this.allergyNote,
+      this.paied,
+      this.childrenPaied});
 
   static ParticipantDataCassero? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
@@ -43,13 +57,57 @@ class ParticipantDataCassero {
       name: json['name'] == null ? "" : json['name']!,
       allergyNote: json['allergyNote'] == null ? "" : json['allergyNote']!,
       number: json['number'] == null ? 0 : json['number']! as int,
-      childrenNumber: json['childrenNumber'] == null ? 0 : json['childrenNumber']! as int,
-      allergy: json['allergy'] == null ? false : json['allergy']! == true ? true : false,
+      paied: json['paied'] == null ? 0 : json['paied']! as int,
+      childrenPaied:
+          json['childrenPaied'] == null ? 0 : json['childrenPaied']! as int,
+      childrenNumber:
+          json['childrenNumber'] == null ? 0 : json['childrenNumber']! as int,
+      allergy: json['allergy'] == null
+          ? false
+          : json['allergy']! == true
+              ? true
+              : false,
       date: json['date'] == null ? null : (json['date'] as Timestamp).toDate(),
     );
   }
 
   Map<String, Object?> toJson() {
-    return {'uid': uid, 'eventUid': eventUid, 'bookUserName':bookUserName, 'name': name, 'number': number, 'childrenNumber':childrenNumber, 'date':date, 'allergy':allergy, 'allergyNote':allergyNote};
+    return {
+      'uid': uid,
+      'eventUid': eventUid,
+      'bookUserName': bookUserName,
+      'name': name,
+      'number': number,
+      'childrenNumber': childrenNumber,
+      'date': date,
+      'allergy': allergy,
+      'allergyNote': allergyNote,
+      'paied': paied,
+      'childrenPaied': childrenPaied
+    };
+  }
+}
+
+class BookPermission {
+  String eventID;
+  bool bookable;
+
+  BookPermission({required this.eventID, required this.bookable});
+
+  static BookPermission? fromJson(String eventID, Map<String, dynamic>? json) {
+    if (json == null) return null;
+
+    return BookPermission(
+      eventID: eventID,
+      bookable: json['allow'] == null
+          ? false
+          : json['allow']! == true
+              ? true
+              : false,
+    );
+  }
+
+  Map<String, Object?> toJson() {
+    return {'eventID': eventID, 'bookable': bookable};
   }
 }

@@ -1,3 +1,4 @@
+/*    DEPRECATED
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
@@ -60,12 +61,12 @@ class _EventTileState extends State<EventTile> {
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
 
-  List<up.User>? _participantUsers = [];
+  //List<up.User>? _participantUsers = [];
   List<List<ParticipantDataCassero>> _currentEventBookData = [];
-  List<up.User>? _bookedUsers = [];
+  //List<up.User>? _bookedUsers = [];
   bool _loading = true;
 
-  StreamSubscription<List<up.User>?>? _presenceSubscription;
+  //StreamSubscription<List<up.User>?>? _presenceSubscription;
   StreamSubscription<List<BookPermission>>? _bookPermission;
 
   List<StreamSubscription<List<ParticipantDataCassero>>?>
@@ -79,9 +80,9 @@ class _EventTileState extends State<EventTile> {
 
   bool _isEventDetailVisible = true;
 
-  bool _imageLoading = true;
+  //bool _imageLoading = true;
 
-  final formKey = GlobalKey<FormState>();
+  //final formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -161,7 +162,7 @@ class _EventTileState extends State<EventTile> {
           for (var item in snapshot) {
             _currentEventBookData[i].add(item);
 
-            if (widget.isAdmin) totalBookedPlaces[i] += item.number;
+            if (widget.isAdmin) totalBookedPlaces[i] += (item.number + item.childrenNumber);
           }
         });
       });
@@ -967,3 +968,4 @@ class _EventTileState extends State<EventTile> {
     );
   }
 }
+*/

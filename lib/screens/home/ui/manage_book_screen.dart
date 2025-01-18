@@ -377,36 +377,67 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   }
 
   Future<void> _bookEventSave() async {
-    if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
-        (allergy && _allergyNoteController.text.length == 0)) {
-      formKey.currentState!.validate();
-    } else {
-      await context.read<AppCubit>().bookEventCassero(
-          widget.upperEvent.id!,
-          widget.isNewBook ? null : widget.bookData.eventUid,
-          _bookEventController.text,
-          bookNumber,
-          childBookNumber,
-          allergy,
-          _allergyNoteController.text);
-
-      if (widget.isNewBook) {
-        await AwesomeDialog(
-          context: context,
-          dialogType: DialogType.success,
-          animType: AnimType.topSlide,
-          title: 'Prenotazione confermata',
-          desc: "Grazie ${_bookEventController.text}, ti aspettiamo!",
-        ).show();
+    if (widget.upperEvent.bookable!) {
+      if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
+          (allergy && _allergyNoteController.text.length == 0)) {
+        formKey.currentState!.validate();
       } else {
-        await AwesomeDialog(
-          context: context,
-          dialogType: DialogType.success,
-          animType: AnimType.topSlide,
-          title: 'Prenotazione modificata',
-          desc: "Dati aggiornati con successo",
-        ).show();
+        if (widget.isNewBook) {
+          await context.read<AppCubit>().bookEventCassero(
+              widget.loggedUser.uid!,
+              "${widget.loggedUser.name} ${widget.loggedUser.surname}",
+              widget.upperEvent.id!,
+              widget.isNewBook ? null : widget.bookData.eventUid,
+              _bookEventController.text,
+              bookNumber,
+              childBookNumber,
+              allergy,
+              _allergyNoteController.text,
+              null,
+              null);
+        } else {
+          await context.read<AppCubit>().bookEventCassero(
+              widget.bookData.uid!,
+              widget.bookData.bookUserName,
+              widget.upperEvent.id!,
+              widget.isNewBook ? null : widget.bookData.eventUid,
+              _bookEventController.text,
+              bookNumber,
+              childBookNumber,
+              allergy,
+              _allergyNoteController.text,
+              null,
+              null);
+        }
+
+        if (widget.isNewBook) {
+          await AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.topSlide,
+            title: 'Prenotazione confermata',
+            desc: "Grazie ${_bookEventController.text}, ti aspettiamo!",
+          ).show();
+        } else {
+          await AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.topSlide,
+            title: 'Prenotazione modificata',
+            desc: "Dati aggiornati con successo",
+          ).show();
+        }
+
+        Navigator.pop(context);
       }
+    } else {
+      await AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.topSlide,
+        title: 'Prenotazioni chiuse',
+        desc: "Chiedi informazioni agli organizzatori dell'evento",
+      ).show();
 
       Navigator.pop(context);
     }

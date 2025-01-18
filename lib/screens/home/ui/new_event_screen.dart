@@ -63,6 +63,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
           ? ""
           : widget.upperEvent!.childrenPrice.toString();
 
+      bookable = widget.upperEvent!.bookable!;
+
       _loadEventImage();
     }
     //print(widget.upperEvent!.id);

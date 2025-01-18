@@ -10,4 +10,5 @@ class Routes {
   static const String verifyScreen = "/verifica";
   static const String viewBookScreen = "/viewBookScreen";
   static const String manageBookScreen = "/manageBookScreen";
+  static const String managePaymentScreen = "/managePaymentScreen";
 }

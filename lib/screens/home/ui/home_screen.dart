@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:pretty_qr_code_plus/pretty_qr_code_plus.dart';
 import 'package:rione_cassero/core/widgets/app_text_button.dart';
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/core/widgets/no_internet.dart';
@@ -18,9 +18,11 @@ import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
 import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/routing/routes.dart';
-import 'package:rione_cassero/screens/home/ui/widgets/event_tile.dart';
 import 'package:rione_cassero/theming/colors.dart';
 import 'package:rione_cassero/theming/styles.dart';
+import 'package:scroll_snap_list/scroll_snap_list.dart';
+
+import '../../../models/participant_data.dart';
 
 class HomeScreen extends StatefulWidget {
   int? tab_index;
@@ -51,8 +53,31 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<List<up.User>>? userSubscription;
   StreamSubscription<int>? cardSubscription;
 
+  List<UpperEvent> myEventBooks = [];
+
   late String whatsappGroupLink =
       ""; // = "https://chat.whatsapp.com/GNCcUncHRnX3cqqfsKemoa";
+
+  // from EventTile file
+  final List<Image> _image = [];
+  up.User? _user;
+  int _editBookNameMode = 0;
+  String bookName = "";
+  int bookNumber = 1;
+  int childBookNumber = 0;
+  List<UpperEvent> data = [];
+  int _focusedIndex = 0;
+  GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
+  List<List<ParticipantDataCassero>> _currentEventBookData = [];
+  bool _loading = true;
+  StreamSubscription<List<BookPermission>>? _bookPermission;
+  List<StreamSubscription<List<ParticipantDataCassero>>?>
+      _eventBookSubscription = [];
+  late List<int> totalBookedPlaces = [];
+  final TextEditingController _bookEventController = TextEditingController();
+  final TextEditingController _allergyNoteController = TextEditingController();
+  bool allergy = false;
+  bool _isEventDetailVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -80,20 +105,436 @@ class _HomeScreenState extends State<HomeScreen> {
     //_loadQr();
 
     //_loadWhatsappLink();
-    _listenCardNumber();
+    //_listenCardNumber();
+
+    for (int i = 0; i < 10; i++) {
+      // dummy number
+      _image.add(Image(image: AssetImage("assets/images/loading.gif")));
+      //print("image loading");
+      //_image[0].image.toString();
+    }
+
+    //_loadLoggedUser();
   }
 
-  void _listenCardNumber() {
-    cardSubscription =
-        context.read<AppCubit>().watchCardNumber().listen((cardNumber) {
-      //if (_loggedUser.cardNumber == 0) _loadEvents();
-      //_loadQr();
-      setState(() {
-        _loggedUser.cardNumber = cardNumber;
-        //print("aggiunto utente totale ${_users.length}");
-        //_filterUsers(_searchController.text);
-      });
+  List<UpperEvent> getMyEventBooks() {
+    List<UpperEvent> myBooks = [];
+    for (int i = 0; i < _events.length; i++) {
+      if (_currentEventBookData[i].length > 0) {
+        myBooks.add(_events[i]);
+        print("sono prenotato a ${_events[i].title}");
+      }
+    }
+
+    return myBooks;
+  }
+
+  Future<void> _loadEventsSubscription() async {
+    setState(() {
+      _loading = true;
+      //_qrMode = 0;
     });
+
+    //totalBookedPlaces = 0;
+
+    // Inizializza _currentEventBookData come una lista di liste vuote
+    _currentEventBookData = List.generate(_events.length, (_) => []);
+    totalBookedPlaces = List.generate(_events.length, (_) => 0);
+
+    for (int i = 0; i < _events.length; i++) {
+      print(_isAdmin);
+      // Ottieni lo stream per ogni evento
+      final stream = context.read<AppCubit>().getBookEventCasseroStream(
+          _events[i].id!, _loggedUser.uid!, _isAdmin);
+
+      // Ascolta lo stream e gestisci i dati
+      //final subscription = stream.listen((snapshot) {
+      //  setState(() {
+      //    totalBookedPlaces[i] = 0;
+      //
+      //    // Aggiorna i dati per l'amministratore o l'utente normale
+      //    _currentEventBookData[i].clear();
+      //    for (var item in snapshot) {
+      //      if (_isAdmin || item.uid == _loggedUser.uid) {
+      //        _currentEventBookData[i].add(item);
+      //      }
+      //      totalBookedPlaces[i] += item.number;
+      //    }
+      //  });
+      //});
+
+      // Ascolta lo stream e gestisci i dati
+      final subscription = stream.listen((snapshot) {
+        setState(() {
+          totalBookedPlaces[i] = 0;
+
+          // Aggiorna i dati per l'amministratore o l'utente normale
+          _currentEventBookData[i].clear();
+          for (var item in snapshot) {
+            _currentEventBookData[i].add(item);
+
+            if (_isAdmin) totalBookedPlaces[i]  += (item.number + item.childrenNumber);
+
+            print("ho eseguito l'aggioranmento");
+
+            setState(() {
+              myEventBooks.clear();
+              myEventBooks = getMyEventBooks();
+            });
+          }
+        });
+      });
+
+      // Aggiungi la subscription alla lista
+      _eventBookSubscription.add(subscription);
+    }
+
+    final permissionStream =
+        context.read<AppCubit>().getBookPermissionCasseroStream();
+    _bookPermission = permissionStream.listen((snapshot) {
+      for (int i = 0; i < snapshot.length; i++) {
+        for (int y = 0; y < _events.length; y++) {
+          if (snapshot[i].eventID == _events[y].id) {
+            _events[y].bookable = snapshot[i].bookable;
+          }
+        }
+      }
+
+      setState(() {});
+    });
+
+    setState(() {
+      _loading = false;
+      //_qrMode = 0;
+    });
+  }
+
+  void _toggleBookMode(int index) async {
+    await Navigator.pushNamed(
+      context,
+      Routes.manageBookScreen,
+      arguments: {
+        'user': _loggedUser,
+        'event': _events[index],
+        'bookData': ParticipantDataCassero(
+            name: "${_loggedUser.name} ${_loggedUser.surname}",
+            number: 1,
+            childrenNumber: 0,
+            eventUid: _events[index].id!,
+            bookUserName: "${_loggedUser.name} ${_loggedUser.surname}"),
+        'image': _image[index],
+        'isNewBook': true,
+      },
+    );
+  }
+
+  void _errorBookMode(int index) async {
+    await AwesomeDialog(
+      context: context,
+      dialogType: DialogType.error,
+      animType: AnimType.topSlide,
+      title: 'Prenotazioni chiuse',
+      desc: "Chiedi informazioni agli organizzatori dell'evento",
+    ).show();
+  }
+
+  void _editBookName() {
+    if (_editBookNameMode == 1) {
+      setState(() {
+        _editBookNameMode = 0;
+        bookName = _bookEventController.text;
+      });
+    } else {
+      setState(() {
+        _editBookNameMode = 1;
+        _bookEventController.text = bookName;
+      });
+    }
+  }
+
+  Widget _buildItemDetail(int index) {
+    if (data.length > index) {
+      var currentEvent = data[index];
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            currentEvent.title,
+            style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.gray17),
+          ),
+          Text(
+            "${currentEvent.date} - ${currentEvent.time}",
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.gray17),
+          ),
+          Text(
+            currentEvent.place,
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.gray17),
+          ),
+          Gap(10.h),
+          _currentEventBookData[index].isNotEmpty &&
+                  index < _currentEventBookData.length &&
+                  _loading == false
+              ? Container(
+                  padding: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
+                    style: TextStyle(
+                        color: ColorsManager.gray17,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
+              : SizedBox.shrink(),
+          currentEvent.bookingLimit != null
+              ? Visibility(
+                  visible: currentEvent.bookingLimit != null &&
+                      currentEvent.bookingLimit! > 0 &&
+                      _isAdmin,
+                  child: Text(
+                    "Posti rimanenti ${currentEvent.bookingLimit! - totalBookedPlaces[index]}",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red),
+                  ),
+                )
+              : SizedBox.shrink(),
+          SizedBox(
+            height: 5,
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Visibility(
+                  visible: _events[index].bookable == true,
+                  child: GestureDetector(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.person_add_alt_1,
+                            color: ColorsManager.gray17,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Aggiungi prenotazione",
+                            style: TextStyle(
+                                color: ColorsManager.gray17, fontSize: 18),
+                          )
+                        ]),
+                    onTap: () => _toggleBookMode(
+                        index), //_toggleBookEvent(_focusedIndex),
+                  ),
+                ),
+                Visibility(
+                  visible: _events[index].bookable == false,
+                  child: GestureDetector(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.person_add_disabled_rounded,
+                            color: ColorsManager.gray17,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Prenotazioni bloccate",
+                            style: TextStyle(
+                                color: ColorsManager.gray17, fontSize: 18),
+                          )
+                        ]),
+                    onTap: () => _errorBookMode(
+                        index), //_toggleBookEvent(_focusedIndex),
+                  ),
+                ),
+                Gap(10.h),
+                GestureDetector(
+                  child: Visibility(
+                    visible: _currentEventBookData[index].isNotEmpty,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.settings,
+                            color: ColorsManager.gray17,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Gestisci prenotazione",
+                            style: TextStyle(
+                                color: ColorsManager.gray17, fontSize: 18),
+                          )
+                        ]),
+                  ),
+                  onTap: () async {
+                    if (_currentEventBookData[index].isNotEmpty) {
+                      await context.pushNamed(
+                        Routes.viewBookScreen,
+                        arguments: {
+                          'event': _events[index],
+                          'bookData': _currentEventBookData[index],
+                          'user': _loggedUser,
+                          'image': _image[index],
+                          'isMoneyScreen': false,
+                          //'bookedUsers': _bookedUsers,
+                          //'participantsUsers': _participantUsers,
+                        },
+                      );
+                      setState(() {
+                        myEventBooks = getMyEventBooks();
+                      });
+
+                    }
+                  },
+                ),
+                Visibility(
+                  visible: _isAdmin,
+                  child: SizedBox(
+                    width: 20,
+                  ),
+                ),
+                Visibility(
+                  visible: _isAdmin & !_loading,
+                  child: GestureDetector(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.edit,
+                            color: Colors.orange,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Modifica evento",
+                            style:
+                                TextStyle(color: Colors.orange, fontSize: 18),
+                          )
+                        ]),
+                    onTap: () => _editEvent(index),
+                  ),
+                ),
+                Visibility(
+                  visible: _isAdmin,
+                  child: SizedBox(
+                    width: 20,
+                  ),
+                ),
+                Visibility(
+                  visible: _isAdmin &
+                      !_loading &
+                      (currentEvent.isToday! ||
+                          (_loggedUser.name == 'Mattia' &&
+                              _loggedUser.surname == 'Morbidelli')),
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (_currentEventBookData[index].isNotEmpty) {
+                        await context.pushNamed(
+                          Routes.viewBookScreen,
+                          arguments: {
+                            'event': _events[index],
+                            'bookData': _currentEventBookData[index],
+                            'user': _loggedUser,
+                            'image': _image[index],
+                            'isMoneyScreen': true,
+                            //'bookedUsers': _bookedUsers,
+                            //'participantsUsers': _participantUsers,
+                          },
+                        );
+                      }
+                    },
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.monetization_on_outlined,
+                            color: Colors.orange,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Gestisci ingresso",
+                            style:
+                                TextStyle(color: Colors.orange, fontSize: 18),
+                          )
+                        ]),
+                  ),
+                ),
+                Visibility(
+                  visible: _isAdmin &
+                      !_loading &
+                      (currentEvent.isToday! ||
+                          (_loggedUser.name == 'Mattia' &&
+                              _loggedUser.surname == 'Morbidelli')),
+                  child: SizedBox(
+                    width: 20,
+                  ),
+                ),
+                //Visibility(
+                //  visible: _isAdmin & !_loading,
+                //  child: GestureDetector(
+                //    onTap: () => _viewParticipants(index),
+                //    child: Icon(
+                //      Icons.menu,
+                //      color: Colors.orange,
+                //    ),
+                //  ),
+                //),
+                //Visibility(
+                //  visible: _isAdmin,
+                //  child: SizedBox(
+                //    width: 20,
+                //  ),
+                //),
+                Visibility(
+                  visible: _isAdmin & !_loading,
+                  child: GestureDetector(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add,
+                            color: Colors.orange,
+                          ),
+                          Gap(5.w),
+                          Text(
+                            "Aggiungi evento",
+                            style:
+                                TextStyle(color: Colors.orange, fontSize: 18),
+                          )
+                        ]),
+                    onTap: () async {
+                      await context.pushNamed(Routes.newEventScreen,
+                          arguments: null);
+                      setState(() {});
+                    },
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      );
+    } else {
+      return SizedBox(
+        width: 350,
+        height: 350,
+      );
+    }
   }
 
   bool isMobileDevice() {
@@ -111,11 +552,199 @@ class _HomeScreenState extends State<HomeScreen> {
     return width < 600;
   }
 
+  Widget _buildListItem(BuildContext context, int index) {
+    return GestureDetector(
+      onTap: () async => {},
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 5),
+        width: isMobileDevice() ? window.display.size.width - 30 : 400,
+        height: isMobileDevice() ? window.display.size.width - 30 : 400,
+        child: InkWell(
+          onTap: () async {
+            sslKey.currentState!.focusToItem(index);
+            if (_currentEventBookData.isNotEmpty) {
+              await context.pushNamed(
+                Routes.viewBookScreen,
+                arguments: {
+                  'event': _events[index],
+                  'bookData': _currentEventBookData,
+                  'user': _loggedUser,
+                  'image': _image[_focusedIndex],
+                  //'bookedUsers': _bookedUsers,
+                  //'participantsUsers': _participantUsers,
+                },
+              );
+            }
+          },
+          child: Stack(children: [
+            Center(child: Image(image: _image[index].image)),
+            index < _currentEventBookData.length &&
+                    index == _focusedIndex &&
+                    _loading == false
+                ? Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      "PRENOTATO x${getTotalBookPeople(_currentEventBookData[index])}",
+                      style: TextStyle(
+                          color: ColorsManager.gray17,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  )
+                : SizedBox.shrink(),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadImage(int index) async {
+    //print("load image future");
+    try {
+      final imageData = await _events[index].getEventImage();
+      if (imageData != null) {
+        setState(() {
+          if (index < _image.length) {
+            _image[index] = Image.memory(imageData);
+          } else {
+            _image.add(Image.memory(imageData));
+          }
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading image: $e');
+      }
+    }
+
+    //if (index == _events.length - 1) {
+    //  setState(() {
+    //    _imageLoading = false;
+    //  });
+    //}
+  }
+
+  Future<void> _editEvent(int index) async {
+    await context.pushNamed(Routes.editEventScreen, arguments: _events[index]);
+    setState(() {});
+  }
+
+  Future<void> _viewParticipants(int index) async {
+    context.pushNamed(
+      Routes.viewParticipantsScreen,
+      arguments: {
+        'upperEvent': _events[index],
+        'allUsers': _users,
+        //'bookedUsers': _bookedUsers,
+        //'participantsUsers': _participantUsers,
+      },
+    );
+  }
+
+  int getTotalBookPeople(List<ParticipantDataCassero> list) {
+    int sum = 0;
+    for (var book in list) {
+      //var event = UpperEvent.fromJson(doc.data());
+      //print(doc.id);
+      sum += book.number + book.childrenNumber;
+    }
+    return sum;
+  }
+
+  Widget LocalEventTile() {
+    return PageView.builder(
+      controller: PageController(viewportFraction: 0.8),
+      // Mostra l'80% di una card
+      itemCount: _events.length,
+      itemBuilder: (context, index) {
+        return Container(
+          height: 500,
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          child: GestureDetector(
+            onDoubleTap: () {
+              setState(() {
+                _isEventDetailVisible =
+                    !_isEventDetailVisible; // Nasconde il pannello quando si preme
+              });
+            },
+            child: Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Container(
+                width: 300,
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  image: DecorationImage(
+                    image: _image[index].image,
+                    fit: _image[index].image.toString().contains("loading.gif")
+                        ? BoxFit.contain
+                        : BoxFit.cover,
+                  ),
+                ),
+                child: Visibility(
+                  visible: _isEventDetailVisible,
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Visibility(
+                          visible: !_image[index]
+                              .image
+                              .toString()
+                              .contains("loading.gif"),
+                          child: Container(
+                            width: 300,
+                            height: _isAdmin ? 300 : 230,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.8),
+                              // Bianco semi-trasparente
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: _buildItemDetail(index),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _listenCardNumber() {
+    cardSubscription =
+        context.read<AppCubit>().watchCardNumber().listen((cardNumber) {
+      //if (_loggedUser.cardNumber == 0) _loadEvents();
+      //_loadQr();
+      setState(() {
+        _loggedUser.cardNumber = cardNumber;
+        //print("aggiunto utente totale ${_users.length}");
+        //_filterUsers(_searchController.text);
+      });
+    });
+  }
+
   @override
   void dispose() {
     super.dispose();
     _searchController.dispose();
     userSubscription?.cancel();
+    _allergyNoteController.dispose();
+    _bookEventController.dispose();
+    for (int i = 0; i < _eventBookSubscription.length; i++)
+      _eventBookSubscription[i]!.cancel();
   }
 
   void _loadWhatsappLink() async {
@@ -164,7 +793,6 @@ class _HomeScreenState extends State<HomeScreen> {
   //  });
   //}
 
-
   void _loadUserLevel() async {
     var user = await context.read<AppCubit>().getUser();
     _loggedUser = user;
@@ -173,15 +801,24 @@ class _HomeScreenState extends State<HomeScreen> {
       _isAdmin = level == "admin";
       _loggedUser.isAdmin = true;
     });
-    if (_isAdmin)
-      _loadUsers();
+    if (_isAdmin) _loadUsers();
 
-    _loadEvents();
+    await _loadEvents();
 
-      setState(() {
-        _isUsersLoading = false;
-        _isLoggedUserLoading = false;
-      });
+    //print("pippo");
+
+    for (int i = 0; i < _events.length; i++) {
+      data.add(_events[i]);
+      //print("for events");
+      _loadImage(i);
+    }
+
+    _loadEventsSubscription();
+
+    setState(() {
+      _isUsersLoading = false;
+      _isLoggedUserLoading = false;
+    });
   }
 
   // Funzione per convertire una stringa dd/mm/yyyy in DateTime
@@ -195,7 +832,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return DateTime(anno, mese, giorno); // Crea un oggetto DateTime
   }
 
-  void _loadEvents() async {
+  Future<void> _loadEvents() async {
     setState(() {
       _isEventsLoading = true;
     });
@@ -209,7 +846,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _events.clear();
       // mostro solo eventi futuri
       //for (UpperEvent event in tmpEvents) {
-      for (int i = 0; i< tmpEvents.length; i++) {
+      for (int i = 0; i < tmpEvents.length; i++) {
         var event = tmpEvents[i];
         event.checkTodayDate();
         DateTime eDate =
@@ -219,7 +856,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _events.add(event);
         }
       }
-    } else _events = tmpEvents;
+    } else
+      _events = tmpEvents;
 
     if (kDebugMode) {
       print("events length ${_events.length}");
@@ -233,9 +871,9 @@ class _HomeScreenState extends State<HomeScreen> {
       _events.sort((b, a) => a.getDate().compareTo(b.getDate()));
     }
 
-   //for (int i = 0; i < tmpEvents.length; i++) {
-   //  print(_events[i].date);
-   //}
+    //for (int i = 0; i < tmpEvents.length; i++) {
+    //  print(_events[i].date);
+    //}
 
     // se un evento ha la da di oggi lo metto in prima fila
     if (_events.length > 1) {
@@ -299,58 +937,59 @@ class _HomeScreenState extends State<HomeScreen> {
           Visibility(
             visible: _events.isNotEmpty,
             child: Expanded(
-              child: EventTile(
-                  upperEvents: _events,
-                  isAdmin: _isAdmin,
-                  allUsers: _users,
-                  loggedUser: _loggedUser),
+              child: LocalEventTile(),
+              //child: EventTile(
+              //    upperEvents: _events,
+              //    isAdmin: _isAdmin,
+              //    allUsers: _users,
+              //    loggedUser: _loggedUser),
             ),
           ),
           Visibility(
-            visible: _events.isEmpty,
-            child: !_isAdmin ? Expanded(
-                child: Center(
-                    child: Text(
-              textAlign: TextAlign.center,
-              //_loggedUser.cardNumber != 0 ?
-                  "Nessun evento in programma",
-              //    : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                  color: ColorsManager.gray17),
-            ))) :
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        textAlign: TextAlign.center,
-                        //_loggedUser.cardNumber != 0 ?
-                        "Nessun evento in programma",
-                        //    : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                            color: ColorsManager.gray17),
+              visible: _events.isEmpty,
+              child: !_isAdmin
+                  ? Expanded(
+                      child: Center(
+                          child: Text(
+                      textAlign: TextAlign.center,
+                      //_loggedUser.cardNumber != 0 ?
+                      "Nessun evento in programma",
+                      //    : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          color: ColorsManager.gray17),
+                    )))
+                  : Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            textAlign: TextAlign.center,
+                            //_loggedUser.cardNumber != 0 ?
+                            "Nessun evento in programma",
+                            //    : "La tua richiesta è in fase di elaborazione, una volta ricevuto il tuo UPPER PASS potrai visualizzare i nostri eventi",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                                color: ColorsManager.gray17),
+                          ),
+                          Gap(20.h),
+                          GestureDetector(
+                            child: Icon(
+                              Icons.add,
+                              color: ColorsManager.gray17,
+                            ),
+                            onTap: () async {
+                              await context.pushNamed(Routes.newEventScreen,
+                                  arguments: null);
+                              setState(() {});
+                            },
+                          ),
+                        ],
                       ),
-                      Gap(20.h),
-                      GestureDetector(
-                        child: Icon(
-                          Icons.add,
-                          color: ColorsManager.gray17,
-                        ),
-                        onTap: () async {
-                          await context.pushNamed(Routes.newEventScreen,
-                              arguments: null);
-                          setState(() {});
-                        },
-                      ),
-                    ],
-                  ),
-                )
-          ),
+                    )),
 //           Visibility(
 //             visible: _isAdmin ,
 //             child: Row(
@@ -410,7 +1049,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _userManagementWidget() {
     return Container(
-      height: MediaQuery.of(context).size.height, // Altezza massima dello schermo
+      height:
+          MediaQuery.of(context).size.height, // Altezza massima dello schermo
       padding: EdgeInsets.only(left: 10, right: 10),
       child: Column(
         children: [
@@ -485,7 +1125,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             shape: RoundedRectangleBorder(
                               //<-- SEE HERE
-                              side: BorderSide(width: 0, color: ColorsManager.gray17_03),
+                              side: BorderSide(
+                                  width: 0, color: ColorsManager.gray17_03),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             leading: Icon(
@@ -587,132 +1228,181 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-
-
   Widget _profileWidget() {
     if (_isLoggedUserLoading == false) {
       //if (qrTapMode == false) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.all(8.0),
-          physics: ClampingScrollPhysics(), // Consente solo scroll verticale
-          child: Column(
-            children: [
-              Text(FirebaseAuth.instance.currentUser!.displayName!,
-                  style: TextStyle(fontSize: 30, color: ColorsManager.gray17)),
-              SizedBox(
-                height: 3,
-              ),
-              //Text(
-              //  "Mostra questo QR e un documento d'identità per entrare!",
-              //  style: TextStyle(fontSize: 16, color: ColorsManager.gray17),
-              //  textAlign: TextAlign.center,
-              //),
-              //SizedBox(
-              //  height: 20,
-              //),
-              //Container(
-              //  width: 320,
-              //  height: 320,
-              //  decoration: BoxDecoration(
-              //      color: ColorsManager.gray17_03,
-              //      borderRadius: BorderRadius.circular(5)),
-              //  child: Center(
-              //    child: SizedBox(
-              //      width: 320,
-              //      child: Center(
-              //          child: _loggedUser.cardNumber != 0
-              //              ? GestureDetector(
-              //                  onTap: _toggleTapQr,
-              //                  child: PrettyQrPlus(
-              //                    data: _qrData,
-              //                    size: 290,
-              //                    elementColor: Colors.black,
-              //                    roundEdges: false,
-              //                    typeNumber: null,
-              //                    //decoration: const PrettyQrDecoration(
-              //                    //  background: ColorsManager.gray17,
-              //                    //),
-              //                  ),
-              //                )
-              //              : Center(
-              //                  child: Text(
-              //                    "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
-              //                    textAlign: TextAlign.center,
-              //                    style: TextStyle(
-              //                      fontSize: 20,
-              //                    ),
-              //                  ),
-              //                )),
-              //    ),
-              //  ),
-              //),
-              //Container(
-              //  width: 320,
-              //  child: Center(
-              //    child: Row(children: [
-              //      Text(
-              //        _loggedUser.uid!,
-              //        style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
-              //        textAlign: TextAlign.start,
-              //      ),
-              //      Gap(10.w),
-              //      Visibility(
-              //        visible: _loggedUser.cardNumber != 0,
-              //        child: Expanded(
-              //          child: Text(
-              //            _loggedUser.cardNumber.toString(),
-              //            style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
-              //            textAlign: TextAlign.end,
-              //          ),
-              //        ),
-              //      ),
-              //    ]),
-              //  ),
-              //),
-              //Gap(20.h),
-              //Visibility(
-              //  visible: whatsappGroupLink != "" &&
-              //      isMobileDevice() &&
-              //      _loggedUser.cardNumber != 0,
-              //  child: GestureDetector(
-              //    onTap: _redirectWhatsapp,
-              //    child: Container(
-              //      width: 320,
-              //      height: 60,
-              //      padding: const EdgeInsets.only(
-              //          right: 8.0, left: 8.0, bottom: 2.0, top: 2.0),
-              //      decoration: BoxDecoration(
-              //          color: ColorsManager.gray17,
-              //          borderRadius: BorderRadius.circular(5)),
-              //      child: Row(
-              //        children: [
-              //          //Icon(Icons.message),
-              //          Image(image: AssetImage("assets/images/whatsapp.gif")),
-              //          Gap(15.w),
-              //          Text("Unisciti al gruppo Whatsapp",
-              //              style: TextStyle(fontWeight: FontWeight.normal)),
-              //        ],
-              //      ),
-              //    ),
-              //  ),
-              //),
-              Gap(30.h),
-              Align(
-                alignment: AlignmentDirectional.bottomCenter,
-                child: AppTextButton(
-                  buttonText: 'Logout',
-                  textStyle: TextStyles.font16Black600Weight,
-                  buttonWidth: 100,
-                  buttonHeight: 50,
-                  onPressed: () {
-                    context.read<AppCubit>().signOut();
-                    context.pushNamed(Routes.loginScreen);
-                  },
-                ),
-              )
-            ],
+      return Column(
+        children: [
+          Text(FirebaseAuth.instance.currentUser!.displayName!,
+              style: TextStyle(fontSize: 30, color: ColorsManager.gray17)),
+          SizedBox(
+            height: 3,
           ),
-        );
+          Expanded(
+            child: myEventBooks.isEmpty
+                ? Center(child: Text('Nessuna prenotazione trovata'))
+                : ListView.builder(
+                    itemCount: myEventBooks.length,
+                    itemBuilder: (context, index) {
+                      UpperEvent event = myEventBooks[index];
+                      return ListTile(
+                        tileColor: Colors.green,
+                        textColor: Colors.black,
+                        subtitleTextStyle: TextStyle(
+                          fontSize: 12,
+                          color: Colors.black38,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          //<-- SEE HERE
+                          side: BorderSide(
+                              width: 0, color: ColorsManager.background),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        //onTap: () => _showUser(user, widget.upperEvent),
+                        //leading: Icon(
+                        //  Icons.person_outline,
+                        //  color: user.state == 'booked'
+                        //      ? Colors.orange
+                        //      : user.state == 'joined'
+                        //          ? Colors.green
+                        //          : Colors.black,
+                        //),
+                        leading: Icon(
+                          Icons.star,
+                          color: Colors.black,
+                        ),
+                        // trailing: GestureDetector(
+                        //   onTap: () =>
+                        //       _manageBook(_filteredBook[index], index),
+                        //   child: Text(
+                        //     widget.isMoneyScreen ? "PAGAMENTO" : "GESTISCI",
+                        //     style: TextStyle(
+                        //         fontSize: 14,
+                        //         color: Colors.black,
+                        //         fontWeight: FontWeight.bold),
+                        //   ),
+                        // ),
+                        //
+                        //trailing: GestureDetector(
+                        //  child: Icon(Icons.delete, color: Colors.red),
+                        //  onTap: () {},
+                        //),
+                        title: Text("${event.title}"),
+                        subtitle: Text('${event.date}'),
+                      );
+                    },
+                  ),
+          ),
+          //Text(
+          //  "Mostra questo QR e un documento d'identità per entrare!",
+          //  style: TextStyle(fontSize: 16, color: ColorsManager.gray17),
+          //  textAlign: TextAlign.center,
+          //),
+          //SizedBox(
+          //  height: 20,
+          //),
+          //Container(
+          //  width: 320,
+          //  height: 320,
+          //  decoration: BoxDecoration(
+          //      color: ColorsManager.gray17_03,
+          //      borderRadius: BorderRadius.circular(5)),
+          //  child: Center(
+          //    child: SizedBox(
+          //      width: 320,
+          //      child: Center(
+          //          child: _loggedUser.cardNumber != 0
+          //              ? GestureDetector(
+          //                  onTap: _toggleTapQr,
+          //                  child: PrettyQrPlus(
+          //                    data: _qrData,
+          //                    size: 290,
+          //                    elementColor: Colors.black,
+          //                    roundEdges: false,
+          //                    typeNumber: null,
+          //                    //decoration: const PrettyQrDecoration(
+          //                    //  background: ColorsManager.gray17,
+          //                    //),
+          //                  ),
+          //                )
+          //              : Center(
+          //                  child: Text(
+          //                    "La tua richiesta è in fase di elaborazione, il tuo UPPER PASS comparirà qui",
+          //                    textAlign: TextAlign.center,
+          //                    style: TextStyle(
+          //                      fontSize: 20,
+          //                    ),
+          //                  ),
+          //                )),
+          //    ),
+          //  ),
+          //),
+          //Container(
+          //  width: 320,
+          //  child: Center(
+          //    child: Row(children: [
+          //      Text(
+          //        _loggedUser.uid!,
+          //        style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
+          //        textAlign: TextAlign.start,
+          //      ),
+          //      Gap(10.w),
+          //      Visibility(
+          //        visible: _loggedUser.cardNumber != 0,
+          //        child: Expanded(
+          //          child: Text(
+          //            _loggedUser.cardNumber.toString(),
+          //            style: TextStyle(color: ColorsManager.gray17, fontSize: 9),
+          //            textAlign: TextAlign.end,
+          //          ),
+          //        ),
+          //      ),
+          //    ]),
+          //  ),
+          //),
+          //Gap(20.h),
+          //Visibility(
+          //  visible: whatsappGroupLink != "" &&
+          //      isMobileDevice() &&
+          //      _loggedUser.cardNumber != 0,
+          //  child: GestureDetector(
+          //    onTap: _redirectWhatsapp,
+          //    child: Container(
+          //      width: 320,
+          //      height: 60,
+          //      padding: const EdgeInsets.only(
+          //          right: 8.0, left: 8.0, bottom: 2.0, top: 2.0),
+          //      decoration: BoxDecoration(
+          //          color: ColorsManager.gray17,
+          //          borderRadius: BorderRadius.circular(5)),
+          //      child: Row(
+          //        children: [
+          //          //Icon(Icons.message),
+          //          Image(image: AssetImage("assets/images/whatsapp.gif")),
+          //          Gap(15.w),
+          //          Text("Unisciti al gruppo Whatsapp",
+          //              style: TextStyle(fontWeight: FontWeight.normal)),
+          //        ],
+          //      ),
+          //    ),
+          //  ),
+          //),
+          Gap(30.h),
+          Align(
+            alignment: AlignmentDirectional.bottomCenter,
+            child: AppTextButton(
+              buttonText: 'Logout',
+              textStyle: TextStyles.font16Black600Weight,
+              buttonWidth: 100,
+              buttonHeight: 50,
+              onPressed: () {
+                context.read<AppCubit>().signOut();
+                context.pushNamed(Routes.loginScreen);
+              },
+            ),
+          )
+        ],
+      );
       //} else {
       //  return Container(
       //    color: ColorsManager.gray17,

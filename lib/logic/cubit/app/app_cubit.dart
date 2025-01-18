@@ -120,21 +120,22 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Future<void> updateBookPermission(String eventId, bool bookable) async {
-    var eventsParticipants =
-    firebase.collection('bookPermission');
-    await eventsParticipants
-        .doc(eventId)
-        .set({'allow': bookable});
+    var eventsParticipants = firebase.collection('bookPermission');
+    await eventsParticipants.doc(eventId).set({'allow': bookable});
   }
 
   Future<void> bookEventCassero(
+      String userUID,
+      String userBookName,
       String eventId,
       String? eventUID,
       String bookName,
       int bookNumber,
       int childrenBookNumber,
       bool? allergy,
-      String? allergyNote) async {
+      String? allergyNote,
+      int? paied,
+      int? childrenPaied) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
         firebase.collection('events').doc(eventId).collection("participants");
@@ -147,17 +148,37 @@ class AppCubit extends Cubit<AppState> {
     }
     final docId = docRef.id;
 
-    await docRef.set({
-      'uid': _auth.currentUser!.uid,
+    //'uid': _auth.currentUser!.uid,
+
+    Map<String, dynamic> data = {
+      'uid': userUID,
+      'bookUserName': userBookName,
       'eventUid': docId,
-      'bookUserName': _auth.currentUser!.displayName!,
       'name': bookName,
       'number': bookNumber,
       'childrenNumber': childrenBookNumber,
       'date': FieldValue.serverTimestamp(),
       'allergy': allergy,
       'allergyNote': allergyNote,
-    });
+    };
+
+
+
+// Controlla lo stato della variabile bool e aggiungi il campo extra se necessario
+    if (paied != null) {
+      data['paied'] = paied; // Aggiungi il parametro solo se necessario
+    }
+
+    if (childrenPaied != null) {
+      data['childrenPaied'] =
+          childrenPaied; // Aggiungi il parametro solo se necessario
+    }
+
+    print("sto settando");
+    print(data);
+
+// Salva i dati nel documento
+    await docRef.set(data);
   }
 
   //.set({'name': bookName, 'number': bookNumber});
@@ -272,10 +293,7 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Stream<List<BookPermission>> getBookPermissionCasseroStream() async* {
-    final snapshotStream =
-        firebase
-        .collection('bookPermission')
-        .snapshots();
+    final snapshotStream = firebase.collection('bookPermission').snapshots();
 
     await for (final snapshot in snapshotStream) {
       final bookList = snapshot.docs.map((doc) {

@@ -7,6 +7,7 @@ import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/screens/forget/ui/forget_screen.dart';
 import 'package:rione_cassero/screens/home/ui/event_book_screen.dart';
 import 'package:rione_cassero/screens/home/ui/manage_book_screen.dart';
+import 'package:rione_cassero/screens/home/ui/manage_payment_screen.dart';
 import 'package:rione_cassero/screens/home/ui/event_participants_screen.dart';
 import 'package:rione_cassero/screens/home/ui/home_screen.dart';
 import 'package:rione_cassero/screens/home/ui/new_event_screen.dart';
@@ -133,6 +134,20 @@ class AppRouter {
               loggedUser: map['user'] as up.User,
               eventImage: map['image'] as Image,
               isNewBook: map['isNewBook'] as bool,
+            ),
+          ),
+        );
+
+      case Routes.managePaymentScreen:
+        var map = settings.arguments as Map<String, Object?>;
+
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: authCubit,
+            child: ManagePaymentScreen(
+              upperEvent: map['event'] as UpperEvent,
+              bookData: map['bookData'] as ParticipantDataCassero,
+              loggedUser: map['user'] as up.User,
             ),
           ),
         );

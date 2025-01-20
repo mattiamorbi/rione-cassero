@@ -38,6 +38,8 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   int bookNumber = 1;
   int childBookNumber = 0;
 
+  bool actionInProgress = false;
+
   final TextEditingController _bookEventController = TextEditingController();
   final TextEditingController _allergyNoteController = TextEditingController();
   bool allergy = false;
@@ -339,13 +341,13 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                                   size: 35,
                                   color: Colors.red,
                                 ),
-                                onTap: _bookEventDelete,
+                                onTap: !actionInProgress ? _bookEventDelete : null,
                               ),
                             ),
                             //Gap(100.w),
                             GestureDetector(
                               child: Icon(Icons.save, size: 35),
-                              onTap: _bookEventSave,
+                              onTap: !actionInProgress ? _bookEventSave : null,
                             ),
                           ],
                         ),
@@ -377,6 +379,10 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   }
 
   Future<void> _bookEventSave() async {
+    setState(() {
+      actionInProgress = true;
+    });
+
     if (widget.upperEvent.bookable!) {
       if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
           (allergy && _allergyNoteController.text.length == 0)) {
@@ -448,6 +454,10 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   }
 
   Future<void> _bookEventDelete() async {
+    setState(() {
+      actionInProgress = true;
+    });
+
     await context.read<AppCubit>().deleteBookEventCassero(
         widget.upperEvent.id!, widget.bookData.eventUid);
 
@@ -467,5 +477,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
     super.dispose();
     _bookEventController.dispose();
     _allergyNoteController.dispose();
+
+    actionInProgress = false;
   }
 }

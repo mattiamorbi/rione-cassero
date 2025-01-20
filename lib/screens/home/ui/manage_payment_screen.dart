@@ -57,6 +57,8 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
 
   List<PaymentHelper> paymentList = [];
 
+  bool actionInProgress = false;
+
   @override
   void initState() {
     super.initState();
@@ -161,7 +163,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
                     ),
                     Gap(10.h),
                     GestureDetector(
-                        onTap: savePaymentData,
+                        onTap: !actionInProgress ? savePaymentData : null,
                         child: Icon(Icons.save, size: 30)),
                     Gap(15.h),
                   ],
@@ -243,6 +245,10 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
   }
 
   Future<void> savePaymentData() async {
+    setState(() {
+      actionInProgress = true;
+    });
+
     int paied = getRealTimePayment(PaymentHelper.adult);
     int childPaied = getRealTimePayment(PaymentHelper.child);
 
@@ -331,5 +337,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
     super.dispose();
     _bookEventController.dispose();
     _allergyNoteController.dispose();
+
+    actionInProgress = false;
   }
 }

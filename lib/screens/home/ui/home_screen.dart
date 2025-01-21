@@ -1241,57 +1241,62 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: myEventBooks.isEmpty
                 ? Center(child: Text('Nessuna prenotazione trovata'))
-                : ListView.builder(
-                    itemCount: myEventBooks.length,
-                    itemBuilder: (context, index) {
-                      UpperEvent event = myEventBooks[index];
-                      return ListTile(
-                        tileColor: Colors.green,
-                        textColor: Colors.black,
-                        subtitleTextStyle: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black38,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          //<-- SEE HERE
-                          side: BorderSide(
-                              width: 0, color: ColorsManager.background),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        //onTap: () => _showUser(user, widget.upperEvent),
-                        //leading: Icon(
-                        //  Icons.person_outline,
-                        //  color: user.state == 'booked'
-                        //      ? Colors.orange
-                        //      : user.state == 'joined'
-                        //          ? Colors.green
-                        //          : Colors.black,
-                        //),
-                        leading: Icon(
-                          Icons.star,
-                          color: Colors.black,
-                        ),
-                        // trailing: GestureDetector(
-                        //   onTap: () =>
-                        //       _manageBook(_filteredBook[index], index),
-                        //   child: Text(
-                        //     widget.isMoneyScreen ? "PAGAMENTO" : "GESTISCI",
-                        //     style: TextStyle(
-                        //         fontSize: 14,
-                        //         color: Colors.black,
-                        //         fontWeight: FontWeight.bold),
-                        //   ),
-                        // ),
-                        //
-                        //trailing: GestureDetector(
-                        //  child: Icon(Icons.delete, color: Colors.red),
-                        //  onTap: () {},
-                        //),
-                        title: Text("${event.title}"),
-                        subtitle: Text('${event.date}'),
-                      );
-                    },
-                  ),
+                : Padding(
+                  padding: const EdgeInsets.only(right: 10, left: 10),
+                  child: ListView.builder(
+                      itemCount: myEventBooks.length,
+                      itemBuilder: (context, index) {
+                        UpperEvent event = myEventBooks[index];
+
+                        return CustomCard(title: event.title,subtitle: event.description, date: event.date);
+                        //return ListTile(
+                        //  tileColor: Colors.green,
+                        //  textColor: Colors.black,
+                        //  subtitleTextStyle: TextStyle(
+                        //    fontSize: 12,
+                        //    color: Colors.black38,
+                        //  ),
+                        //  shape: RoundedRectangleBorder(
+                        //    //<-- SEE HERE
+                        //    side: BorderSide(
+                        //        width: 0, color: ColorsManager.background),
+                        //    borderRadius: BorderRadius.circular(20),
+                        //  ),
+                        //  //onTap: () => _showUser(user, widget.upperEvent),
+                        //  //leading: Icon(
+                        //  //  Icons.person_outline,
+                        //  //  color: user.state == 'booked'
+                        //  //      ? Colors.orange
+                        //  //      : user.state == 'joined'
+                        //  //          ? Colors.green
+                        //  //          : Colors.black,
+                        //  //),
+                        //  leading: Icon(
+                        //    Icons.star,
+                        //    color: Colors.black,
+                        //  ),
+                        //  // trailing: GestureDetector(
+                        //  //   onTap: () =>
+                        //  //       _manageBook(_filteredBook[index], index),
+                        //  //   child: Text(
+                        //  //     widget.isMoneyScreen ? "PAGAMENTO" : "GESTISCI",
+                        //  //     style: TextStyle(
+                        //  //         fontSize: 14,
+                        //  //         color: Colors.black,
+                        //  //         fontWeight: FontWeight.bold),
+                        //  //   ),
+                        //  // ),
+                        //  //
+                        //  //trailing: GestureDetector(
+                        //  //  child: Icon(Icons.delete, color: Colors.red),
+                        //  //  onTap: () {},
+                        //  //),
+                        //  title: Text("${event.title}"),
+                        //  subtitle: Text('${event.date}'),
+                        //);
+                      },
+                    ),
+                ),
           ),
           //Text(
           //  "Mostra questo QR e un documento d'identità per entrare!",
@@ -1430,6 +1435,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
+
   void _redirectWhatsapp() {
     html.window.open(whatsappGroupLink!, "_blank");
   }
@@ -1471,5 +1478,103 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       if (isMobileDevice()) qrTapMode = !qrTapMode;
     });
+  }
+}
+
+
+class CustomCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String date;
+
+  // Costruttore per accettare argomenti
+  const CustomCard({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    required this.date,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 6, // Ombra intorno alla card
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15), // Angoli arrotondati
+      ),
+      shadowColor: Colors.black.withOpacity(0.3), // Colore ombra
+      child: Container(
+        width: window.display.size.width - 30,
+        height: 120,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.lightBlue[100]!,
+              Colors.lightBlue[300]!,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              offset: Offset(5, 5),
+              blurRadius: 10,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.4),
+              offset: Offset(-5, -5),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue[900],
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.blue[700],
+                  ),
+                ),
+              ],
+            ),
+            Center(
+              child: Text(
+                date,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[900],
+                  shadows: [
+                    Shadow(
+                      blurRadius: 5,
+                      color: Colors.black45,
+                      offset: Offset(2, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

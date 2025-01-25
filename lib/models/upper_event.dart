@@ -20,6 +20,9 @@ class UpperEvent {
 
   bool? bookable;
 
+  int sumUpMyBookPerson = 0;
+  int sumUpMyBookChildren = 0;
+
   UpperEvent({
     required this.title,
     required this.description,

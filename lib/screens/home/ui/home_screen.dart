@@ -33,7 +33,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   //late String _qrData = "";
   late bool _isAdmin = false;
   List<UpperEvent> _events = [];
@@ -79,6 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool allergy = false;
   bool _isEventDetailVisible = true;
 
+  late TabController _tabController;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,6 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     BlocProvider.of<AppCubit>(context);
     _loadUserLevel();
+
+    // Imposta l'indice iniziale della TabBar (es. 1 per la seconda tab)
+    _tabController = TabController(length: 3, initialIndex: 1, vsync: this);
     //_loadQr();
 
     //_loadWhatsappLink();
@@ -122,7 +128,24 @@ class _HomeScreenState extends State<HomeScreen> {
     for (int i = 0; i < _events.length; i++) {
       if (_currentEventBookData[i].length > 0) {
         myBooks.add(_events[i]);
-        print("sono prenotato a ${_events[i].title}");
+        myBooks.last.sumUpMyBookChildren = 0;
+        myBooks.last.sumUpMyBookPerson = 0;
+        for (int y = 0; y < _currentEventBookData[i].length; y++) {
+          if (_loggedUser.uid == _currentEventBookData[i].elementAt(y).uid) {
+            myBooks.last.sumUpMyBookPerson +=
+                _currentEventBookData[i].elementAt(y).number;
+            myBooks.last.sumUpMyBookChildren +=
+                _currentEventBookData[i].elementAt(y).childrenNumber;
+          }
+        }
+        print("sono prenotato a ${_events[i].id}");
+      }
+    }
+
+    for (int i = 0; i < myBooks.length; i++) {
+      if (myBooks[i].sumUpMyBookChildren == 0 &&
+          myBooks[i].sumUpMyBookPerson == 0) {
+        myBooks.removeAt(i);
       }
     }
 
@@ -173,7 +196,8 @@ class _HomeScreenState extends State<HomeScreen> {
           for (var item in snapshot) {
             _currentEventBookData[i].add(item);
 
-            if (_isAdmin) totalBookedPlaces[i]  += (item.number + item.childrenNumber);
+            if (_isAdmin)
+              totalBookedPlaces[i] += (item.number + item.childrenNumber);
 
             print("ho eseguito l'aggioranmento");
 
@@ -399,7 +423,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         myEventBooks = getMyEventBooks();
                       });
-
                     }
                   },
                 ),
@@ -1236,19 +1259,60 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(FirebaseAuth.instance.currentUser!.displayName!,
               style: TextStyle(fontSize: 30, color: ColorsManager.gray17)),
           SizedBox(
-            height: 3,
+            height: 10,
+          ),
+          Visibility(
+            visible: !myEventBooks.isEmpty,
+            child: Text("Le mie prenotazioni",
+                style: TextStyle(fontSize: 15, color: ColorsManager.gray17)),
+          ),
+          SizedBox(
+            height: 5,
           ),
           Expanded(
             child: myEventBooks.isEmpty
-                ? Center(child: Text('Nessuna prenotazione trovata'))
+                ? GestureDetector(
+                    onTap: () async {
+                      _tabController.animateTo(0);
+                    },
+                    child: Container(
+                        width: 270,
+                        height: 200,
+                        child: Image(
+                          image: AssetImage("assets/images/scopri_eventi.png"),
+                          fit: BoxFit.cover,
+                        )))
                 : Padding(
-                  padding: const EdgeInsets.only(right: 10, left: 10),
-                  child: ListView.builder(
+                    padding: const EdgeInsets.only(right: 10, left: 10),
+                    child: ListView.builder(
                       itemCount: myEventBooks.length,
                       itemBuilder: (context, index) {
                         UpperEvent event = myEventBooks[index];
 
-                        return CustomCard(title: event.title,subtitle: event.description, date: event.date);
+                        return GestureDetector(
+                          onTap: () async {
+                            await context.pushNamed(
+                              Routes.viewBookScreen,
+                              arguments: {
+                                'event': _events[index],
+                                'bookData': _currentEventBookData[index],
+                                'user': _loggedUser,
+                                'image': _image[index],
+                                'isMoneyScreen': false,
+                                //'bookedUsers': _bookedUsers,
+                                //'participantsUsers': _participantUsers,
+                              },
+                            );
+                          },
+                          child: CustomCard(
+                            title: event.title,
+                            subtitle: event.description,
+                            date: event.date,
+                            imagePath: "assets/images/cassero_no_bg.png",
+                            persons: event.sumUpMyBookPerson,
+                            children: event.sumUpMyBookChildren,
+                          ),
+                        );
                         //return ListTile(
                         //  tileColor: Colors.green,
                         //  textColor: Colors.black,
@@ -1296,7 +1360,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         //);
                       },
                     ),
-                ),
+                  ),
           ),
           //Text(
           //  "Mostra questo QR e un documento d'identità per entrare!",
@@ -1435,8 +1499,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
   void _redirectWhatsapp() {
     html.window.open(whatsappGroupLink!, "_blank");
   }
@@ -1462,13 +1524,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             bottom: TabBar(
               tabs: _getTabBars(),
+              controller: _tabController,
               indicatorColor: ColorsManager.gray17,
               padding: EdgeInsets.only(bottom: 10),
             ),
           ),
           body: Padding(
-              padding: const EdgeInsets.only(bottom: 25.0),
-              child: TabBarView(children: _tabBarViewWidgets())),
+            padding: const EdgeInsets.only(bottom: 25.0),
+            child: TabBarView(
+              children: _tabBarViewWidgets(),
+              controller: _tabController,
+            ), // Associa il TabController,)),
+          ),
         ),
       ),
     );
@@ -1481,11 +1548,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-
 class CustomCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String date;
+  final String imagePath;
+  final int persons;
+  final int children;
 
   // Costruttore per accettare argomenti
   const CustomCard({
@@ -1493,19 +1562,22 @@ class CustomCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.date,
+    required this.imagePath,
+    required this.persons,
+    required this.children,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 6, // Ombra intorno alla card
+      elevation: 10, // Ombra intorno alla card
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15), // Angoli arrotondati
       ),
       shadowColor: Colors.black.withOpacity(0.3), // Colore ombra
       child: Container(
-        width: window.display.size.width - 30,
-        height: 120,
+        width: 300,
+        height: 150,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -1516,60 +1588,125 @@ class CustomCard extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              offset: Offset(5, 5),
-              blurRadius: 10,
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.4),
-              offset: Offset(-5, -5),
-              blurRadius: 10,
-            ),
-          ],
         ),
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[900],
-                  ),
+            // Immagine in basso a destra con trasparenza
+            Positioned(
+              top: 5,
+              right: 10,
+              child: Opacity(
+                opacity: 0.2, // Imposta la trasparenza
+                child: Image.asset(
+                  imagePath,
+                  width: 210,
+                  height: 350,
+                  fit: BoxFit.fill,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.blue[700],
-                  ),
-                ),
-              ],
+              ),
             ),
-            Center(
-              child: Text(
-                date,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[900],
-                  shadows: [
-                    Shadow(
-                      blurRadius: 5,
-                      color: Colors.black45,
-                      offset: Offset(2, 2),
+            Positioned(
+              top: 5,
+              right: 10,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Visibility(
+                    visible: persons != 0,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                        Gap(3.w),
+                        Text(
+                          "x ${persons}",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  Visibility(
+                    visible: persons != 0,
+                    child: Gap(5.h),
+                  ),
+                  Visibility(
+                    visible: children != 0,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.child_care_rounded,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                        Gap(3.w),
+                        Text(
+                          "x ${children}",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Contenuto della card
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[900],
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Center(
+                    child: Text(
+                      date,
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[900],
+                        shadows: [
+                          Shadow(
+                            blurRadius: 5,
+                            color: Colors.black45,
+                            offset: Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

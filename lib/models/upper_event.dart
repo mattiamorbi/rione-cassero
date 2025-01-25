@@ -1,4 +1,5 @@
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rione_cassero/helpers/date_time_helper.dart';
 import 'package:http/http.dart' as http;
@@ -22,6 +23,7 @@ class UpperEvent {
 
   int sumUpMyBookPerson = 0;
   int sumUpMyBookChildren = 0;
+  Image image = Image(image: AssetImage("assets/images/loading.gif"));
 
   UpperEvent({
     required this.title,
@@ -53,7 +55,11 @@ Future<Uint8List?> getEventImage() async {
   final storageRef = FirebaseStorage.instance.ref();
   final imageRef = storageRef.child(imagePath);
   print(imagePath);
-  return await imageRef.getData();
+  Uint8List? tmp = await imageRef.getData();
+  if (tmp != null) {
+    this.image = Image.memory(tmp);
+  }
+  return tmp;
 }
 
 // Future<Uint8List?> getEventImage() async {

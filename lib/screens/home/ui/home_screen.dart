@@ -60,12 +60,13 @@ class _HomeScreenState extends State<HomeScreen>
       ""; // = "https://chat.whatsapp.com/GNCcUncHRnX3cqqfsKemoa";
 
   // from EventTile file
-  final List<Image> _image = [];
+  //final List<Image> _image = [];
   up.User? _user;
   int _editBookNameMode = 0;
   String bookName = "";
   int bookNumber = 1;
   int childBookNumber = 0;
+
   //List<UpperEvent> data = [];
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
@@ -107,18 +108,18 @@ class _HomeScreenState extends State<HomeScreen>
     _loadUserLevel();
 
     // Imposta l'indice iniziale della TabBar (es. 1 per la seconda tab)
-    _tabController = TabController(length: 3, initialIndex: 1, vsync: this);
+    //_tabController = TabController(length: 2, initialIndex: 1, vsync: this);
     //_loadQr();
 
     //_loadWhatsappLink();
     //_listenCardNumber();
 
-    for (int i = 0; i < 10; i++) {
-      // dummy number
-      _image.add(Image(image: AssetImage("assets/images/loading.gif")));
-      //print("image loading");
-      //_image[0].image.toString();
-    }
+    //for (int i = 0; i < _; i++) {
+    //  // dummy number
+    //  _image.add(Image(image: AssetImage("assets/images/loading.gif")));
+    //  //print("image loading");
+    //  //_image[0].image.toString();
+    //}
 
     //_loadLoggedUser();
   }
@@ -126,28 +127,32 @@ class _HomeScreenState extends State<HomeScreen>
   List<UpperEvent> getMyEventBooks() {
     List<UpperEvent> myBooks = [];
     for (int i = 0; i < _events.length; i++) {
-      if (_currentEventBookData[i].length > 0) {
-        myBooks.add(_events[i]);
-        myBooks.last.sumUpMyBookChildren = 0;
-        myBooks.last.sumUpMyBookPerson = 0;
+      if (_currentEventBookData[i].isNotEmpty) {
+        _events[i].sumUpMyBookChildren = 0;
+        _events[i].sumUpMyBookPerson = 0;
         for (int y = 0; y < _currentEventBookData[i].length; y++) {
           if (_loggedUser.uid == _currentEventBookData[i].elementAt(y).uid) {
-            myBooks.last.sumUpMyBookPerson +=
+            _events[i].sumUpMyBookPerson +=
                 _currentEventBookData[i].elementAt(y).number;
-            myBooks.last.sumUpMyBookChildren +=
+            _events[i].sumUpMyBookChildren +=
                 _currentEventBookData[i].elementAt(y).childrenNumber;
           }
         }
+        if (_events[i].sumUpMyBookChildren != 0 ||
+            _events[i].sumUpMyBookPerson != 0) {
+          myBooks.add(_events[i]);
+        }
+
         print("sono prenotato a ${_events[i].id}");
       }
     }
 
-    for (int i = 0; i < myBooks.length; i++) {
-      if (myBooks[i].sumUpMyBookChildren == 0 &&
-          myBooks[i].sumUpMyBookPerson == 0) {
-        myBooks.removeAt(i);
-      }
-    }
+    //for (int i = 0; i < myBooks.length; i++) {
+    //  if (myBooks[i].sumUpMyBookChildren == 0 &&
+    //      myBooks[i].sumUpMyBookPerson == 0) {
+    //    myBooks.removeAt(i);
+    //  }
+    //}
 
     return myBooks;
   }
@@ -193,6 +198,7 @@ class _HomeScreenState extends State<HomeScreen>
 
           // Aggiorna i dati per l'amministratore o l'utente normale
           _currentEventBookData[i].clear();
+
           for (var item in snapshot) {
             _currentEventBookData[i].add(item);
 
@@ -246,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen>
             childrenNumber: 0,
             eventUid: _events[index].id!,
             bookUserName: "${_loggedUser.name} ${_loggedUser.surname}"),
-        'image': _image[index],
+        'image': _events[index].image,
         'isNewBook': true,
       },
     );
@@ -279,6 +285,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildItemDetail(int index) {
     if (_events.length > index) {
       var currentEvent = _events[index];
+      currentEvent.checkTodayDate();
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -390,7 +397,8 @@ class _HomeScreenState extends State<HomeScreen>
                 Gap(10.h),
                 GestureDetector(
                   child: Visibility(
-                    visible: _currentEventBookData[index].isNotEmpty,
+                    visible: index < _currentEventBookData.length &&
+                        _currentEventBookData[index].isNotEmpty,
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -407,14 +415,15 @@ class _HomeScreenState extends State<HomeScreen>
                         ]),
                   ),
                   onTap: () async {
-                    if (_currentEventBookData[index].isNotEmpty) {
+                    if (index < _currentEventBookData.length &&
+                        _currentEventBookData[index].isNotEmpty) {
                       await context.pushNamed(
                         Routes.viewBookScreen,
                         arguments: {
                           'event': _events[index],
                           'bookData': _currentEventBookData[index],
                           'user': _loggedUser,
-                          'image': _image[index],
+                          'image': _events[index].image,
                           'isMoneyScreen': false,
                           //'bookedUsers': _bookedUsers,
                           //'participantsUsers': _participantUsers,
@@ -473,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen>
                             'event': _events[index],
                             'bookData': _currentEventBookData[index],
                             'user': _loggedUser,
-                            'image': _image[index],
+                            'image': _events[index].image,
                             'isMoneyScreen': true,
                             //'bookedUsers': _bookedUsers,
                             //'participantsUsers': _participantUsers,
@@ -541,11 +550,17 @@ class _HomeScreenState extends State<HomeScreen>
                           )
                         ]),
                     onTap: () async {
-                      await context.pushNamed(Routes.newEventScreen,
-                          arguments: null);
+                      UpperEvent newE = await context
+                          .pushNamed(Routes.newEventScreen, arguments: null);
                       setState(() {
-                        _loadUserLevel();
-
+                        //_loadUserLevel();
+                        //newE.checkTodayDate();
+                        _events.add(newE);
+                        List<ParticipantDataCassero> temp = [];
+                        _currentEventBookData.add(temp);
+                        totalBookedPlaces.add(0);
+                        _loadImage(_events.length - 1);
+                        //sortEvents(_events);
                       });
                     },
                   ),
@@ -595,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen>
                   'event': _events[index],
                   'bookData': _currentEventBookData,
                   'user': _loggedUser,
-                  'image': _image[_focusedIndex],
+                  'image': _events[_focusedIndex].image,
                   //'bookedUsers': _bookedUsers,
                   //'participantsUsers': _participantUsers,
                 },
@@ -603,7 +618,7 @@ class _HomeScreenState extends State<HomeScreen>
             }
           },
           child: Stack(children: [
-            Center(child: Image(image: _image[index].image)),
+            Center(child: Image(image: _events[index].image.image)),
             index < _currentEventBookData.length &&
                     index == _focusedIndex &&
                     _loading == false
@@ -632,15 +647,15 @@ class _HomeScreenState extends State<HomeScreen>
     //print("load image future");
     try {
       final imageData = await _events[index].getEventImage();
-      if (imageData != null) {
-        setState(() {
-          if (index < _image.length) {
-            _image[index] = Image.memory(imageData);
-          } else {
-            _image.add(Image.memory(imageData));
-          }
-        });
-      }
+      //if (imageData != null) {
+      //  setState(() {
+      //    if (index < _image.length) {
+      //      _image[index] = Image.memory(imageData);
+      //    } else {
+      //      _image.add(Image.memory(imageData));
+      //    }
+      //  });
+      //}
     } catch (e) {
       if (kDebugMode) {
         print('Error loading image: $e');
@@ -655,7 +670,16 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _editEvent(int index) async {
-    await context.pushNamed(Routes.editEventScreen, arguments: _events[index]);
+    UpperEvent event = await context.pushNamed(Routes.editEventScreen,
+        arguments: _events[index]);
+    for (int i = 0; i < _events.length; i++) {
+      if (event.id == _events[i].id) {
+        // evento modificato
+        _events[i] = event;
+        _loadImage(i);
+        //sortEvents(_events);
+      }
+    }
     setState(() {});
   }
 
@@ -708,9 +732,13 @@ class _HomeScreenState extends State<HomeScreen>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   image: DecorationImage(
-                    image: _image[index].image,
-                    fit: _image[index].image.toString().contains("loading.gif")
-                        ? BoxFit.contain
+                    image: _events[index].image.image,
+                    fit: _events[index]
+                            .image
+                            .image
+                            .toString()
+                            .contains("loading.gif")
+                        ? BoxFit.none
                         : BoxFit.cover,
                   ),
                 ),
@@ -720,7 +748,8 @@ class _HomeScreenState extends State<HomeScreen>
                     children: [
                       Center(
                         child: Visibility(
-                          visible: !_image[index]
+                          visible: !_events[index]
+                              .image
                               .image
                               .toString()
                               .contains("loading.gif"),
@@ -828,11 +857,12 @@ class _HomeScreenState extends State<HomeScreen>
       _loggedUser.isAdmin = true;
     });
     if (_isAdmin) _loadUsers();
+    _tabController =
+        TabController(length: _isAdmin ? 3 : 2, initialIndex: 1, vsync: this);
 
     await _loadEvents();
 
     //print("pippo");
-
 
     for (int i = 0; i < _events.length; i++) {
       //data.add(_events[i]);
@@ -869,22 +899,37 @@ class _HomeScreenState extends State<HomeScreen>
       print("TEMP EVENTS LENGTH ${tmpEvents.length}");
     }
 
-    if (_isAdmin == false) {
-      _events.clear();
-      // mostro solo eventi futuri
-      //for (UpperEvent event in tmpEvents) {
-      for (int i = 0; i < tmpEvents.length; i++) {
-        var event = tmpEvents[i];
-        event.checkTodayDate();
-        DateTime eDate =
-            convertiStringaAData(event.date).add(Duration(days: 1));
-        if (eDate.isAfter(DateTime.now()) || event.isToday!) {
-          //if (_loggedUser.cardNumber != 0) _events.add(event);
-          _events.add(event);
-        }
+    sortEvents(tmpEvents);
+
+    if (kDebugMode) {
+      print(_events.length);
+    }
+
+    setState(() {
+      _isEventsLoading = false;
+    });
+  }
+
+  void sortEvents(var events) {
+    //if (_isAdmin == false) {
+    List<UpperEvent> tmpEvents = [];
+    for (int i = 0; i < events.length; i++) {
+      tmpEvents.add(events[i]);
+    }
+    _events.clear();
+    // mostro solo eventi futuri
+    //for (UpperEvent event in tmpEvents) {
+    for (int i = 0; i < tmpEvents.length; i++) {
+      var event = tmpEvents[i];
+      event.checkTodayDate();
+      DateTime eDate = convertiStringaAData(event.date).add(Duration(days: 1));
+      if (eDate.isAfter(DateTime.now()) || event.isToday!) {
+        //if (_loggedUser.cardNumber != 0) _events.add(event);
+        _events.add(event);
       }
-    } else
-      _events = tmpEvents;
+    }
+    //} else
+    //_events = tmpEvents;
 
     if (kDebugMode) {
       print("events length ${_events.length}");
@@ -904,6 +949,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     // se un evento ha la da di oggi lo metto in prima fila
     if (_events.length > 1) {
+      _events = _events.reversed.toList();
       for (UpperEvent event in _events) {
         event.checkTodayDate();
         if (event.isToday!) {
@@ -919,13 +965,19 @@ class _HomeScreenState extends State<HomeScreen>
       }
     }
 
-    if (kDebugMode) {
-      print(_events.length);
+    // se admin aggiungo eventi passati
+    if (_isAdmin) {
+      for (int i = 0; i < tmpEvents.length; i++) {
+        var event = tmpEvents[i];
+        event.checkTodayDate();
+        DateTime eDate =
+            convertiStringaAData(event.date).add(Duration(days: 1));
+        if (eDate.isBefore(DateTime.now()) || event.isToday!) {
+          //if (_loggedUser.cardNumber != 0) _events.add(event);
+          _events.add(event);
+        }
+      }
     }
-
-    setState(() {
-      _isEventsLoading = false;
-    });
   }
 
   List<Widget> _getTabBars() {
@@ -943,6 +995,7 @@ class _HomeScreenState extends State<HomeScreen>
   List<Widget> _tabBarViewWidgets() {
     var widgets = <Widget>[_eventsWidget(), _profileWidget()];
     if (_isAdmin) widgets.add(_userManagementWidget());
+
     return widgets;
   }
 
@@ -1303,7 +1356,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 'event': event,
                                 'bookData': _currentEventBookData[eventIndex],
                                 'user': _loggedUser,
-                                'image': _image[eventIndex],
+                                'image': _events[eventIndex].image,
                                 'isMoneyScreen': false,
                                 //'bookedUsers': _bookedUsers,
                                 //'participantsUsers': _participantUsers,

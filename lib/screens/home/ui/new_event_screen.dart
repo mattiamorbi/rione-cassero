@@ -236,7 +236,13 @@ class _NewEventScreenState extends State<NewEventScreen> {
               print("Error while saving event! $e");
             }
           }
+
+          newUpperEvent.bookable = bookable;
+
+          Navigator.pop(context, newUpperEvent);
         }
+
+
       } else {
         final imageRef = _pickedImage == null
             ? storageRef.child(widget.upperEvent!.imagePath)
@@ -285,9 +291,11 @@ class _NewEventScreenState extends State<NewEventScreen> {
         }
 
         print("fatto");
+
+        Navigator.pop(context, widget.upperEvent); // Restituisci l'oggetto aggiornato
       }
 
-      context.pop();
+
     }
   }
 

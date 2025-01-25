@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen>
   String bookName = "";
   int bookNumber = 1;
   int childBookNumber = 0;
-  List<UpperEvent> data = [];
+  //List<UpperEvent> data = [];
   int _focusedIndex = 0;
   GlobalKey<ScrollSnapListState> sslKey = GlobalKey();
   List<List<ParticipantDataCassero>> _currentEventBookData = [];
@@ -277,8 +277,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildItemDetail(int index) {
-    if (data.length > index) {
-      var currentEvent = data[index];
+    if (_events.length > index) {
+      var currentEvent = _events[index];
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -543,7 +543,10 @@ class _HomeScreenState extends State<HomeScreen>
                     onTap: () async {
                       await context.pushNamed(Routes.newEventScreen,
                           arguments: null);
-                      setState(() {});
+                      setState(() {
+                        _loadUserLevel();
+
+                      });
                     },
                   ),
                 ),
@@ -830,8 +833,9 @@ class _HomeScreenState extends State<HomeScreen>
 
     //print("pippo");
 
+
     for (int i = 0; i < _events.length; i++) {
-      data.add(_events[i]);
+      //data.add(_events[i]);
       //print("for events");
       _loadImage(i);
     }
@@ -1289,15 +1293,17 @@ class _HomeScreenState extends State<HomeScreen>
                       itemBuilder: (context, index) {
                         UpperEvent event = myEventBooks[index];
 
+                        int eventIndex = _events.indexOf(event);
+
                         return GestureDetector(
                           onTap: () async {
                             await context.pushNamed(
                               Routes.viewBookScreen,
                               arguments: {
-                                'event': _events[index],
-                                'bookData': _currentEventBookData[index],
+                                'event': event,
+                                'bookData': _currentEventBookData[eventIndex],
                                 'user': _loggedUser,
-                                'image': _image[index],
+                                'image': _image[eventIndex],
                                 'isMoneyScreen': false,
                                 //'bookedUsers': _bookedUsers,
                                 //'participantsUsers': _participantUsers,

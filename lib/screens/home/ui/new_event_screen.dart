@@ -14,7 +14,6 @@ import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/theming/colors.dart';
 
 import '../../../logic/cubit/app/app_cubit.dart';
-import '../../../routing/routes.dart';
 
 // ignore: must_be_immutable
 class NewEventScreen extends StatefulWidget {
@@ -226,7 +225,12 @@ class _NewEventScreenState extends State<NewEventScreen> {
           print("4--");
 
           try {
-            await events.doc().set(newUpperEvent.toJson());
+            var ref = events.doc();
+            await events.doc(ref.id).set(newUpperEvent.toJson());
+            print(ref.id);
+            await context
+                .read<AppCubit>()
+                .updateBookPermission(ref.id, bookable);
           } on Exception catch (e) {
             if (kDebugMode) {
               print("Error while saving event! $e");
@@ -260,6 +264,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
             childrenPrice: int.parse(_childrenPriceController.text),
             bookingLimit: int.parse(_bookingLimitController.text));
 
+
+
         try {
           await events.doc(id).set(upperEvent.toJson());
         } on Exception catch (e) {
@@ -268,16 +274,19 @@ class _NewEventScreenState extends State<NewEventScreen> {
           }
         }
         widget.upperEvent = upperEvent;
+        try {
+          await context
+              .read<AppCubit>()
+              .updateBookPermission(widget.upperEvent!.id!, bookable);
+        } on Exception catch (e) {
+          if (kDebugMode) {
+            print("Error while updateBookRooles! $e");
+          }
+        }
+
         print("fatto");
       }
-      try {
-        await context.read<AppCubit>().updateBookPermission(
-            widget.upperEvent!.id!, bookable);
-      }on Exception catch (e) {
-        if (kDebugMode) {
-          print("Error while updateBookRooles! $e");
-        }
-      }
+
       context.pop();
     }
   }

@@ -856,9 +856,16 @@ class _HomeScreenState extends State<HomeScreen>
       _isAdmin = level == "admin";
       _loggedUser.isAdmin = true;
     });
-    if (_isAdmin) _loadUsers();
-    _tabController =
-        TabController(length: _isAdmin ? 3 : 2, initialIndex: 1, vsync: this);
+
+    if (_isAdmin) {
+      setState(() {
+        _tabController = TabController(length: 3, initialIndex: 1, vsync: this);
+      });
+
+      _loadUsers();
+    } else {
+      _tabController = TabController(length: 2, initialIndex: 1, vsync: this);
+    }
 
     await _loadEvents();
 

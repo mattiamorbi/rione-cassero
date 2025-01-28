@@ -209,9 +209,8 @@ class _HomeScreenState extends State<HomeScreen>
 
             print("ho eseguito l'aggioranmento");
             myEventBooks.clear();
-            setState(() {
-              myEventBooks = getMyEventBooks();
-            });
+            myEventBooks = getMyEventBooks();
+            setState(() {});
           }
         });
       });
@@ -430,9 +429,8 @@ class _HomeScreenState extends State<HomeScreen>
                           //'participantsUsers': _participantUsers,
                         },
                       );
-                      setState(() {
-                        myEventBooks = getMyEventBooks();
-                      });
+                      myEventBooks = getMyEventBooks();
+                      setState(() {});
                     }
                   },
                 ),
@@ -883,7 +881,13 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {
       _isUsersLoading = false;
       _isLoggedUserLoading = false;
-      _masterLoading = false;
+    });
+
+    Future.delayed(Duration(milliseconds: 100), () {
+      // Do something
+      setState(() {
+        _masterLoading = false;
+      });
     });
   }
 
@@ -1332,7 +1336,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _profileWidget() {
-    if (_isLoggedUserLoading == false) {
+    if (_isLoggedUserLoading == false && _masterLoading == false && _loading == false) {
       //if (qrTapMode == false) {
       return Column(
         children: [

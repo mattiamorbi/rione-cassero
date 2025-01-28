@@ -326,28 +326,60 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             GestureDetector(
-                              child: Icon(
-                                Icons.undo,
-                                size: 35,
-                                color: Colors.black,
-                              ),
                               onTap: _bookEventUndo,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.undo,
+                                    size: 35,
+                                    color: Colors.black,
+                                  ),
+                                  Gap(3.h),
+                                  Text("Indietro"),
+                                ],
+                              ),
                             ),
                             Visibility(
                               visible: !widget.isNewBook,
                               child: GestureDetector(
-                                child: Icon(
-                                  Icons.delete,
-                                  size: 35,
-                                  color: Colors.red,
+                                onTap:
+                                    !actionInProgress ? _bookEventDelete : null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.delete,
+                                      size: 35,
+                                      color: Colors.red,
+                                    ),
+                                    Gap(3.h),
+                                    Text(
+                                      "Cancella",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ],
                                 ),
-                                onTap: !actionInProgress ? _bookEventDelete : null,
                               ),
                             ),
                             //Gap(100.w),
                             GestureDetector(
-                              child: Icon(Icons.save, size: 35),
                               onTap: !actionInProgress ? _bookEventSave : null,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.save,
+                                    size: 35,
+                                    color: Colors.green,
+                                  ),
+                                  Gap(3.h),
+                                  Text("Salva", style: TextStyle(color: Colors.green),),
+                                ],
+                              ),
                             ),
                           ],
                         ),

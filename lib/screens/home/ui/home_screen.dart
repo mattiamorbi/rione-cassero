@@ -410,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           Gap(5.w),
                           Text(
-                            "Gestisci prenotazione",
+                            "Gestisci prenotazioni",
                             style: TextStyle(
                                 color: ColorsManager.gray17, fontSize: 18),
                           )
@@ -856,7 +856,7 @@ class _HomeScreenState extends State<HomeScreen>
     var level = await context.read<AppCubit>().getUserLevel();
     setState(() {
       _isAdmin = level == "admin";
-      _loggedUser.isAdmin = true;
+      _loggedUser.isAdmin = _isAdmin;
     });
 
     if (_isAdmin) {
@@ -1588,7 +1588,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   SafeArea _homePage(BuildContext context) {
     return SafeArea(
-      child: _masterLoading
+      child: _masterLoading || _loading
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

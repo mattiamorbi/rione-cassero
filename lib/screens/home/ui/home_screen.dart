@@ -208,9 +208,8 @@ class _HomeScreenState extends State<HomeScreen>
               totalBookedPlaces[i] += (item.number + item.childrenNumber);
 
             print("ho eseguito l'aggioranmento");
-
+            myEventBooks.clear();
             setState(() {
-              myEventBooks.clear();
               myEventBooks = getMyEventBooks();
             });
           }

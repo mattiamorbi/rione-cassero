@@ -79,7 +79,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
 
     for (int i = 0; i < widget.bookData.childrenNumber; i++) {
       paymentList.add(PaymentHelper(
-          type: PaymentHelper.child, paied: i < widget.bookData.paied!));
+          type: PaymentHelper.child, paied: i < widget.bookData.childrenPaied!));
     }
   }
 
@@ -177,62 +177,137 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
                       onTap: () => setState(() {
                         paymentList[index].paied = !paymentList[index].paied;
                       }),
-                      child: ListTile(
-                        tileColor: paymentList[index].paied
-                            ? Colors.lightGreen
-                            : Colors.amberAccent,
-                        textColor: Colors.black,
-                        subtitleTextStyle: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black38,
-                        ),
+                     // child: ListTile(
+                     //   tileColor: paymentList[index].paied
+                     //       ? Colors.lightGreen
+                     //       : Colors.amberAccent,
+                     //   textColor: Colors.black,
+                     //   subtitleTextStyle: TextStyle(
+                     //     fontSize: 12,
+                     //     color: Colors.black38,
+                     //   ),
+                     //   shape: RoundedRectangleBorder(
+                     //     //<-- SEE HERE
+                     //     side: BorderSide(
+                     //         width: 0, color: ColorsManager.background),
+                     //     borderRadius: BorderRadius.circular(20),
+                     //   ),
+                     //   //onTap: () => _showUser(user, widget.upperEvent),
+                     //   //leading: Icon(
+                     //   //  Icons.person_outline,
+                     //   //  color: user.state == 'booked'
+                     //   //      ? Colors.orange
+                     //   //      : user.state == 'joined'
+                     //   //          ? Colors.green
+                     //   //          : Colors.black,
+                     //   //),
+                     //   leading: Icon(
+                     //     paymentList[index].type == PaymentHelper.adult
+                     //         ? Icons.person
+                     //         : Icons.bedroom_baby,
+                     //     color: Colors.black,
+                     //   ),
+                     //   // trailing: GestureDetector(
+                     //   //   onTap: () => setState(() {
+                     //   //     paymentList[index].paied = !paymentList[index].paied;
+                     //   //   }),
+                     //   //   child: Text(
+                     //   //     paymentList[index].paied ? "PAGATO" : "GESTISCI",
+                     //   //     style: TextStyle(
+                     //   //         fontSize: 14,
+                     //   //         color: Colors.black,
+                     //   //         fontWeight: FontWeight.bold),
+                     //   //   ),
+                     //   // ),
+//
+                     //   //trailing: GestureDetector(
+                     //   //  child: Icon(Icons.delete, color: Colors.red),
+                     //   //  onTap: () {},
+                     //   //),
+                     //   title: Text(
+                     //       paymentList[index].type == PaymentHelper.adult
+                     //           ? "Adulto"
+                     //           : "Bambino"),
+                     //   subtitle: Text(
+                     //       paymentList[index].type == PaymentHelper.adult
+                     //           ? "${widget.upperEvent.price} €"
+                     //           : "${widget.upperEvent.childrenPrice} €"),
+                     // ),
+                      child: Card(
+                        elevation: 10, // Ombra intorno alla card
                         shape: RoundedRectangleBorder(
-                          //<-- SEE HERE
-                          side: BorderSide(
-                              width: 0, color: ColorsManager.background),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20), // Angoli arrotondati
                         ),
-                        //onTap: () => _showUser(user, widget.upperEvent),
-                        //leading: Icon(
-                        //  Icons.person_outline,
-                        //  color: user.state == 'booked'
-                        //      ? Colors.orange
-                        //      : user.state == 'joined'
-                        //          ? Colors.green
-                        //          : Colors.black,
-                        //),
-                        leading: Icon(
-                          paymentList[index].type == PaymentHelper.adult
-                              ? Icons.person
-                              : Icons.bedroom_baby,
-                          color: Colors.black,
+                        shadowColor: Colors.black.withOpacity(0.3), // Colore ombra
+                        child: Container(
+                          padding: EdgeInsets.all(10), // Spaziatura interna
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: paymentList[index].paied
+                                  ? [Colors.lightGreen[300]!, Colors.lightGreen[500]!]
+                                  : [Colors.red[300]!, Colors.red[500]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                            leading: Container(
+                              padding: EdgeInsets.all(8), // Margine interno per l'icona
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9), // Sfondo bianco per l'icona
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                paymentList[index].type == PaymentHelper.adult
+                                    ? Icons.person
+                                    : Icons.bedroom_baby,
+                                color: Colors.black87,
+                                size: 24,
+                              ),
+                            ),
+                            title: Text(
+                              paymentList[index].type == PaymentHelper.adult ? "Adulto" : "Bambino",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            subtitle: Text(
+                              paymentList[index].type == PaymentHelper.adult
+                                  ? "${widget.upperEvent.price} €"
+                                  : "${widget.upperEvent.childrenPrice} €",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            trailing: GestureDetector(
+                              onTap: () => setState(() {
+                                paymentList[index].paied = !paymentList[index].paied;
+                              }),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: paymentList[index].paied ? Colors.green[700] : Colors.red[700],
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Text(
+                                  paymentList[index].paied ? "PAGATO" : "PAGA",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        // trailing: GestureDetector(
-                        //   onTap: () => setState(() {
-                        //     paymentList[index].paied = !paymentList[index].paied;
-                        //   }),
-                        //   child: Text(
-                        //     paymentList[index].paied ? "PAGATO" : "GESTISCI",
-                        //     style: TextStyle(
-                        //         fontSize: 14,
-                        //         color: Colors.black,
-                        //         fontWeight: FontWeight.bold),
-                        //   ),
-                        // ),
-
-                        //trailing: GestureDetector(
-                        //  child: Icon(Icons.delete, color: Colors.red),
-                        //  onTap: () {},
-                        //),
-                        title: Text(
-                            paymentList[index].type == PaymentHelper.adult
-                                ? "Adulto"
-                                : "Bambino"),
-                        subtitle: Text(
-                            paymentList[index].type == PaymentHelper.adult
-                                ? "${widget.upperEvent.price} €"
-                                : "${widget.upperEvent.childrenPrice} €"),
                       ),
+
                     );
                   },
                 ),

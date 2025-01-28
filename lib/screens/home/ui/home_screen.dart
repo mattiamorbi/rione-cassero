@@ -83,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   late TabController _tabController;
 
+  bool _masterLoading = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -438,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen>
                 Visibility(
                   visible: _isAdmin,
                   child: SizedBox(
-                    width: 20,
+                    height: 8,
                   ),
                 ),
                 Visibility(
@@ -464,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen>
                 Visibility(
                   visible: _isAdmin,
                   child: SizedBox(
-                    width: 20,
+                    height: 8,
                   ),
                 ),
                 Visibility(
@@ -513,7 +515,7 @@ class _HomeScreenState extends State<HomeScreen>
                           (_loggedUser.name == 'Mattia' &&
                               _loggedUser.surname == 'Morbidelli')),
                   child: SizedBox(
-                    width: 20,
+                    height: 8,
                   ),
                 ),
                 //Visibility(
@@ -755,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen>
                               .contains("loading.gif"),
                           child: Container(
                             width: 300,
-                            height: _isAdmin ? 300 : 230,
+                            height: _isAdmin ? 340 : 230,
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.8),
                               // Bianco semi-trasparente
@@ -877,11 +879,12 @@ class _HomeScreenState extends State<HomeScreen>
       _loadImage(i);
     }
 
-    _loadEventsSubscription();
+    await _loadEventsSubscription();
 
     setState(() {
       _isUsersLoading = false;
       _isLoggedUserLoading = false;
+      _masterLoading = false;
     });
   }
 
@@ -1141,51 +1144,59 @@ class _HomeScreenState extends State<HomeScreen>
       padding: EdgeInsets.only(left: 10, right: 10),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(children: [
-              Expanded(
-                child: AppTextFormField(
-                  hint: "Cerca",
-                  validator: (value) {},
-                  controller: _searchController,
-                  isObscureText: false,
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.black38,
-                  ),
-                  suffixIcon: Visibility(
-                    visible: _searchController.text.length != 0,
-                    child: GestureDetector(
-                      onTap: _clearSearch,
-                      child: Icon(
-                        Icons.cancel,
-                        color: Colors.black38,
+          Container(
+            color: ColorsManager.background,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(children: [
+                    Expanded(
+                      child: AppTextFormField(
+                        hint: "Cerca",
+                        validator: (value) {},
+                        controller: _searchController,
+                        isObscureText: false,
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: Colors.black38,
+                        ),
+                        suffixIcon: Visibility(
+                          visible: _searchController.text.length != 0,
+                          child: GestureDetector(
+                            onTap: _clearSearch,
+                            child: Icon(
+                              Icons.cancel,
+                              color: Colors.black38,
+                            ),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          _filterUsers(value);
+                        },
                       ),
                     ),
-                  ),
-                  onChanged: (value) {
-                    _filterUsers(value);
-                  },
+                    Gap(20.w),
+                    GestureDetector(
+                      onTap: _manageCardFilter,
+                      child: Icon(
+                        cardFilter ? Icons.person : Icons.person_outline,
+                        color: ColorsManager.gray17,
+                        size: 30,
+                      ),
+                    ),
+                    Gap(10.w),
+                  ]),
                 ),
-              ),
-              Gap(20.w),
-              GestureDetector(
-                onTap: _manageCardFilter,
-                child: Icon(
-                  cardFilter ? Icons.person : Icons.person_outline,
-                  color: ColorsManager.gray17,
-                  size: 30,
+                Text(
+                  cardFilter
+                      ? "Totale utenti: ${_users.length} / Da tesserare: ${_filteredUsers.length}"
+                      : "Totale utenti: ${_users.length}",
+                  style: TextStyle(color: ColorsManager.gray17, fontSize: 14),
                 ),
-              ),
-              Gap(10.w),
-            ]),
-          ),
-          Text(
-            cardFilter
-                ? "Totale utenti: ${_users.length} / Da tesserare: ${_filteredUsers.length}"
-                : "Totale utenti: ${_users.length}",
-            style: TextStyle(color: ColorsManager.gray17, fontSize: 14),
+                Gap(10.h),
+              ],
+            ),
           ),
           Expanded(
             child: _isUsersLoading
@@ -1202,72 +1213,78 @@ class _HomeScreenState extends State<HomeScreen>
                         itemCount: _filteredUsers.length,
                         itemBuilder: (context, index) {
                           final user = _filteredUsers[index];
-                          return ListTile(
-                            tileColor: ColorsManager.gray9_01,
-                            textColor: Colors.black,
-                            onTap: () => _showUser(user),
-                            subtitleTextStyle: TextStyle(
-                              fontSize: 12,
-                              color: Colors.black38,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              //<-- SEE HERE
-                              side: BorderSide(
-                                  width: 0, color: ColorsManager.gray17_03),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            leading: Icon(
-                              user.getAge() < 18
-                                  ? Icons.bedroom_baby_outlined
-                                  : user.isAdmin!
-                                      ? Icons.settings_accessibility
-                                      : user.cardNumber != 0
-                                          ? Icons.person
-                                          : Icons.person_outline,
-                              color: user.getAge() < 18 && user.cardNumber == 0
-                                  ? Colors.red
-                                  : user.isAdmin!
-                                      ? Colors.orange
-                                      : user.cardNumber != 0
-                                          ? Colors.green
-                                          : Colors.black,
-                            ),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (String result) {
-                                switch (result) {
-                                  case 'show_user':
-                                    _showUser(user);
-                                    break;
-                                  case 'reimposta_password':
-                                    _resetPassword(user);
-                                    break;
-                                  case 'rendi_amministratore':
-                                    _userToAdmin(user);
-                                    break;
-                                }
-                              },
-                              itemBuilder: (BuildContext context) =>
-                                  <PopupMenuEntry<String>>[
-                                const PopupMenuItem<String>(
-                                  value: 'show_user',
-                                  child: Text('Visualizza'),
+                          return Column(
+                            children: [
+                              ListTile(
+                                tileColor: ColorsManager.background,
+                                textColor: Colors.black,
+                                onTap: () => _showUser(user),
+                                subtitleTextStyle: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black38,
                                 ),
-                                const PopupMenuItem<String>(
-                                  value: 'reimposta_password',
-                                  child: Text('Reimposta password'),
+                                shape: RoundedRectangleBorder(
+                                  //<-- SEE HERE
+                                  side: BorderSide(
+                                      width: 0, color: ColorsManager.gray17_03),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                PopupMenuItem<String>(
-                                  value: 'rendi_amministratore',
-                                  child: user.isAdmin!
-                                      ? Text('Rendi utente')
-                                      : Text('Rendi amministratore'),
+                                leading: Icon(
+                                  user.getAge() < 18
+                                      ? Icons.bedroom_baby_outlined
+                                      : user.isAdmin!
+                                          ? Icons.settings_accessibility
+                                          : user.cardNumber != 0
+                                              ? Icons.person
+                                              : Icons.person_outline,
+                                  color:
+                                      user.getAge() < 18 && user.cardNumber == 0
+                                          ? Colors.red
+                                          : user.isAdmin!
+                                              ? Colors.orange
+                                              : user.cardNumber != 0
+                                                  ? Colors.green
+                                                  : Colors.black,
                                 ),
-                              ],
-                            ),
-                            title: Text('${user.name} ${user.surname}'),
-                            subtitle: Text(
-                                //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
-                                'Email: ${user.email}'),
+                                trailing: PopupMenuButton<String>(
+                                  onSelected: (String result) {
+                                    switch (result) {
+                                      case 'show_user':
+                                        _showUser(user);
+                                        break;
+                                      case 'reimposta_password':
+                                        _resetPassword(user);
+                                        break;
+                                      case 'rendi_amministratore':
+                                        _userToAdmin(user);
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'show_user',
+                                      child: Text('Visualizza'),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                      value: 'reimposta_password',
+                                      child: Text('Reimposta password'),
+                                    ),
+                                    PopupMenuItem<String>(
+                                      value: 'rendi_amministratore',
+                                      child: user.isAdmin!
+                                          ? Text('Rendi utente')
+                                          : Text('Rendi amministratore'),
+                                    ),
+                                  ],
+                                ),
+                                title: Text('${user.name} ${user.surname}'),
+                                subtitle: Text(
+                                    //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
+                                    'Email: ${user.email}'),
+                              ),
+                              Gap(10.h),
+                            ],
                           );
                         },
                       ),
@@ -1571,39 +1588,54 @@ class _HomeScreenState extends State<HomeScreen>
 
   SafeArea _homePage(BuildContext context) {
     return SafeArea(
-      child: DefaultTabController(
-        initialIndex: widget.tab_index ?? 1,
-        length: _isAdmin ? 3 : 2,
-        child: Scaffold(
-          backgroundColor: ColorsManager.background,
-          appBar: AppBar(
-            backgroundColor: ColorsManager.background,
-            title: Padding(
-              padding: const EdgeInsets.only(top: 40.0),
-              //child: Center(child: Container(width: 300, height: 100, child: Image(image: AssetImage("assets/images/upper_2.png"),fit: BoxFit.scaleDown,))),
-              child: Center(
-                child: Text(
-                  "RIONE CASSERO",
-                  style: TextStyle(color: ColorsManager.gray17, fontSize: 25),
+      child: _masterLoading
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image(
+                    image: AssetImage("assets/images/cassero_no_bg.png"),
+                    fit: BoxFit.cover,
+                  ),
+                  Image(image: AssetImage("assets/images/loading.gif")),
+                ],
+              ),
+            )
+          : DefaultTabController(
+              initialIndex: widget.tab_index ?? 1,
+              length: _isAdmin ? 3 : 2,
+              child: Scaffold(
+                backgroundColor: ColorsManager.background,
+                appBar: AppBar(
+                  backgroundColor: ColorsManager.background,
+                  title: Padding(
+                    padding: const EdgeInsets.only(top: 40.0),
+                    //child: Center(child: Container(width: 300, height: 100, child: Image(image: AssetImage("assets/images/upper_2.png"),fit: BoxFit.scaleDown,))),
+                    child: Center(
+                      child: Text(
+                        "RIONE CASSERO",
+                        style: TextStyle(
+                            color: ColorsManager.gray17, fontSize: 25),
+                      ),
+                    ),
+                  ),
+                  bottom: TabBar(
+                    tabs: _getTabBars(),
+                    controller: _tabController,
+                    indicatorColor: ColorsManager.gray17,
+                    padding: EdgeInsets.only(bottom: 10),
+                  ),
+                ),
+                body: Padding(
+                  padding: const EdgeInsets.only(bottom: 25.0),
+                  child: TabBarView(
+                    children: _tabBarViewWidgets(),
+                    controller: _tabController,
+                  ), // Associa il TabController,)),
                 ),
               ),
             ),
-            bottom: TabBar(
-              tabs: _getTabBars(),
-              controller: _tabController,
-              indicatorColor: ColorsManager.gray17,
-              padding: EdgeInsets.only(bottom: 10),
-            ),
-          ),
-          body: Padding(
-            padding: const EdgeInsets.only(bottom: 25.0),
-            child: TabBarView(
-              children: _tabBarViewWidgets(),
-              controller: _tabController,
-            ), // Associa il TabController,)),
-          ),
-        ),
-      ),
     );
   }
 

@@ -646,7 +646,11 @@ class _HomeScreenState extends State<HomeScreen>
     //print("load image future");
     try {
       final imageData = await _events[index].getEventImage();
-      //if (imageData != null) {
+      if (imageData != null && _tabController.index == 0) {
+        setState(() {
+
+        });
+      }
       //  setState(() {
       //    if (index < _image.length) {
       //      _image[index] = Image.memory(imageData);
@@ -1336,7 +1340,9 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _profileWidget() {
-    if (_isLoggedUserLoading == false && _masterLoading == false && _loading == false) {
+    if (_isLoggedUserLoading == false &&
+        _masterLoading == false &&
+        _loading == false) {
       //if (qrTapMode == false) {
       return Column(
         children: [
@@ -1364,7 +1370,7 @@ class _HomeScreenState extends State<HomeScreen>
                         height: 200,
                         child: Image(
                           image: AssetImage("assets/images/scopri_eventi.png"),
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fitWidth,
                         )))
                 : Padding(
                     padding: const EdgeInsets.only(right: 10, left: 10),

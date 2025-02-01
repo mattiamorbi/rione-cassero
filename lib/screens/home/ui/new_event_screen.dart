@@ -9,7 +9,6 @@ import 'package:gap/gap.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/core/widgets/no_internet.dart';
-import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/theming/colors.dart';
 
@@ -241,8 +240,6 @@ class _NewEventScreenState extends State<NewEventScreen> {
 
           Navigator.pop(context, newUpperEvent);
         }
-
-
       } else {
         final imageRef = _pickedImage == null
             ? storageRef.child(widget.upperEvent!.imagePath)
@@ -270,7 +267,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
             childrenPrice: int.parse(_childrenPriceController.text),
             bookingLimit: int.parse(_bookingLimitController.text));
 
-
+        upperEvent.bookable = bookable;
 
         try {
           await events.doc(id).set(upperEvent.toJson());
@@ -292,10 +289,9 @@ class _NewEventScreenState extends State<NewEventScreen> {
 
         print("fatto");
 
-        Navigator.pop(context, widget.upperEvent); // Restituisci l'oggetto aggiornato
+        Navigator.pop(
+            context, widget.upperEvent); // Restituisci l'oggetto aggiornato
       }
-
-
     }
   }
 
@@ -388,6 +384,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                         )
                       ],
                     ),
+                    Gap(30.h),
                   ],
                 ),
               ),
@@ -402,36 +399,57 @@ class _NewEventScreenState extends State<NewEventScreen> {
                   ),
                 ),
               ),
-              Gap(25.h),
+              Visibility(
+                visible: _webImage.length <= 1,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  child: Image(image: AssetImage("assets/images/loading.gif")),
+                ),
+              ),
+              Gap(30.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                      child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Icon(
-                            Icons.image,
-                            color: _noImage == true
-                                ? Colors.red
-                                : ColorsManager.gray17,
-                          )),
-                      onTap: _loadImage),
+                    onTap: _loadImage,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.image,
+                          size: 35,
+                          color: Colors.black,
+                        ),
+                        Gap(3.h),
+                        Text("Carica immagine", style: TextStyle(color: Colors.black),),
+                      ],
+                    ),
+                  ),
                   SizedBox(
-                    width: 20,
+                    width: 40,
                   ),
                   GestureDetector(
-                    child: Container(
-                        width: 50,
-                        height: 50,
-                        child: Icon(
-                          Icons.save,
-                          color: ColorsManager.gray17,
-                        )),
                     onTap: _uploadToFirebase,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.save,
+                          size: 35,
+                          color: Colors.green,
+                        ),
+                        Gap(3.h),
+                        Text("Salva", style: TextStyle(color: Colors.green),),
+                      ],
+                    ),
                   ),
                 ],
-              )
+              ),
+
+              Gap(50.h),
             ]),
           ),
         ),

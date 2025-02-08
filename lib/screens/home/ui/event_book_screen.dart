@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
@@ -275,7 +276,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                           int totalBook = calcTotalBook(user);
                           return GestureDetector(
                             onTap: () =>
-                            widget.isMoneyScreen ? _managePayment(_filteredBook[index], index) : _manageBook(_filteredBook[index], index),
+                            widget.isMoneyScreen ? _managePayment(_filteredBook[index], index) : _manageBook(_filteredBook[index], index, notPaied != totalBook && !widget.loggedUser.isAdmin!),
                             //child: ListTile(
                             //  tileColor: !widget.isMoneyScreen
                             //      ? ColorsManager.background
@@ -342,8 +343,8 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      notPaied == 0 ? Colors.lightGreen[100]! : Colors.red[100]!,
-                                      notPaied == 0 ? Colors.lightGreen[300]! : Colors.red[300]!,
+                                      notPaied == 0 ? Colors.lightGreen[100]! : !widget.isMoneyScreen ? Colors.blue[100]! : Colors.red[100]!,
+                                      notPaied == 0 ? Colors.lightGreen[300]! : !widget.isMoneyScreen ? Colors.blue[300]! : Colors.red[300]!,
                                     ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -387,29 +388,48 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                       color: Colors.black54,
                                     ),
                                   ),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        widget.isMoneyScreen
-                                            ? "${totalBook - notPaied} / ${totalBook}"
-                                            : notPaied == 0
-                                            ? "PAGATO"
-                                            : (widget.upperEvent.price! *
-                                            widget.bookData[index].paied!) +
-                                            (widget.upperEvent.childrenPrice! *
-                                                widget.bookData[index].childrenPaied!) ==
-                                            0
-                                            ? "${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €"
-                                            : "${(widget.upperEvent.price! * widget.bookData[index].paied!) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenPaied!)} € / ${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                  trailing: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: notPaied == 0 ? Colors.green[700] : widget.isMoneyScreen? Colors.red[700] : Colors.blue[700],
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Text(
+                                      widget.isMoneyScreen
+                                          ? "${notPaied} DA PAGARE"
+                                          : notPaied == 0
+                                          ? "PAGATO" : notPaied != totalBook ?
+                                          "${notPaied} DA PAGARE" : "MODIFICA",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
                                       ),
-                                    ],
+                                    ),
                                   ),
+                                 // trailing: Column(
+                                 //   mainAxisAlignment: MainAxisAlignment.center,
+                                 //   children: [
+                                 //     Text(
+                                 //       widget.isMoneyScreen
+                                 //           ? "${totalBook - notPaied} / ${totalBook}"
+                                 //           : notPaied == 0
+                                 //           ? "PAGATO"
+                                 //           : (widget.upperEvent.price! *
+                                 //           widget.bookData[index].paied!) +
+                                 //           (widget.upperEvent.childrenPrice! *
+                                 //               widget.bookData[index].childrenPaied!) ==
+                                 //           0
+                                 //           ? "${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €"
+                                 //           : "${(widget.upperEvent.price! * widget.bookData[index].paied!) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenPaied!)} € / ${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €",
+                                 //       style: TextStyle(
+                                 //         fontSize: 14,
+                                 //         color: Colors.black,
+                                 //         fontWeight: FontWeight.bold,
+                                 //       ),
+                                 //     ),
+                                 //   ],
+                                 // ),
                                   tileColor: Colors.transparent, // Lascia il colore trasparente
                                 ),
                               ),
@@ -428,19 +448,28 @@ class _EventBookScreenState extends State<EventBookScreen> {
 
 
   Future<void> _manageBook(
-      ParticipantDataCassero currentBookData, int index) async {
-    await Navigator.pushNamed(
-      context,
-      Routes.manageBookScreen,
-      arguments: {
-        'user': widget.loggedUser,
-        'event': widget.upperEvent,
-        'bookData': currentBookData,
-        'image': widget.eventImage,
-        'isNewBook': false,
-      },
-    );
-
+      ParticipantDataCassero currentBookData, int index, bool alreadyPaied) async {
+    if (!alreadyPaied) {
+      await Navigator.pushNamed(
+        context,
+        Routes.manageBookScreen,
+        arguments: {
+          'user': widget.loggedUser,
+          'event': widget.upperEvent,
+          'bookData': currentBookData,
+          'image': widget.eventImage,
+          'isNewBook': false,
+        },
+      );
+    } else {
+      await AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.topSlide,
+        title: 'Prenotazione chiusa',
+        desc: "Non è più possibile modificare questa prenotazione",
+      ).show();
+    }
 
 
     //if (result == 'edit') {

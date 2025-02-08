@@ -16,6 +16,7 @@ class UpperEvent {
   int? bookingLimit;
   String? id;
   bool? isToday;
+  bool? isFuture;
 
   DateTime? date_time;
 

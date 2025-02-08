@@ -942,6 +942,7 @@ class _HomeScreenState extends State<HomeScreen>
       DateTime eDate = convertiStringaAData(event.date).add(Duration(days: 1));
       if (eDate.isAfter(DateTime.now()) || event.isToday!) {
         //if (_loggedUser.cardNumber != 0) _events.add(event);
+        event.isFuture = true;
         _events.add(event);
       }
     }
@@ -989,8 +990,9 @@ class _HomeScreenState extends State<HomeScreen>
         event.checkTodayDate();
         DateTime eDate =
             convertiStringaAData(event.date).add(Duration(days: 1));
-        if (eDate.isBefore(DateTime.now()) || event.isToday!) {
+        if (eDate.isBefore(DateTime.now()) && !event.isToday!) {
           //if (_loggedUser.cardNumber != 0) _events.add(event);
+          event.isFuture = false;
           _events.add(event);
         }
       }
@@ -1403,6 +1405,7 @@ class _HomeScreenState extends State<HomeScreen>
                             imagePath: "assets/images/cassero_no_bg.png",
                             persons: event.sumUpMyBookPerson,
                             children: event.sumUpMyBookChildren,
+                            isFuture: event.isFuture ?? true,
                           ),
                         );
                         //return ListTile(
@@ -1662,6 +1665,7 @@ class CustomCard extends StatelessWidget {
   final String imagePath;
   final int persons;
   final int children;
+  final bool isFuture;
 
   // Costruttore per accettare argomenti
   const CustomCard({
@@ -1672,6 +1676,7 @@ class CustomCard extends StatelessWidget {
     required this.imagePath,
     required this.persons,
     required this.children,
+    required this.isFuture,
   }) : super(key: key);
 
   @override
@@ -1688,8 +1693,8 @@ class CustomCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.lightBlue[100]!,
-              Colors.lightBlue[300]!,
+              isFuture ? Colors.lightBlue[100]! : Colors.orange[100]!,
+              isFuture ? Colors.lightBlue[300]! : Colors.orange[300]!,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

@@ -197,9 +197,13 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             GestureDetector(
-                              child: Icon(
-                                Icons.remove,
-                                size: 25,
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Icon(
+                                  Icons.remove,
+                                  size: 25,
+                                ),
                               ),
                               onTap: () => setState(() {
                                 bookNumber--;
@@ -211,9 +215,13 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               style: TextStyle(fontSize: 30),
                             ),
                             GestureDetector(
-                              child: Icon(
-                                Icons.add,
-                                size: 25,
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Icon(
+                                  Icons.add,
+                                  size: 25,
+                                ),
                               ),
                               onTap: () => setState(() {
                                 bookNumber++;
@@ -231,9 +239,13 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             GestureDetector(
-                              child: Icon(
-                                Icons.remove,
-                                size: 25,
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Icon(
+                                  Icons.remove,
+                                  size: 25,
+                                ),
                               ),
                               onTap: () => setState(() {
                                 childBookNumber--;
@@ -245,9 +257,13 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               style: TextStyle(fontSize: 30),
                             ),
                             GestureDetector(
-                              child: Icon(
-                                Icons.add,
-                                size: 25,
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Icon(
+                                  Icons.add,
+                                  size: 25,
+                                ),
                               ),
                               onTap: () => setState(() {
                                 childBookNumber++;

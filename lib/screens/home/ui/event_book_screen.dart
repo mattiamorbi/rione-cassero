@@ -396,7 +396,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                     ),
                                     child: Text(
                                       widget.isMoneyScreen
-                                          ? "${notPaied} DA PAGARE"
+                                          ? notPaied == 0 ? "PAGATO" : "${notPaied} DA PAGARE"
                                           : notPaied == 0
                                           ? "PAGATO" : notPaied != totalBook ?
                                           "${notPaied} DA PAGARE" : "MODIFICA",

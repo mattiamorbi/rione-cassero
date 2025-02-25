@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -616,6 +617,18 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       onTap: () async {
         passwordFocusNode.unfocus();
         passwordConfirmationFocusNode.unfocus();
+
+        if (!privacy) {
+          await AwesomeDialog(
+            context: context,
+            dialogType: DialogType.error,
+            animType: AnimType.rightSlide,
+            title: 'Errore',
+            desc: "Acconsenti alla Privacy Policy",
+          ).show();
+          return;
+        }
+
         if (formKey.currentState!.validate()) {
           //setState(() {
           //  terms1ApprovalError = !terms1Approval;

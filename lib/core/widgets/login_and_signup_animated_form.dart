@@ -126,7 +126,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                   TextSpan(
                     text:
                         'Acconsento al trattamento dei miei dati personali come descritto nella ',
-                    style: TextStyle(fontSize: 25, color: Colors.black),
+                    style: TextStyle(fontSize: 16, color: Colors.black),
                   ),
                   WidgetSpan(
                     alignment: PlaceholderAlignment.baseline,
@@ -137,7 +137,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
                       },
                       child: Text(
                         'Privacy Policy.',
-                        style: TextStyle(fontSize: 25, color: Colors.blueAccent, fontWeight: FontWeight.bold ),
+                        style: TextStyle(fontSize: 16, color: Colors.blueAccent, fontWeight: FontWeight.bold ),
                       ),
                     ),
                   ),

@@ -11,8 +11,8 @@ import 'package:rione_cassero/helpers/extensions.dart';
 import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 import 'package:rione_cassero/routing/routes.dart';
-import 'package:rione_cassero/theming/styles.dart';
 import 'package:rione_cassero/theming/colors.dart';
+import 'package:rione_cassero/theming/styles.dart';
 
 import '../../helpers/server_date.dart';
 
@@ -36,10 +36,13 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   bool isObscureText = true;
   bool hasMinLength = false;
 
+  bool privacy = false;
+
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+
   //TextEditingController addressController = TextEditingController();
   //TextEditingController birthdateController = TextEditingController();
   //TextEditingController birthplaceController = TextEditingController();
@@ -47,7 +50,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   //TextEditingController cityController = TextEditingController();
   TextEditingController telephoneController = TextEditingController();
   TextEditingController passwordConfirmationController =
-  TextEditingController();
+      TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -87,8 +90,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           //capField(),
           genericField(
               telephoneController, 'Telefono', 'Inserisci un telefono valido'),
-          if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(20.h),
-          //termsFields(),
+          if (widget.isSignUpPage != null && widget.isSignUpPage!) Gap(25.h),
+          if (widget.isSignUpPage != null && widget.isSignUpPage!) termsField(),
           Gap(20.h),
           PasswordValidations(
             hasMinLength: hasMinLength,
@@ -97,6 +100,51 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           Gap(20.h),
           loginOrSignUpOrPasswordButton(context),
         ],
+      ),
+    );
+  }
+
+  Widget termsField() {
+    return GestureDetector(
+      onTap: () => setState(() {
+        privacy = !privacy;
+      }),
+      child: Container(
+        child: Row(
+          children: [
+            Gap(15.w),
+            Icon(
+              !privacy ? Icons.circle_outlined : Icons.check_circle,
+              size: 35,
+            ),
+            Gap(20.w),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text:
+                        'Acconsento al trattamento dei miei dati personali come descritto nella ',
+                    style: TextStyles.font11White400Weight,
+                  ),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.baseline,
+                    baseline: TextBaseline.alphabetic, // Allineamento corretto con il testo
+                    child: GestureDetector(
+                      onTap: () {
+                        context.pushNamed(Routes.privacyPolicyScreen);
+                      },
+                      child: Text(
+                        'Privacy Policy.',
+                        style: TextStyles.font11Blue600Weight,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -116,7 +164,6 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     telephoneController.dispose();
     passwordConfirmationController.dispose();
   }
-
 
 //Widget termsFields() {
 //  if (widget.isSignUpPage == true) {
@@ -434,7 +481,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   }
 
   loginOrSignUpOrPasswordButton(BuildContext context) {
-    if (widget.isSignUpPage == true) {// && widget.currentDate != null) {
+    if (widget.isSignUpPage == true) {
+      // && widget.currentDate != null) {
       return signUpButton(context);
     }
     //if (widget.isSignUpPage == true && widget.currentDate == null) {
@@ -578,7 +626,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           //if (!terms1Approval || !terms2Approval || !terms3Approval) return;
 
           // se il servizio web non funziona la prendo dal telefono con lo stesso formato per evitare comportamenti strani dell'app
-          widget.currentDate ??= DateTime.parse(DateTime.now().toString().split(".")[0]);
+          widget.currentDate ??=
+              DateTime.parse(DateTime.now().toString().split(".")[0]);
 
           var user = up.User(
             name: capitalize(nameController.text),

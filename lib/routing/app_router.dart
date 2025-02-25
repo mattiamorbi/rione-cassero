@@ -13,6 +13,7 @@ import 'package:rione_cassero/screens/home/ui/home_screen.dart';
 import 'package:rione_cassero/screens/home/ui/new_event_screen.dart';
 import 'package:rione_cassero/screens/home/ui/user_page.dart';
 import 'package:rione_cassero/screens/login/ui/login_screen.dart';
+import 'package:rione_cassero/screens/signup/ui/privacy-policy.dart';
 import 'package:rione_cassero/screens/signup/ui/sign_up_screen.dart';
 import 'package:rione_cassero/screens/signup/ui/verfication.dart';
 
@@ -134,6 +135,16 @@ class AppRouter {
               loggedUser: map['user'] as up.User,
               eventImage: map['image'] as Image,
               isNewBook: map['isNewBook'] as bool,
+            ),
+          ),
+        );
+
+      case Routes.privacyPolicyScreen:
+
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: authCubit,
+            child: PrivacyPolicy(
             ),
           ),
         );

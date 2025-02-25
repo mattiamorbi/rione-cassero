@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Gap(20.h),
                   const DoNotHaveAccountText(),
                   Gap(10.h),
-                  const TermsAndConditionsText(),
+                  //const TermsAndConditionsText(),
                 ],
               );
             },

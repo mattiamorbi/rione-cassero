@@ -96,7 +96,7 @@ class _ForgetScreenState extends State<ForgetScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min, // Ensure minimum height
                   children: [
-                    const TermsAndConditionsText(),
+                    //const TermsAndConditionsText(),
                     Gap(24.h),
                     const AlreadyHaveAccountText(),
                   ],

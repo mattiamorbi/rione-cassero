@@ -13,17 +13,8 @@ class TermsAndConditionsText extends StatelessWidget {
       text: TextSpan(
         children: [
           TextSpan(
-            text: 'Iscrivendoti al Rione Cassero, accetti i nostri',
+            text: 'Iscrivendoti al Rione Cassero, accetti la nostra ',
             style: TextStyles.font11White400Weight,
-          ),
-          TextSpan(
-            text: ' Termini e condizioni',
-            style: TextStyles.font11Blue600Weight,
-          ),
-          TextSpan(
-            text: ' e',
-            style: TextStyles.font11White400Weight
-                .copyWith(height: 4.h),
           ),
           TextSpan(
             text: ' PrivacyPolicy.',

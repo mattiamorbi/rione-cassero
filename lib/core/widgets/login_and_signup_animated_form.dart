@@ -112,43 +112,47 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       }),
       child: Container(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start, // Allinea il testo all'inizio della riga
           children: [
             Gap(15.w),
             Icon(
               !privacy ? Icons.circle_outlined : Icons.check_circle,
-              size: 35,
+              size: 25,
             ),
             Gap(20.w),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text:
-                        'Acconsento al trattamento dei miei dati personali come descritto nella ',
-                    style: TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-                  WidgetSpan(
-                    alignment: PlaceholderAlignment.baseline,
-                    baseline: TextBaseline.alphabetic, // Allineamento corretto con il testo
-                    child: GestureDetector(
-                      onTap: () {
-                        context.pushNamed(Routes.privacyPolicyScreen);
-                      },
-                      child: Text(
-                        'Privacy Policy.',
-                        style: TextStyle(fontSize: 16, color: Colors.blueAccent, fontWeight: FontWeight.bold ),
+            Expanded(  // Aggiungi Expanded per permettere il wrapping del testo
+              child: RichText(
+                textAlign: TextAlign.start,  // Imposta allineamento a sinistra
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text:
+                      'Acconsento al trattamento dei miei dati personali come descritto nella ',
+                      style: TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic, // Allineamento corretto con il testo
+                      child: GestureDetector(
+                        onTap: () {
+                          context.pushNamed(Routes.privacyPolicyScreen);
+                        },
+                        child: Text(
+                          'Privacy Policy.',
+                          style: TextStyle(fontSize: 12, color: Colors.blueAccent, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
+
 
   @override
   void dispose() {

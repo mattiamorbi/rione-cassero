@@ -34,6 +34,8 @@ class ParticipantDataCassero {
   int? paied;
   int? childrenPaied;
 
+  bool? confirmed;
+
   ParticipantDataCassero(
       {this.uid,
       required this.bookUserName,
@@ -45,7 +47,7 @@ class ParticipantDataCassero {
       this.allergy,
       this.allergyNote,
       this.paied,
-      this.childrenPaied});
+      this.childrenPaied, this.confirmed});
 
   static ParticipantDataCassero? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
@@ -68,6 +70,7 @@ class ParticipantDataCassero {
               ? true
               : false,
       date: json['date'] == null ? null : (json['date'] as Timestamp).toDate(),
+      confirmed: json['confirmed'] == null ? true : json['confirmed']! as bool,
     );
   }
 
@@ -83,7 +86,8 @@ class ParticipantDataCassero {
       'allergy': allergy,
       'allergyNote': allergyNote,
       'paied': paied,
-      'childrenPaied': childrenPaied
+      'childrenPaied': childrenPaied,
+      'confirmed': confirmed,
     };
   }
 }

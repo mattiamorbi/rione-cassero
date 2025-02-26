@@ -343,8 +343,10 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      notPaied == 0 ? Colors.lightGreen[100]! : !widget.isMoneyScreen ? Colors.blue[100]! : Colors.red[100]!,
-                                      notPaied == 0 ? Colors.lightGreen[300]! : !widget.isMoneyScreen ? Colors.blue[300]! : Colors.red[300]!,
+                                      //notPaied == 0 ? Colors.lightGreen[100]! : !widget.isMoneyScreen ? Colors.blue[100]! : Colors.red[100]!,
+                                      //notPaied == 0 ? Colors.lightGreen[300]! : !widget.isMoneyScreen ? Colors.blue[300]! : Colors.red[300]!,
+                                      notPaied == 0 ? Colors.lightGreen[100]! : widget.isMoneyScreen? Colors.red[100]! : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? Colors.green[100]! : Colors.blue[100]!,
+                                      notPaied == 0 ? Colors.lightGreen[300]! : widget.isMoneyScreen? Colors.red[300]! : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? Colors.green[300]! : Colors.blue[300]!,
                                     ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -389,7 +391,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                   trailing: Container(
                                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: notPaied == 0 ? Colors.green[700] : widget.isMoneyScreen? Colors.red[700] : Colors.blue[700],
+                                      color: notPaied == 0 ? Colors.green[700] : widget.isMoneyScreen? Colors.red[700] : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? Colors.green[700] : Colors.blue[700],
                                       borderRadius: BorderRadius.circular(15),
                                     ),
                                     child: Text(
@@ -397,7 +399,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                           ? notPaied == 0 ? "PAGATO" : "${notPaied} DA PAGARE"
                                           : notPaied == 0
                                           ? "PAGATO" : notPaied != totalBook ?
-                                          "${notPaied} DA PAGARE" : "MODIFICA",
+                                          "${notPaied} DA PAGARE" : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? "MODIFICA" : "GESTISCI",
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,

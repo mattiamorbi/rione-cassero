@@ -29,6 +29,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
   Uint8List _webImage = Uint8List(0);
   bool _noImage = false;
   bool bookable = true;
+  bool confirmation = true;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -62,6 +63,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
           : widget.upperEvent!.childrenPrice.toString();
 
       bookable = widget.upperEvent!.bookable!;
+      confirmation = widget.upperEvent!.confirmation!;
 
       _loadEventImage();
     }
@@ -219,6 +221,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
             price: int.parse(_priceController.text),
             childrenPrice: int.parse(_childrenPriceController.text),
             bookingLimit: int.parse(_bookingLimitController.text),
+            confirmation: confirmation,
           );
 
           print("4--");
@@ -237,6 +240,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
           }
 
           newUpperEvent.bookable = bookable;
+
 
           Navigator.pop(context, newUpperEvent);
         }
@@ -265,7 +269,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
                 : "images/${_pickedImage!.name}",
             price: int.parse(_priceController.text),
             childrenPrice: int.parse(_childrenPriceController.text),
-            bookingLimit: int.parse(_bookingLimitController.text));
+            bookingLimit: int.parse(_bookingLimitController.text),
+            confirmation: confirmation);
 
         upperEvent.bookable = bookable;
 
@@ -385,6 +390,49 @@ class _NewEventScreenState extends State<NewEventScreen> {
                       ],
                     ),
                     Gap(30.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("Conferma prenotazione",
+                            style: TextStyle(fontSize: 22)),
+                        Gap(40.w),
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            confirmation = true;
+                          }),
+                          child: Row(
+                            children: [
+                              Icon(
+                                confirmation
+                                    ? Icons.check_circle_outline
+                                    : Icons.circle_outlined,
+                                size: 25,
+                              ),
+                              Text("SI", style: TextStyle(fontSize: 22)),
+                            ],
+                          ),
+                        ),
+                        Gap(30.w),
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            confirmation = false;
+                          }),
+                          child: Row(
+                            children: [
+                              Icon(
+                                !confirmation
+                                    ? Icons.check_circle_outline
+                                    : Icons.circle_outlined,
+                                size: 25,
+                              ),
+                              Text("NO", style: TextStyle(fontSize: 22)),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    Gap(30.h),
+
                   ],
                 ),
               ),

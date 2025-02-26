@@ -135,7 +135,8 @@ class AppCubit extends Cubit<AppState> {
       bool? allergy,
       String? allergyNote,
       int? paied,
-      int? childrenPaied) async {
+      int? childrenPaied,
+      bool? confirmation, bool? confirmed) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
         firebase.collection('events').doc(eventId).collection("participants");
@@ -162,8 +163,6 @@ class AppCubit extends Cubit<AppState> {
       'allergyNote': allergyNote,
     };
 
-
-
 // Controlla lo stato della variabile bool e aggiungi il campo extra se necessario
     if (paied != null) {
       data['paied'] = paied; // Aggiungi il parametro solo se necessario
@@ -172,6 +171,16 @@ class AppCubit extends Cubit<AppState> {
     if (childrenPaied != null) {
       data['childrenPaied'] =
           childrenPaied; // Aggiungi il parametro solo se necessario
+    }
+
+    if (confirmed == null) {
+      if (confirmation != null && confirmation) {
+        data['confirmed'] = false;
+      } else {
+        data['confirmed'] = true;
+      }
+    } else {
+      data['confirmed'] = confirmed;
     }
 
     print("sto settando");

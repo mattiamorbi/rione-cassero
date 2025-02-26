@@ -339,7 +339,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
           allergy,
           _allergyNoteController.text,
           paied,
-          childPaied);
+          childPaied, null, null);
 
       await AwesomeDialog(
         context: context,

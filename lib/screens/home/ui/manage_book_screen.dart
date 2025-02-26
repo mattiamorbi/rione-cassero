@@ -397,6 +397,26 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                                 ],
                               ),
                             ),
+
+                            Visibility(
+                              visible: !widget.isNewBook && widget.loggedUser.isAdmin! && widget.upperEvent.confirmation != null && widget.upperEvent.confirmation! && widget.bookData.confirmed != null && !widget.bookData.confirmed!,
+                              child: GestureDetector(
+                                onTap: !actionInProgress ? _bookConfirmation : null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.confirmation_num_outlined,
+                                      size: 35,
+                                      color: Colors.orange,
+                                    ),
+                                    Gap(3.h),
+                                    Text("Conferma prenotazione", style: TextStyle(color: Colors.orange),),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         Gap(40.h),
@@ -448,7 +468,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               allergy,
               _allergyNoteController.text,
               null,
-              null);
+              null, widget.upperEvent.confirmation, null);
         } else {
           await context.read<AppCubit>().bookEventCassero(
               widget.bookData.uid!,
@@ -461,7 +481,67 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               allergy,
               _allergyNoteController.text,
               null,
-              null);
+              null, widget.upperEvent.confirmation, null);
+        }
+
+        if (widget.isNewBook) {
+          await AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.topSlide,
+            title: 'Prenotazione confermata',
+            desc: "Grazie ${_bookEventController.text}, ti aspettiamo!",
+          ).show();
+        } else {
+          await AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.topSlide,
+            title: 'Prenotazione modificata',
+            desc: "Dati aggiornati con successo",
+          ).show();
+        }
+
+        Navigator.pop(context);
+      }
+    } else {
+      await AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.topSlide,
+        title: 'Prenotazioni chiuse',
+        desc: "Chiedi informazioni agli organizzatori dell'evento",
+      ).show();
+
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _bookConfirmation() async {
+    setState(() {
+      actionInProgress = true;
+    });
+
+    if (widget.upperEvent.bookable!) {
+      if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
+          (allergy && _allergyNoteController.text.length == 0)) {
+        formKey.currentState!.validate();
+      } else {
+        if (widget.isNewBook) {
+
+        } else {
+          await context.read<AppCubit>().bookEventCassero(
+              widget.bookData.uid!,
+              widget.bookData.bookUserName,
+              widget.upperEvent.id!,
+              widget.isNewBook ? null : widget.bookData.eventUid,
+              _bookEventController.text,
+              bookNumber,
+              childBookNumber,
+              allergy,
+              _allergyNoteController.text,
+              null,
+              null, widget.upperEvent.confirmation, true);
         }
 
         if (widget.isNewBook) {

@@ -21,10 +21,13 @@ class UpperEvent {
   DateTime? date_time;
 
   bool? bookable;
+  bool? confirmation;
 
   int sumUpMyBookPerson = 0;
   int sumUpMyBookChildren = 0;
   Image image = Image(image: AssetImage("assets/images/loading.gif"));
+
+  bool? confirmedBooks;
 
   UpperEvent({
     required this.title,
@@ -39,6 +42,7 @@ class UpperEvent {
     this.price,
     this.childrenPrice,
     this.bookingLimit,
+    this.confirmation,
   });
 
   DateTime getDate() => DateTimeHelper.getDateTime(date);
@@ -94,6 +98,8 @@ Future<Uint8List?> getEventImage() async {
           price: json['price'] == null ? null : json['price']  as int,
           childrenPrice: json['childrenPrice'] == null ? null : json['childrenPrice']  as int,
           bookingLimit: json['bookingLimit'] == null ? null : json['bookingLimit']  as int,
+          confirmation: json['confirmation'] == null ? false : json['confirmation']  as bool,
+
         );
 
   Map<String, Object?> toJson() {
@@ -107,6 +113,7 @@ Future<Uint8List?> getEventImage() async {
       'price': price,
       'childrenPrice': childrenPrice,
       'bookingLimit': bookingLimit,
+      'confirmation': confirmation == null ? false : confirmation,
     };
   }
 

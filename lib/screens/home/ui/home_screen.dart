@@ -132,12 +132,17 @@ class _HomeScreenState extends State<HomeScreen>
       if (_currentEventBookData[i].isNotEmpty) {
         _events[i].sumUpMyBookChildren = 0;
         _events[i].sumUpMyBookPerson = 0;
+        _events[i].confirmedBooks = true;
         for (int y = 0; y < _currentEventBookData[i].length; y++) {
           if (_loggedUser.uid == _currentEventBookData[i].elementAt(y).uid) {
             _events[i].sumUpMyBookPerson +=
                 _currentEventBookData[i].elementAt(y).number;
             _events[i].sumUpMyBookChildren +=
                 _currentEventBookData[i].elementAt(y).childrenNumber;
+            if (_currentEventBookData[i].elementAt(y).confirmed != null && _currentEventBookData[i].elementAt(y).confirmed == false){
+              _events[i].confirmedBooks = false;
+            }
+
           }
         }
         if (_events[i].sumUpMyBookChildren != 0 ||
@@ -1383,6 +1388,8 @@ class _HomeScreenState extends State<HomeScreen>
 
                         int eventIndex = _events.indexOf(event);
 
+
+
                         return GestureDetector(
                           onTap: () async {
                             await context.pushNamed(
@@ -1406,6 +1413,7 @@ class _HomeScreenState extends State<HomeScreen>
                             persons: event.sumUpMyBookPerson,
                             children: event.sumUpMyBookChildren,
                             isFuture: event.isFuture ?? true,
+                            confirmed: event.confirmedBooks!,
                           ),
                         );
                         //return ListTile(
@@ -1666,6 +1674,7 @@ class CustomCard extends StatelessWidget {
   final int persons;
   final int children;
   final bool isFuture;
+  final bool confirmed;
 
   // Costruttore per accettare argomenti
   const CustomCard({
@@ -1677,6 +1686,7 @@ class CustomCard extends StatelessWidget {
     required this.persons,
     required this.children,
     required this.isFuture,
+    required this.confirmed,
   }) : super(key: key);
 
   @override
@@ -1693,8 +1703,8 @@ class CustomCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              isFuture ? Colors.lightBlue[100]! : Colors.orange[100]!,
-              isFuture ? Colors.lightBlue[300]! : Colors.orange[300]!,
+              isFuture ? (confirmed ? Colors.lightGreen[100]! : Colors.lightBlue[100]!) : Colors.orange[100]!,
+              isFuture ? (confirmed ? Colors.lightGreen[300]! : Colors.lightBlue[300]!) : Colors.orange[300]!,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -1788,7 +1798,7 @@ class CustomCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[900],
+                          color: isFuture ? (confirmed ? Colors.green[900]! : Colors.blue[900]!) : Colors.orange[900]!,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -1796,7 +1806,7 @@ class CustomCard extends StatelessWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.blue[700],
+                          color: isFuture ? (confirmed ? Colors.green[700]! : Colors.blue[700]!) : Colors.orange[700]!,
                         ),
                       ),
                     ],
@@ -1807,7 +1817,7 @@ class CustomCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue[900],
+                        color: isFuture ? (confirmed ? Colors.green[900]! : Colors.blue[900]!) : Colors.orange[900]!,
                         shadows: [
                           Shadow(
                             blurRadius: 5,

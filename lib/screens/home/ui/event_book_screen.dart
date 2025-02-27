@@ -374,8 +374,9 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                   ),
                                   subtitle: Text(
                                     widget.isMoneyScreen
-                                        ? 'Prenotazione effettuata da: ${user.bookUserName}'
-                                        : 'Effettuata da: ${user.bookUserName}',
+                                        ? "Prenotazione effettuata da: ${user.bookUserName}"
+                                        : widget.loggedUser.isAdmin! ? "Effettuata da: ${user.bookUserName}\r\n${user.date!.day}/${user.date!.month}/${user.date!.year} ${user.date!.hour}:${user.date!.minute}"
+                                        : "Effettuata da: ${user.bookUserName}",
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.black54,

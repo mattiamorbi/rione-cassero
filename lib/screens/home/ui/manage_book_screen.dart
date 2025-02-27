@@ -61,6 +61,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
 
   Widget build(BuildContext context) {
     var currentEvent = widget.upperEvent;
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: ColorsManager.background,
@@ -143,7 +144,18 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               color: Color.fromRGBO(50, 50, 50, 1),
                               fontSize: 15),
                         )),
-                        Gap(20.h),
+                        Gap(10.h),
+                        Visibility(
+                          visible: widget.loggedUser.isAdmin! && !widget.isNewBook,
+                          child: Center(
+                              child: Text(
+                                "Effettuata il ${widget.bookData.date!.day}/${widget.bookData.date!.month}/${widget.bookData.date!.year} ${widget.bookData.date!.hour}:${widget.bookData.date!.minute}",
+                                style: TextStyle(
+                                    color: Color.fromRGBO(50, 50, 50, 1),
+                                    fontSize: 15),
+                              )),
+                        ),
+                        Gap(10.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

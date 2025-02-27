@@ -1691,6 +1691,32 @@ class CustomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    late Color bgShade1;
+    late Color bgShade2;
+    late Color textColor;
+    late Color subTextColor;
+
+    // siamo nel passato
+    if (!isFuture) {
+      bgShade1 = Colors.blueGrey[100]!;
+      bgShade2 = Colors.blueGrey[300]!;
+      textColor = Colors.black;
+      subTextColor = Colors.black;
+    } else {
+      if (confirmed) {
+        bgShade1 = Colors.lightBlue[100]!;
+        bgShade2 = Colors.lightBlue[300]!;
+        textColor = Colors.blue[900]!;
+        subTextColor = Colors.blue[700]!;
+      } else {
+        bgShade1 = Colors.orange[100]!;
+        bgShade2 = Colors.orange[300]!;
+        textColor = Colors.orange[900]!;
+        subTextColor = Colors.orange[700]!;
+      }
+    }
+
     return Card(
       elevation: 10, // Ombra intorno alla card
       shape: RoundedRectangleBorder(
@@ -1703,8 +1729,10 @@ class CustomCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              isFuture ? (confirmed ? Colors.lightGreen[100]! : Colors.lightBlue[100]!) : Colors.orange[100]!,
-              isFuture ? (confirmed ? Colors.lightGreen[300]! : Colors.lightBlue[300]!) : Colors.orange[300]!,
+              //isFuture ? (confirmed ? Colors.lightGreen[100]! : Colors.lightBlue[100]!) : Colors.orange[100]!,
+              //isFuture ? (confirmed ? Colors.lightGreen[300]! : Colors.lightBlue[300]!) : Colors.orange[300]!,
+              bgShade1,
+              bgShade2,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -1798,7 +1826,7 @@ class CustomCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: isFuture ? (confirmed ? Colors.green[900]! : Colors.blue[900]!) : Colors.orange[900]!,
+                          color: textColor,//isFuture ? (confirmed ? Colors.green[900]! : Colors.blue[900]!) : Colors.orange[900]!,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -1806,7 +1834,7 @@ class CustomCard extends StatelessWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 16,
-                          color: isFuture ? (confirmed ? Colors.green[700]! : Colors.blue[700]!) : Colors.orange[700]!,
+                          color: subTextColor,//isFuture ? (confirmed ? Colors.green[700]! : Colors.blue[700]!) : Colors.orange[700]!,
                         ),
                       ),
                     ],
@@ -1817,7 +1845,7 @@ class CustomCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: isFuture ? (confirmed ? Colors.green[900]! : Colors.blue[900]!) : Colors.orange[900]!,
+                        color: textColor,//isFuture ? (confirmed ? Colors.green[900]! : Colors.blue[900]!) : Colors.orange[900]!,
                         shadows: [
                           Shadow(
                             blurRadius: 5,

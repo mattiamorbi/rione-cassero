@@ -41,6 +41,8 @@ class EventBookScreen extends StatefulWidget {
 class _EventBookScreenState extends State<EventBookScreen> {
   //List<ParticipantDataCassero> _totalJoinBook = [];
   List<ParticipantDataCassero> _filteredBook = [];
+  List<ParticipantDataCassero> _preFilteredBook = [];
+  int toBeConfirmedBook = 0;
 
   //List<up.User?>? bookedUsers = [];
   //List<up.User?>? participantsUsers = [];
@@ -58,75 +60,50 @@ class _EventBookScreenState extends State<EventBookScreen> {
   void initState() {
     super.initState();
 
-    _filteredBook = widget.bookData;
-    //_totalJoinBook = widget.bookData;
+    _loadFilteredBook();
 
-    //_loadEventSubscription();
 
-    //Future.delayed(Duration(seconds: 3));
-
-    //if (kDebugMode) {
-    //  print(_totalJoinEvent.length);
-    //  print(_filteredUsers.length);
-    //}
-
-    //_isUsersLoading = false;
   }
 
-  // void _loadEventSubscription() {
-  //   _presenceSubscription = context
-  //       .read<AppCubit>()
-  //       .getEventsParticipantStream(widget.upperEvent.id!, widget.allUsers)
-  //       .listen((snapshot) {
-  //     setState(() {
-  //       participantsUsers = snapshot;
-  //       _totalJoinEvent = _createJoinList();
-  //       _filteredUsers = _totalJoinEvent;
-  //     });
-  //   });
-//
-  //   _bookSubscription = context
-  //       .read<AppCubit>()
-  //       .getEventsBookStream(widget.upperEvent.id!, widget.allUsers)
-  //       .listen((snapshot) {
-  //     setState(() {
-  //       bookedUsers = snapshot;
-  //       _totalJoinEvent = _createJoinList();
-  //       _filteredUsers = _totalJoinEvent;
-  //     });
-  //   });
-  // }
+  void _loadFilteredBook() {
+    if (_preFilteredBook.length > 0) {
+      _preFilteredBook.clear();
+      toBeConfirmedBook = 0;
+    }
+    if (widget.isMoneyScreen &&
+        widget.upperEvent.confirmation != null &&
+        widget.upperEvent.confirmation!) {
+      for (int i = 0; i < widget.bookData.length; i++) {
+        if (widget.bookData[i].confirmed!) {
+          _preFilteredBook.add(widget.bookData[i]);
+        }
+      }
+    } else {
+      for (int i = 0; i < widget.bookData.length; i++) {
+        if (!widget.bookData[i].confirmed!) {
+          _preFilteredBook.add(widget.bookData[i]);
+          toBeConfirmedBook++;
+        }
+      }
+      for (int i = 0; i < widget.bookData.length; i++) {
+        if (widget.bookData[i].confirmed!) {
+          _preFilteredBook.add(widget.bookData[i]);
+        }
+      }
+    }
 
-  //List<up.User> _createJoinList() {
-  //  // Creiamo una mappa per gestire l'unione
-  //  Map<String, up.User> userMap = {};
-  //  if (kDebugMode) print(bookedUsers!.length);
-  //  // Aggiungo prima i prenotati
-  //  for (var us in bookedUsers!) {
-  //    //userMap[us.uid!]?.state = 'booked';
-  //    userMap[us!.uid!] = us.copyWith(state: 'booked');
-  //  }
-//
-  //  // Poi aggiungo i partecipanti, sovrascrivendo se già esiste
-  //  for (var us in participantsUsers!) {
-  //    userMap[us!.uid!] = us.copyWith(state: 'joined');
-  //    // userMap[us.uid!]?.state = 'joined';
-  //  }
-//
-  //  if (kDebugMode) print("user map ${userMap.length}");
-//
-  //  // Converto la mappa in una lista finale
-  //  return userMap.values.toList();
-  //}
+    _filteredBook = _preFilteredBook;
+  }
 
   // Funzione per filtrare la lista degli utenti in base al testo inserito
   void filterUsers(String query) {
-    List<ParticipantDataCassero> filtered = widget.bookData.where((book) {
+    List<ParticipantDataCassero> filtered = _preFilteredBook.where((book) {
       String fullName =
           '${book.name.toLowerCase()} ${book.bookUserName.toLowerCase()}';
 
       bool result = fullName.contains(query.toLowerCase());
       if (_allergyFilter) result = result && book.allergy == true;
+      //if (widget.isMoneyScreen || widget.upperEvent.confirmation != null) result = result && book.confirmed != null && book.confirmed!;
       return result;
     }).toList();
 
@@ -211,20 +188,24 @@ class _EventBookScreenState extends State<EventBookScreen> {
                       ),
                     ),
                     Text(
-                      "Prenotazioni: ${widget.bookData.length}",
+                      widget.isMoneyScreen
+                          ? "Prenotazioni: ${_preFilteredBook.length}"
+                          : toBeConfirmedBook > 0
+                              ? "Prenotazioni: ${_preFilteredBook.length} (Da confermare: ${toBeConfirmedBook})"
+                              : "Prenotazioni: ${_preFilteredBook.length}",
                       style: TextStyle(color: ColorsManager.gray17),
                     ),
                     Visibility(
                       visible: widget.loggedUser.isAdmin!,
                       child: Text(
-                        "Persone totali: ${getTotalBookPeople(widget.bookData, false)}",
+                        "Persone totali: ${getTotalBookPeople(_preFilteredBook, false)}",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),
                     Visibility(
                       visible: widget.loggedUser.isAdmin!,
                       child: Text(
-                        "Bambini totali: ${getTotalBookChild(widget.bookData, false)}",
+                        "Bambini totali: ${getTotalBookChild(_preFilteredBook, false)}",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),
@@ -233,7 +214,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                           widget.upperEvent.price != null &&
                           widget.upperEvent.childrenPrice != null,
                       child: Text(
-                        "Incasso previsto: ${(widget.upperEvent.price! * getTotalBookPeople(widget.bookData, false)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(widget.bookData, false))} €",
+                        "Incasso previsto: ${(widget.upperEvent.price! * getTotalBookPeople(_preFilteredBook, false)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(_preFilteredBook, false))} €",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),
@@ -242,7 +223,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                           widget.upperEvent.price != null &&
                           widget.upperEvent.childrenPrice != null,
                       child: Text(
-                        "Incasso attuale: ${(widget.upperEvent.price! * getTotalBookPeople(widget.bookData, true)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(widget.bookData, true))} €",
+                        "Incasso attuale: ${(widget.upperEvent.price! * getTotalBookPeople(_preFilteredBook, true)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(_preFilteredBook, true))} €",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),
@@ -274,79 +255,88 @@ class _EventBookScreenState extends State<EventBookScreen> {
                           final user = _filteredBook[index];
                           int notPaied = calcNotPaied(user);
                           int totalBook = calcTotalBook(user);
+
+                          late Color bgShade1;
+                          late Color bgShade2;
+                          late Color textColor;
+                          late Color subTextColor;
+
+                          if (widget.isMoneyScreen) {
+                            if (notPaied == 0) {
+                              // verde
+                              bgShade1 = Colors.lightGreen[100]!;
+                              bgShade2 = Colors.lightGreen[300]!;
+                              textColor = Colors.lightGreen[900]!;
+                              subTextColor = Colors.lightGreen[700]!;
+                            } else {
+                              //rosso
+                              bgShade1 = Colors.red[100]!;
+                              bgShade2 = Colors.red[300]!;
+                              textColor = Colors.red[900]!;
+                              subTextColor = Colors.red[700]!;
+                            }
+
+                          } else {
+                            if (user.confirmed!) {
+                              bgShade1 = Colors.lightBlue[100]!;
+                              bgShade2 = Colors.lightBlue[300]!;
+                              textColor = Colors.blue[900]!;
+                              subTextColor = Colors.blue[700]!;
+                            } else {
+                              bgShade1 = Colors.orange[100]!;
+                              bgShade2 = Colors.orange[300]!;
+                              textColor = Colors.orange[900]!;
+                              subTextColor = Colors.orange[700]!;
+                            }
+                          }
+
                           return GestureDetector(
-                            onTap: () =>
-                            widget.isMoneyScreen ? _managePayment(_filteredBook[index], index) : _manageBook(_filteredBook[index], index, notPaied != totalBook && !widget.loggedUser.isAdmin!),
-                            //child: ListTile(
-                            //  tileColor: !widget.isMoneyScreen
-                            //      ? ColorsManager.background
-                            //      : notPaied > 0
-                            //          ? Colors.amberAccent
-                            //          : Colors.green,
-                            //  textColor: Colors.black,
-                            //  subtitleTextStyle: TextStyle(
-                            //    fontSize: 12,
-                            //    color: Colors.black38,
-                            //  ),
-                            //  shape: RoundedRectangleBorder(
-                            //    //<-- SEE HERE
-                            //    side: BorderSide(
-                            //        width: 0, color: ColorsManager.background),
-                            //    borderRadius: BorderRadius.circular(20),
-                            //  ),
-                            //  //onTap: () => _showUser(user, widget.upperEvent),
-                            //  //leading: Icon(
-                            //  //  Icons.person_outline,
-                            //  //  color: user.state == 'booked'
-                            //  //      ? Colors.orange
-                            //  //      : user.state == 'joined'
-                            //  //          ? Colors.green
-                            //  //          : Colors.black,
-                            //  //),
-                            //  leading: Icon(
-                            //    _filteredBook[index].allergy != null &&
-                            //            _filteredBook[index].allergy == true
-                            //        ? Icons.no_food
-                            //        : Icons.bookmark_border,
-                            //    color: Colors.black,
-                            //  ),
-                            //  trailing: Text(
-                            //    widget.isMoneyScreen ? "${totalBook - notPaied} / ${totalBook}" : notPaied == 0 ? "PAGATO" : (widget.upperEvent.price! * widget.bookData[index].paied!) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenPaied!) == 0 ? "${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €" : "${(widget.upperEvent.price! * widget.bookData[index].paied!) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenPaied!)} € / ${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €",
-                            //    style: TextStyle(
-                            //        fontSize: 14,
-                            //        color: Colors.black,
-                            //        fontWeight: FontWeight.bold),
-                            //  ),
-//
-                            //  //trailing: GestureDetector(
-                            //  //  child: Icon(Icons.delete, color: Colors.red),
-                            //  //  onTap: () {},
-                            //  //),
-                            //  title: widget.isMoneyScreen ? Text(
-                            //      "${user.name}") : Text(totalBook > 1
-                            //      ? "${user.name} (${totalBook} persone)"
-                            //      : "${user.name} (${totalBook} persona)"),
-                            //  subtitle: Text(
-                            //      //'Email: ${user.email}\nData di nascita: ${user.birthdate}'),
-                            //      widget.isMoneyScreen
-                            //          ? 'Prenotazione effettuata da: ${user.bookUserName}'
-                            //          : 'Effettuata da: ${user.bookUserName}'),
-                            //),
+                            onTap: () => widget.isMoneyScreen
+                                ? _managePayment(_filteredBook[index], index)
+                                : _manageBook(
+                                    _filteredBook[index],
+                                    index,
+                                    notPaied != totalBook &&
+                                        !widget.loggedUser.isAdmin!),
                             child: Card(
-                              elevation: 10, // Ombra intorno alla card
+                              elevation: 10,
+                              // Ombra intorno alla card
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20), // Angoli arrotondati
+                                borderRadius: BorderRadius.circular(
+                                    20), // Angoli arrotondati
                               ),
-                              shadowColor: Colors.black.withOpacity(0.3), // Colore ombra
+                              shadowColor: Colors.black.withOpacity(0.3),
+                              // Colore ombra
                               child: Container(
-                                padding: EdgeInsets.all(10), // Spaziatura interna
+                                padding:
+                                    EdgeInsets.all(10), // Spaziatura interna
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
                                       //notPaied == 0 ? Colors.lightGreen[100]! : !widget.isMoneyScreen ? Colors.blue[100]! : Colors.red[100]!,
                                       //notPaied == 0 ? Colors.lightGreen[300]! : !widget.isMoneyScreen ? Colors.blue[300]! : Colors.red[300]!,
-                                      notPaied == 0 ? Colors.lightGreen[100]! : widget.isMoneyScreen? Colors.red[100]! : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? Colors.green[100]! : Colors.blue[100]!,
-                                      notPaied == 0 ? Colors.lightGreen[300]! : widget.isMoneyScreen? Colors.red[300]! : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? Colors.green[300]! : Colors.blue[300]!,
+                                      //notPaied == 0
+                                      //    ? Colors.lightGreen[100]!
+                                      //    : widget.isMoneyScreen
+                                      //        ? Colors.red[100]!
+                                      //        : (user.confirmed != null &&
+                                      //                user.confirmed! &&
+                                      //                widget
+                                      //                    .loggedUser.isAdmin!)
+                                      //            ? Colors.green[100]!
+                                      //            : Colors.blue[100]!,
+                                      //notPaied == 0
+                                      //    ? Colors.lightGreen[300]!
+                                      //    : widget.isMoneyScreen
+                                      //        ? Colors.red[300]!
+                                      //        : (user.confirmed != null &&
+                                      //                user.confirmed! &&
+                                      //                widget
+                                      //                    .loggedUser.isAdmin!)
+                                      //            ? Colors.green[300]!
+                                      //            : Colors.blue[300]!,
+                                      bgShade1,
+                                      bgShade2,
                                     ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -354,23 +344,26 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: ListTile(
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 8),
                                   leading: Container(
                                     padding: EdgeInsets.all(5),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.8), // Sfondo per l'icona
+                                      color: Colors.white.withOpacity(0.8),
+                                      // Sfondo per l'icona
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
                                       _filteredBook[index].allergy != null &&
-                                          _filteredBook[index].allergy == true
+                                              _filteredBook[index].allergy ==
+                                                  true
                                           ? Icons.no_food
                                           : Icons.bookmark_border,
                                       color: Colors.black87,
                                     ),
                                   ),
                                   title: Text(
-                                  totalBook > 1
+                                    totalBook > 1
                                         ? "${user.name} (${totalBook} persone)"
                                         : "${user.name} (${totalBook} persona)",
                                     style: TextStyle(
@@ -389,17 +382,37 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                     ),
                                   ),
                                   trailing: Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: notPaied == 0 ? Colors.green[700] : widget.isMoneyScreen? Colors.red[700] : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? Colors.green[700] : Colors.blue[700],
+                                      //color: notPaied == 0
+                                      //    ? Colors.green[700]
+                                      //    : widget.isMoneyScreen
+                                      //        ? Colors.red[700]
+                                      //        : (user.confirmed != null &&
+                                      //                user.confirmed! &&
+                                      //                widget
+                                      //                    .loggedUser.isAdmin!)
+                                      //            ? Colors.green[700]
+                                      //            : Colors.blue[700],
+                                      color: textColor,
                                       borderRadius: BorderRadius.circular(15),
                                     ),
                                     child: Text(
                                       widget.isMoneyScreen
-                                          ? notPaied == 0 ? "PAGATO" : "${notPaied} DA PAGARE"
+                                          ? notPaied == 0
+                                              ? "PAGATO"
+                                              : "${notPaied} DA PAGARE"
                                           : notPaied == 0
-                                          ? "PAGATO" : notPaied != totalBook ?
-                                          "${notPaied} DA PAGARE" : (user.confirmed != null && user.confirmed! && widget.loggedUser.isAdmin!) ? "MODIFICA" : "GESTISCI",
+                                              ? "PAGATO"
+                                              : notPaied != totalBook
+                                                  ? "${notPaied} DA PAGARE"
+                                                  : (user.confirmed != null &&
+                                                          user.confirmed! &&
+                                                          widget.loggedUser
+                                                              .isAdmin!)
+                                                      ? "MODIFICA"
+                                                      : "GESTISCI",
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -407,34 +420,34 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                       ),
                                     ),
                                   ),
-                                 // trailing: Column(
-                                 //   mainAxisAlignment: MainAxisAlignment.center,
-                                 //   children: [
-                                 //     Text(
-                                 //       widget.isMoneyScreen
-                                 //           ? "${totalBook - notPaied} / ${totalBook}"
-                                 //           : notPaied == 0
-                                 //           ? "PAGATO"
-                                 //           : (widget.upperEvent.price! *
-                                 //           widget.bookData[index].paied!) +
-                                 //           (widget.upperEvent.childrenPrice! *
-                                 //               widget.bookData[index].childrenPaied!) ==
-                                 //           0
-                                 //           ? "${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €"
-                                 //           : "${(widget.upperEvent.price! * widget.bookData[index].paied!) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenPaied!)} € / ${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €",
-                                 //       style: TextStyle(
-                                 //         fontSize: 14,
-                                 //         color: Colors.black,
-                                 //         fontWeight: FontWeight.bold,
-                                 //       ),
-                                 //     ),
-                                 //   ],
-                                 // ),
-                                  tileColor: Colors.transparent, // Lascia il colore trasparente
+                                  // trailing: Column(
+                                  //   mainAxisAlignment: MainAxisAlignment.center,
+                                  //   children: [
+                                  //     Text(
+                                  //       widget.isMoneyScreen
+                                  //           ? "${totalBook - notPaied} / ${totalBook}"
+                                  //           : notPaied == 0
+                                  //           ? "PAGATO"
+                                  //           : (widget.upperEvent.price! *
+                                  //           widget.bookData[index].paied!) +
+                                  //           (widget.upperEvent.childrenPrice! *
+                                  //               widget.bookData[index].childrenPaied!) ==
+                                  //           0
+                                  //           ? "${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €"
+                                  //           : "${(widget.upperEvent.price! * widget.bookData[index].paied!) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenPaied!)} € / ${(widget.upperEvent.price! * widget.bookData[index].number) + (widget.upperEvent.childrenPrice! * widget.bookData[index].childrenNumber)} €",
+                                  //       style: TextStyle(
+                                  //         fontSize: 14,
+                                  //         color: Colors.black,
+                                  //         fontWeight: FontWeight.bold,
+                                  //       ),
+                                  //     ),
+                                  //   ],
+                                  // ),
+                                  tileColor: Colors
+                                      .transparent, // Lascia il colore trasparente
                                 ),
                               ),
                             ),
-
                           );
                         },
                       ),
@@ -446,9 +459,8 @@ class _EventBookScreenState extends State<EventBookScreen> {
     );
   }
 
-
-  Future<void> _manageBook(
-      ParticipantDataCassero currentBookData, int index, bool alreadyPaied) async {
+  Future<void> _manageBook(ParticipantDataCassero currentBookData, int index,
+      bool alreadyPaied) async {
     if (!alreadyPaied) {
       await Navigator.pushNamed(
         context,
@@ -471,7 +483,6 @@ class _EventBookScreenState extends State<EventBookScreen> {
       ).show();
     }
 
-
     //if (result == 'edit') {
     //  final updated = await context.read<AppCubit>().getSingleBookEventCassero(
     //          widget.upperEvent.id!, currentBookData.eventUid)
@@ -482,13 +493,12 @@ class _EventBookScreenState extends State<EventBookScreen> {
     //} else if (result == 'delete') {
     //  setState(() {});
     //}
-
+    _loadFilteredBook();
     setState(() {});
   }
 
   Future<void> _managePayment(
       ParticipantDataCassero currentBookData, int index) async {
-
     await Navigator.pushNamed(
       context,
       Routes.managePaymentScreen,

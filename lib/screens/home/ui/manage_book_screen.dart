@@ -412,7 +412,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                                       color: Colors.orange,
                                     ),
                                     Gap(3.h),
-                                    Text("Conferma prenotazione", style: TextStyle(color: Colors.orange),),
+                                    Text("Conferma", style: TextStyle(color: Colors.orange),),
                                   ],
                                 ),
                               ),
@@ -481,17 +481,27 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               allergy,
               _allergyNoteController.text,
               null,
-              null, widget.upperEvent.confirmation, null);
+              null, widget.upperEvent.confirmation, widget.bookData.confirmed);
         }
 
         if (widget.isNewBook) {
-          await AwesomeDialog(
-            context: context,
-            dialogType: DialogType.success,
-            animType: AnimType.topSlide,
-            title: 'Prenotazione confermata',
-            desc: "Grazie ${_bookEventController.text}, ti aspettiamo!",
-          ).show();
+          if (widget.upperEvent.confirmation == null || widget.upperEvent.confirmation == false) {
+            await AwesomeDialog(
+              context: context,
+              dialogType: DialogType.success,
+              animType: AnimType.topSlide,
+              title: 'Prenotazione confermata',
+              desc: "Grazie ${_bookEventController.text}, ti aspettiamo!",
+            ).show();
+          } else {
+            await AwesomeDialog(
+              context: context,
+              dialogType: DialogType.info,
+              animType: AnimType.topSlide,
+              title: 'Prenotazione inviata',
+              desc: "Grazie ${_bookEventController.text}, la tua prenotazione verrà confermata al più presto!",
+            ).show();
+          }
         } else {
           await AwesomeDialog(
             context: context,
@@ -522,14 +532,12 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
       actionInProgress = true;
     });
 
-    if (widget.upperEvent.bookable!) {
+
       if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
           (allergy && _allergyNoteController.text.length == 0)) {
         formKey.currentState!.validate();
       } else {
-        if (widget.isNewBook) {
-
-        } else {
+        if (!widget.isNewBook) {
           await context.read<AppCubit>().bookEventCassero(
               widget.bookData.uid!,
               widget.bookData.bookUserName,
@@ -542,39 +550,19 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               _allergyNoteController.text,
               null,
               null, widget.upperEvent.confirmation, true);
-        }
 
-        if (widget.isNewBook) {
           await AwesomeDialog(
             context: context,
             dialogType: DialogType.success,
             animType: AnimType.topSlide,
             title: 'Prenotazione confermata',
-            desc: "Grazie ${_bookEventController.text}, ti aspettiamo!",
-          ).show();
-        } else {
-          await AwesomeDialog(
-            context: context,
-            dialogType: DialogType.success,
-            animType: AnimType.topSlide,
-            title: 'Prenotazione modificata',
-            desc: "Dati aggiornati con successo",
+            desc: "Hai confermato la prenotazione per ${widget.bookData.name}",
           ).show();
         }
 
         Navigator.pop(context);
       }
-    } else {
-      await AwesomeDialog(
-        context: context,
-        dialogType: DialogType.error,
-        animType: AnimType.topSlide,
-        title: 'Prenotazioni chiuse',
-        desc: "Chiedi informazioni agli organizzatori dell'evento",
-      ).show();
 
-      Navigator.pop(context);
-    }
   }
 
   void _bookEventUndo() {

@@ -352,7 +352,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text("Prenotazioni aperte",
-                            style: TextStyle(fontSize: 22)),
+                            style: TextStyle(fontSize: 18)),
                         Gap(40.w),
                         GestureDetector(
                           onTap: () => setState(() {
@@ -394,7 +394,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text("Conferma prenotazione",
-                            style: TextStyle(fontSize: 22)),
+                            style: TextStyle(fontSize: 18)),
                         Gap(40.w),
                         GestureDetector(
                           onTap: () => setState(() {

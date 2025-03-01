@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
 import 'package:rione_cassero/models/participant_data.dart';
@@ -145,16 +147,17 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               fontSize: 15),
                         )),
                         Gap(10.h),
-                        Visibility(
-                          visible: widget.loggedUser.isAdmin! && !widget.isNewBook,
-                          child: Center(
-                              child: Text(
+                        widget.loggedUser.isAdmin! &&
+                                !widget.isNewBook &&
+                                widget.bookData.date != null
+                            ? Center(
+                                child: Text(
                                 "Effettuata il ${widget.bookData.date!.day}/${widget.bookData.date!.month}/${widget.bookData.date!.year} ${widget.bookData.date!.hour}:${widget.bookData.date!.minute}",
                                 style: TextStyle(
                                     color: Color.fromRGBO(50, 50, 50, 1),
                                     fontSize: 15),
-                              )),
-                        ),
+                              ))
+                            : SizedBox.shrink(),
                         Gap(10.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -405,15 +408,25 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                                     color: Colors.green,
                                   ),
                                   Gap(3.h),
-                                  Text("Salva", style: TextStyle(color: Colors.green),),
+                                  Text(
+                                    "Salva",
+                                    style: TextStyle(color: Colors.green),
+                                  ),
                                 ],
                               ),
                             ),
 
                             Visibility(
-                              visible: !widget.isNewBook && widget.loggedUser.isAdmin! && widget.upperEvent.confirmation != null && widget.upperEvent.confirmation! && widget.bookData.confirmed != null && !widget.bookData.confirmed!,
+                              visible: !widget.isNewBook &&
+                                  widget.loggedUser.isAdmin! &&
+                                  widget.upperEvent.confirmation != null &&
+                                  widget.upperEvent.confirmation! &&
+                                  widget.bookData.confirmed != null &&
+                                  !widget.bookData.confirmed!,
                               child: GestureDetector(
-                                onTap: !actionInProgress ? _bookConfirmation : null,
+                                onTap: !actionInProgress
+                                    ? _bookConfirmation
+                                    : null,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -424,7 +437,10 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                                       color: Colors.orange,
                                     ),
                                     Gap(3.h),
-                                    Text("Conferma", style: TextStyle(color: Colors.orange),),
+                                    Text(
+                                      "Conferma",
+                                      style: TextStyle(color: Colors.orange),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -480,7 +496,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               allergy,
               _allergyNoteController.text,
               null,
-              null, widget.upperEvent.confirmation, null);
+              null,
+              widget.upperEvent.confirmation,
+              null);
         } else {
           await context.read<AppCubit>().bookEventCassero(
               widget.bookData.uid!,
@@ -493,11 +511,14 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               allergy,
               _allergyNoteController.text,
               null,
-              null, widget.upperEvent.confirmation, widget.bookData.confirmed);
+              null,
+              widget.upperEvent.confirmation,
+              widget.bookData.confirmed);
         }
 
         if (widget.isNewBook) {
-          if (widget.upperEvent.confirmation == null || widget.upperEvent.confirmation == false) {
+          if (widget.upperEvent.confirmation == null ||
+              widget.upperEvent.confirmation == false) {
             await AwesomeDialog(
               context: context,
               dialogType: DialogType.success,
@@ -511,7 +532,8 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               dialogType: DialogType.info,
               animType: AnimType.topSlide,
               title: 'Prenotazione inviata',
-              desc: "Grazie ${_bookEventController.text}, la tua prenotazione verrà confermata al più presto!",
+              desc:
+                  "Grazie ${_bookEventController.text}, la tua prenotazione verrà confermata al più presto!",
             ).show();
           }
         } else {
@@ -544,37 +566,80 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
       actionInProgress = true;
     });
 
+    if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
+        (allergy && _allergyNoteController.text.length == 0)) {
+      formKey.currentState!.validate();
+    } else {
+      if (!widget.isNewBook) {
+        await context.read<AppCubit>().bookEventCassero(
+            widget.bookData.uid!,
+            widget.bookData.bookUserName,
+            widget.upperEvent.id!,
+            widget.isNewBook ? null : widget.bookData.eventUid,
+            _bookEventController.text,
+            bookNumber,
+            childBookNumber,
+            allergy,
+            _allergyNoteController.text,
+            null,
+            null,
+            widget.upperEvent.confirmation,
+            true);
 
-      if ((_editBookNameMode == 1 && _bookEventController.text.length == 0) ||
-          (allergy && _allergyNoteController.text.length == 0)) {
-        formKey.currentState!.validate();
-      } else {
-        if (!widget.isNewBook) {
-          await context.read<AppCubit>().bookEventCassero(
-              widget.bookData.uid!,
-              widget.bookData.bookUserName,
-              widget.upperEvent.id!,
-              widget.isNewBook ? null : widget.bookData.eventUid,
-              _bookEventController.text,
-              bookNumber,
-              childBookNumber,
-              allergy,
-              _allergyNoteController.text,
-              null,
-              null, widget.upperEvent.confirmation, true);
+        await sendEmail();
 
-          await AwesomeDialog(
-            context: context,
-            dialogType: DialogType.success,
-            animType: AnimType.topSlide,
-            title: 'Prenotazione confermata',
-            desc: "Hai confermato la prenotazione per ${widget.bookData.name}",
-          ).show();
-        }
-
-        Navigator.pop(context);
+        await AwesomeDialog(
+          context: context,
+          dialogType: DialogType.success,
+          animType: AnimType.topSlide,
+          title: 'Prenotazione confermata',
+          desc: "Hai confermato la prenotazione per ${widget.bookData.name}",
+        ).show();
       }
 
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> sendEmail() async {
+    var url = Uri.parse("https://api-send-email.dellamahome.com/SendEmail");
+
+    var headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'text/plain',
+      "Access-Control-Allow-Origin": "*",
+      'Authorization': 'Basic cmlvbmUtY2Fzc2VybzpDYXNzZXJvMjAyNQ=='
+    };
+
+    var body = json.encode({
+      "emailTo": ["mattia.morbidelli@gmail.com"],
+      "emailBcc": [],
+      "emailCc": [],
+      "subject": "Test da docker",
+      "body": "Test da docker 123"
+    });
+
+    try {
+      var response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        print("Email inviata con successo!");
+        print("Risposta: ${response.body}");
+      } else {
+        print("Errore durante l'invio dell'email");
+        print("Status Code: ${response.statusCode}");
+        print("Reason Phrase: ${response.reasonPhrase}");
+        print("Body: ${response.body}");
+        print("Headers: ${response.headers}");
+      }
+
+    } catch (e, stacktrace) {
+      print("Errore durante la richiesta HTTP");
+      print("Messaggio: $e");
+      print("URL: $url");
+      print("Timestamp: ${DateTime.now()}");
+      print("Stacktrace:\n$stacktrace");
+    }
   }
 
   void _bookEventUndo() {

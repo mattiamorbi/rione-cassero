@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -602,43 +603,35 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   }
 
   Future<void> sendEmail() async {
-    var url = Uri.parse("https://api-send-email.dellamahome.com/SendEmail");
-
     var headers = {
       'Content-Type': 'application/json',
       'Accept': 'text/plain',
-      "Access-Control-Allow-Origin": "*",
       'Authorization': 'Basic cmlvbmUtY2Fzc2VybzpDYXNzZXJvMjAyNQ=='
     };
-
-    var body = json.encode({
-      "emailTo": ["mattia.morbidelli@gmail.com"],
+    var data = json.encode({
+      "emailTo": [
+        "mattia.morbidelli@gmail.com"
+      ],
       "emailBcc": [],
       "emailCc": [],
       "subject": "Test da docker",
       "body": "Test da docker 123"
     });
+    var dio = Dio();
+    var response = await dio.request(
+      'https://api-send-email.dellamahome.com/SendEmail',
+      options: Options(
+        method: 'POST',
+        headers: headers,
+      ),
+      data: data,
+    );
 
-    try {
-      var response = await http.post(url, headers: headers, body: body);
-
-      if (response.statusCode == 200) {
-        print("Email inviata con successo!");
-        print("Risposta: ${response.body}");
-      } else {
-        print("Errore durante l'invio dell'email");
-        print("Status Code: ${response.statusCode}");
-        print("Reason Phrase: ${response.reasonPhrase}");
-        print("Body: ${response.body}");
-        print("Headers: ${response.headers}");
-      }
-
-    } catch (e, stacktrace) {
-      print("Errore durante la richiesta HTTP");
-      print("Messaggio: $e");
-      print("URL: $url");
-      print("Timestamp: ${DateTime.now()}");
-      print("Stacktrace:\n$stacktrace");
+    if (response.statusCode == 200) {
+      print(json.encode(response.data));
+    }
+    else {
+      print(response.statusMessage);
     }
   }
 

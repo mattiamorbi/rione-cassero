@@ -1,4 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:collection/collection.dart';
+import 'package:encrypt/encrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
@@ -50,6 +52,9 @@ class _EventBookScreenState extends State<EventBookScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   bool _allergyFilter = false;
+  bool _alphabetSort = false;
+  bool _dateSort = false;
+  bool _toBeConfirmedSort = true;
 
   //bool _isUsersLoading = true;
 
@@ -92,7 +97,10 @@ class _EventBookScreenState extends State<EventBookScreen> {
       }
     }
 
-    _filteredBook = _preFilteredBook;
+    applyListSorting(_preFilteredBook);
+
+
+
   }
 
   // Funzione per filtrare la lista degli utenti in base al testo inserito
@@ -107,8 +115,21 @@ class _EventBookScreenState extends State<EventBookScreen> {
       return result;
     }).toList();
 
+    applyListSorting(filtered);
+  }
+
+  void applyListSorting(List<ParticipantDataCassero> list){
+    // Ordinamento con `sortBy()` usando il nome
+
+    if (_dateSort) {
+      list.sortBy((u) => u.date!);
+      list = list.reversed.toList();
+    } else if (_alphabetSort){
+      list.sortBy((u) => u.name.toUpperCase());
+    }
+
     setState(() {
-      _filteredBook = filtered;
+      _filteredBook = list;
     });
   }
 
@@ -231,16 +252,63 @@ class _EventBookScreenState extends State<EventBookScreen> {
                     Visibility(
                       visible:
                           widget.loggedUser.isAdmin! && !widget.isMoneyScreen,
-                      child: GestureDetector(
-                          onTap: () => setState(() {
-                                _allergyFilter = !_allergyFilter;
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                              onTap: () => setState(() {
+                                    _allergyFilter = !_allergyFilter;
+                                    filterUsers(_searchController.text);
+                                  }),
+                              child: Icon(
+                                  _allergyFilter
+                                      ? Icons.no_food
+                                      : Icons.no_food_outlined,
+                                  size: 30, color: _allergyFilter ? Colors.lightGreen : Colors.black,)),
+                          Gap(20.w),
+                          GestureDetector(
+                              onTap: () => setState(() {
+                                _alphabetSort = false;
+                                _dateSort = false;
+                                _toBeConfirmedSort = true;
+                                //applyListSorting(_filteredBook);
                                 filterUsers(_searchController.text);
                               }),
-                          child: Icon(
-                              _allergyFilter
-                                  ? Icons.no_food
-                                  : Icons.no_food_outlined,
-                              size: 30)),
+                              child: Icon(
+                                _toBeConfirmedSort
+                                    ? Icons.confirmation_num
+                                    : Icons.confirmation_num_outlined,
+                                size: 30, color: _toBeConfirmedSort ? Colors.lightGreen : Colors.black,)),
+                          Gap(20.w),
+                          GestureDetector(
+                              onTap: () => setState(() {
+                                _alphabetSort = true;
+                                _dateSort = false;
+                                _toBeConfirmedSort = false;
+                                applyListSorting(_filteredBook);
+                              }),
+                              child: Icon(
+                                  _alphabetSort
+                                      ? Icons.sort_by_alpha
+                                      : Icons.sort_by_alpha_rounded,
+                                  size: 30, color: _alphabetSort ? Colors.lightGreen : Colors.black,)),
+                          Gap(20.w),
+                          GestureDetector(
+                              onTap: () => setState(() {
+                                _alphabetSort = false;
+                                _dateSort = true;
+                                _toBeConfirmedSort = false;
+                                applyListSorting(_filteredBook);
+                              }),
+                              child: Icon(
+                                _dateSort
+                                    ? Icons.date_range
+                                    : Icons.date_range_outlined,
+                                size: 30, color: _dateSort ? Colors.lightGreen : Colors.black,)),
+
+                        ],
+                      ),
                     ),
                     Gap(15.h),
                   ],
@@ -373,7 +441,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    widget.isMoneyScreen
+                                    widget.isMoneyScreen && user.date != null
                                         ? "Prenotazione effettuata da: ${user.bookUserName}"
                                         : widget.loggedUser.isAdmin! ? "Effettuata da: ${user.bookUserName}\r\n${user.date!.day}/${user.date!.month}/${user.date!.year} ${user.date!.hour}:${user.date!.minute}"
                                         : "Effettuata da: ${user.bookUserName}",

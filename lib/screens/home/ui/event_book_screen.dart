@@ -287,7 +287,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                               }),
                               child: Icon(
                                 _toBeConfirmedSort
-                                    ? Icons.confirmation_num
+                                    ? Icons.confirmation_num_outlined
                                     : Icons.confirmation_num_outlined,
                                 size: 30, color: _toBeConfirmedSort ? Colors.lightGreen : Colors.black,)),
                           Gap(20.w),

@@ -198,9 +198,19 @@ class _EventBookScreenState extends State<EventBookScreen> {
                           validator: (value) {},
                           controller: _searchController,
                           isObscureText: false,
-                          suffixIcon: Icon(
-                            Icons.search,
-                            color: Colors.black38,
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              if (_searchController.text.length > 0) {
+                                setState(() {
+                                  _searchController.text = "";
+                                  filterUsers("");
+                                });
+                              }
+                            },
+                            child: Icon(
+                              _searchController.text.length == 0 ? Icons.search : Icons.cancel,
+                              color: Colors.black38,
+                            ),
                           ),
                           onChanged: (value) {
                             filterUsers(value);

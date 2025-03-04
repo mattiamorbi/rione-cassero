@@ -641,7 +641,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
 
     await AwesomeDialog(
       context: context,
-      dialogType: DialogType.success,
+      dialogType: DialogType.info,
       animType: AnimType.topSlide,
       title: 'Prenotazione cancellata',
       desc: "Ci dispiace per la tua disdetta",

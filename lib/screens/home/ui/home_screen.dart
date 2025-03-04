@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen>
           myBooks.add(_events[i]);
         }
 
-        print("sono prenotato a ${_events[i].id}");
+        //print("sono prenotato a ${_events[i].id}");
       }
     }
 
@@ -212,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen>
             if (_isAdmin)
               totalBookedPlaces[i] += (item.number + item.childrenNumber);
 
-            print("ho eseguito l'aggioranmento");
+            //print("ho eseguito l'aggioranmento");
             myEventBooks.clear();
             myEventBooks = getMyEventBooks();
             setState(() {});
@@ -821,6 +821,8 @@ class _HomeScreenState extends State<HomeScreen>
     userSubscription = context.read<AppCubit>().getUsers().listen((userList) {
       setState(() {
         _users = userList;
+        context.read<AppCubit>().userList = _users;
+        print("userList aggioranata ${_users.length}");
         //print("aggiunto utente totale ${_users.length}");
         _filterUsers(_searchController.text);
       });
@@ -865,7 +867,9 @@ class _HomeScreenState extends State<HomeScreen>
       _loggedUser.isAdmin = _isAdmin;
     });
 
+
     if (_isAdmin) {
+      context.read<AppCubit>().getEmailAPI();
       setState(() {
         _tabController = TabController(length: 3, initialIndex: 1, vsync: this);
       });

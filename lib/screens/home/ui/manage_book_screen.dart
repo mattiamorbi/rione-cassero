@@ -587,7 +587,28 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
             widget.upperEvent.confirmation,
             true);
 
-        await sendEmail();
+
+        String? address = context.read<AppCubit>().getEmailFromUserUID(widget.bookData.uid!);
+        if (address != null) {
+          bool email_result = await sendEmail(address, widget.upperEvent.title, widget.bookData.bookUserName, widget.bookData.name, widget.upperEvent.date.toString(), childBookNumber == 0 ? "${bookNumber}" : "${bookNumber} + ${childBookNumber} bambini");
+          if (!email_result) {
+            await AwesomeDialog(
+              context: context,
+              dialogType: DialogType.error,
+              animType: AnimType.topSlide,
+              title: 'Errore invio email',
+              desc: "Non è stato possibile inviare l'email di conferma",
+            ).show();
+          }
+        } else {
+          await AwesomeDialog(
+            context: context,
+            dialogType: DialogType.error,
+            animType: AnimType.topSlide,
+            title: 'Email non trovata',
+            desc: "Non è stato possibile trovare l'indirizzo email del destinatario",
+          ).show();
+        }
 
         await AwesomeDialog(
           context: context,
@@ -602,37 +623,8 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
     }
   }
 
-  Future<void> sendEmail() async {
-    var headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'text/plain',
-      'Authorization': 'Basic cmlvbmUtY2Fzc2VybzpDYXNzZXJvMjAyNQ=='
-    };
-    var data = json.encode({
-      "emailTo": [
-        "mattia.morbidelli@gmail.com"
-      ],
-      "emailBcc": [],
-      "emailCc": [],
-      "subject": "Test da docker",
-      "body": "Test da docker 123"
-    });
-    var dio = Dio();
-    var response = await dio.request(
-      'https://api-send-email.dellamahome.com/SendEmail',
-      options: Options(
-        method: 'POST',
-        headers: headers,
-      ),
-      data: data,
-    );
-
-    if (response.statusCode == 200) {
-      print(json.encode(response.data));
-    }
-    else {
-      print(response.statusMessage);
-    }
+  Future<bool> sendEmail(String address, String eventName, String personName, String bookName, String eventDate, String bookInfo) async {
+    return context.read<AppCubit>().sendConfirmationEmail(address, eventName, personName, bookName, eventName, bookInfo);
   }
 
   void _bookEventUndo() {

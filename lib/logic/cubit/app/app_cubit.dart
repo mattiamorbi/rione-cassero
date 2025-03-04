@@ -2,12 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rione_cassero/helpers/email_api.dart';
 import 'package:rione_cassero/models/participant_data.dart';
 import 'package:rione_cassero/models/role.dart';
 import 'package:rione_cassero/models/upper_event.dart';
 import 'package:rione_cassero/models/user.dart' as up;
 
 part 'app_state.dart';
+
+EmailAPI? emailAPI;
+
 
 class AppCubit extends Cubit<AppState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -19,6 +23,7 @@ class AppCubit extends Cubit<AppState> {
   );
 
   User? getLoggedUser() => _auth.currentUser;
+  List<up.User>? userList;
 
   AppCubit() : super(AuthInitial());
 
@@ -73,6 +78,22 @@ class AppCubit extends Cubit<AppState> {
     } catch (e) {
       print(e.toString());
       emit(AuthError(e.toString()));
+    }
+  }
+
+  String? getEmailFromUserUID(String uid) {
+    if (userList != null) {
+      if (userList!.length != 0) {
+        for (int i = 0; i < userList!.length; i++) {
+          if (userList![i].uid! == uid) {
+            return userList![i].email;
+          }
+        }
+      } else {
+        return null;
+      }
+    } else {
+      return null;
     }
   }
 
@@ -136,7 +157,8 @@ class AppCubit extends Cubit<AppState> {
       String? allergyNote,
       int? paied,
       int? childrenPaied,
-      bool? confirmation, bool? confirmed) async {
+      bool? confirmation,
+      bool? confirmed) async {
     //var tempData = await getParticipantData(eventId, user);
     var eventsParticipants =
         firebase.collection('events').doc(eventId).collection("participants");
@@ -374,6 +396,38 @@ class AppCubit extends Cubit<AppState> {
       print(doc.data());
     }
     return doc.data()?['link'];
+  }
+
+  Future<void> getEmailAPI() async {
+    var users = firebase.collection('email');
+    try {
+      var doc = await users.doc('api').get();
+      if (kDebugMode) {
+        print(doc.data());
+      }
+
+      if (doc.exists && doc.data() != null) {
+        emailAPI =
+            EmailAPI(url: doc.data()?['url'], secret: doc.data()?['secret']);
+      } else {
+        if (kDebugMode) {
+          print("Document not found or empty");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching EmailAPI: $e");
+      }
+    }
+  }
+
+  Future<bool> sendConfirmationEmail(String address, String eventName, String personName, String bookName, String eventDate, String bookInfo) async {
+      if (emailAPI != null && emailAPI!.isValid()) {
+        return emailAPI!.sendConfirmationEmail(address, eventName, personName, bookName, eventName, bookInfo);
+      } else {
+        return false;
+      }
+
   }
 
   Future<String> getUserLevel() async {

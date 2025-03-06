@@ -624,7 +624,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   }
 
   Future<bool> sendEmail(String address, String eventName, String personName, String bookName, String eventDate, String bookInfo) async {
-    return context.read<AppCubit>().sendConfirmationEmail(address, eventName, personName, bookName, eventName, bookInfo);
+    return context.read<AppCubit>().sendConfirmationEmail(address, eventName, personName, bookName, eventDate, bookInfo);
   }
 
   void _bookEventUndo() {

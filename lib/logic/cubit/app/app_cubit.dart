@@ -423,7 +423,8 @@ class AppCubit extends Cubit<AppState> {
 
   Future<bool> sendConfirmationEmail(String address, String eventName, String personName, String bookName, String eventDate, String bookInfo) async {
       if (emailAPI != null && emailAPI!.isValid()) {
-        return emailAPI!.sendConfirmationEmail(address, eventName, personName, bookName, eventName, bookInfo);
+        //(String address, String eventName, String personName, String bookName, String eventDate, String bookInfo)
+        return emailAPI!.sendConfirmationEmail(address, eventName, personName, bookName, eventDate, bookInfo);
       } else {
         return false;
       }

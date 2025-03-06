@@ -639,6 +639,8 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
     await context.read<AppCubit>().deleteBookEventCassero(
         widget.upperEvent.id!, widget.bookData.eventUid);
 
+
+
     await AwesomeDialog(
       context: context,
       dialogType: DialogType.info,

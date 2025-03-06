@@ -315,7 +315,7 @@ class AppCubit extends Cubit<AppState> {
 
     await for (final snapshot in snapshotStream) {
       final bookList = snapshot.docs.map((doc) {
-        print(doc.data()!);
+        //print(doc.data()!);
         return ParticipantDataCassero.fromJson(doc.data())!;
       }).toList();
 

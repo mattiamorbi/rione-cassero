@@ -212,13 +212,17 @@ class _HomeScreenState extends State<HomeScreen>
             if (_isAdmin)
               totalBookedPlaces[i] += (item.number + item.childrenNumber);
 
-            //print("ho eseguito l'aggioranmento");
-            myEventBooks.clear();
-            myEventBooks = getMyEventBooks();
-            setState(() {});
-          }
+
+
+          }            //print("ho eseguito l'aggioranmento");
+          myEventBooks.clear();
+          myEventBooks = getMyEventBooks();
+          print("HO AGGIORNATO LA LISTA");
+          setState(() {});
         });
       });
+
+
 
       // Aggiungi la subscription alla lista
       _eventBookSubscription.add(subscription);

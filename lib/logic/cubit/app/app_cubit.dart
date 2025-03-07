@@ -153,6 +153,7 @@ class AppCubit extends Cubit<AppState> {
       String bookName,
       int bookNumber,
       int childrenBookNumber,
+      int infantBookNumber,
       bool? allergy,
       String? allergyNote,
       int? paied,
@@ -180,6 +181,7 @@ class AppCubit extends Cubit<AppState> {
       'name': bookName,
       'number': bookNumber,
       'childrenNumber': childrenBookNumber,
+      'infantBookNumber': infantBookNumber,
       'date': FieldValue.serverTimestamp(),
       'allergy': allergy,
       'allergyNote': allergyNote,
@@ -205,8 +207,8 @@ class AppCubit extends Cubit<AppState> {
       data['confirmed'] = confirmed;
     }
 
-    print("sto settando");
-    print(data);
+    //print("sto settando");
+    //print(data);
 
 // Salva i dati nel documento
     await docRef.set(data);

@@ -1,13 +1,10 @@
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:http/http.dart' as http;
 import 'package:rione_cassero/core/widgets/app_text_form_field.dart';
 import 'package:rione_cassero/logic/cubit/app/app_cubit.dart';
 import 'package:rione_cassero/models/participant_data.dart';
@@ -40,6 +37,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   String bookName = "";
   int bookNumber = 1;
   int childBookNumber = 0;
+  int infantBookNumber = 0;
 
   bool actionInProgress = false;
 
@@ -55,6 +53,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
     bookName = widget.bookData.name;
     bookNumber = widget.bookData.number;
     childBookNumber = widget.bookData.childrenNumber;
+    infantBookNumber = widget.bookData.infantBookNumber;
 
     allergy = widget.bookData.allergy ?? false;
     _allergyNoteController.text = widget.bookData.allergyNote ?? "";
@@ -64,6 +63,14 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
 
   Widget build(BuildContext context) {
     var currentEvent = widget.upperEvent;
+    bool enableSave = true;
+
+    if (widget.bookData.confirmed != null &&
+        widget.upperEvent.confirmation != null) {
+      if (widget.bookData.confirmed! && widget.upperEvent.confirmation!) {
+        enableSave = false;
+      }
+    }
 
     return SafeArea(
       child: Scaffold(
@@ -248,9 +255,9 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                         Gap(15.h),
                         Center(
                             child: Text(
-                          "Bambini",
-                          style: TextStyle(fontSize: 15),
-                        )),
+                              "Bambini",
+                              style: TextStyle(fontSize: 15),
+                            )),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -283,6 +290,48 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               ),
                               onTap: () => setState(() {
                                 childBookNumber++;
+                              }),
+                            ),
+                          ],
+                        ),
+                        Gap(15.h),
+                        Center(
+                            child: Text(
+                              "Neonati",
+                              style: TextStyle(fontSize: 15),
+                            )),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            GestureDetector(
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Icon(
+                                  Icons.remove,
+                                  size: 25,
+                                ),
+                              ),
+                              onTap: () => setState(() {
+                                infantBookNumber--;
+                                if (infantBookNumber <= 0) infantBookNumber = 0;
+                              }),
+                            ),
+                            Text(
+                              infantBookNumber.toString(),
+                              style: TextStyle(fontSize: 30),
+                            ),
+                            GestureDetector(
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Icon(
+                                  Icons.add,
+                                  size: 25,
+                                ),
+                              ),
+                              onTap: () => setState(() {
+                                infantBookNumber++;
                               }),
                             ),
                           ],
@@ -406,12 +455,16 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                                   Icon(
                                     Icons.save,
                                     size: 35,
-                                    color: Colors.green,
+                                    color:
+                                        enableSave ? Colors.green : Colors.grey,
                                   ),
                                   Gap(3.h),
                                   Text(
                                     "Salva",
-                                    style: TextStyle(color: Colors.green),
+                                    style: TextStyle(
+                                        color: enableSave
+                                            ? Colors.green
+                                            : Colors.grey),
                                   ),
                                 ],
                               ),
@@ -476,6 +529,21 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
   }
 
   Future<void> _bookEventSave() async {
+    if (widget.bookData.confirmed != null &&
+        widget.upperEvent.confirmation != null) {
+      if (widget.bookData.confirmed! && widget.upperEvent.confirmation!) {
+        await AwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          animType: AnimType.topSlide,
+          title: 'La prenotazione è confermata',
+          desc:
+              "Non è possibile modificare una prenotazione confermata, inseriscine una nuova!",
+        ).show();
+        return;
+      }
+    }
+
     setState(() {
       actionInProgress = true;
     });
@@ -494,6 +562,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               _bookEventController.text,
               bookNumber,
               childBookNumber,
+              infantBookNumber,
               allergy,
               _allergyNoteController.text,
               null,
@@ -509,6 +578,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               _bookEventController.text,
               bookNumber,
               childBookNumber,
+              infantBookNumber,
               allergy,
               _allergyNoteController.text,
               null,
@@ -580,6 +650,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
             _bookEventController.text,
             bookNumber,
             childBookNumber,
+            infantBookNumber,
             allergy,
             _allergyNoteController.text,
             null,
@@ -587,10 +658,18 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
             widget.upperEvent.confirmation,
             true);
 
-
-        String? address = context.read<AppCubit>().getEmailFromUserUID(widget.bookData.uid!);
+        String? address =
+            context.read<AppCubit>().getEmailFromUserUID(widget.bookData.uid!);
         if (address != null) {
-          bool email_result = await sendEmail(address, widget.upperEvent.title, widget.bookData.bookUserName, widget.bookData.name, widget.upperEvent.date.toString(), childBookNumber == 0 ? "${bookNumber}" : "${bookNumber} + ${childBookNumber} bambini");
+          bool email_result = await sendEmail(
+              address,
+              widget.upperEvent.title,
+              widget.bookData.bookUserName,
+              widget.bookData.name,
+              widget.upperEvent.date.toString(),
+              childBookNumber == 0
+                  ? "${bookNumber}"
+                  : "${bookNumber} + ${childBookNumber} bambini");
           if (!email_result) {
             await AwesomeDialog(
               context: context,
@@ -606,7 +685,8 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
             dialogType: DialogType.error,
             animType: AnimType.topSlide,
             title: 'Email non trovata',
-            desc: "Non è stato possibile trovare l'indirizzo email del destinatario",
+            desc:
+                "Non è stato possibile trovare l'indirizzo email del destinatario",
           ).show();
         }
 
@@ -623,8 +703,10 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
     }
   }
 
-  Future<bool> sendEmail(String address, String eventName, String personName, String bookName, String eventDate, String bookInfo) async {
-    return context.read<AppCubit>().sendConfirmationEmail(address, eventName, personName, bookName, eventDate, bookInfo);
+  Future<bool> sendEmail(String address, String eventName, String personName,
+      String bookName, String eventDate, String bookInfo) async {
+    return context.read<AppCubit>().sendConfirmationEmail(
+        address, eventName, personName, bookName, eventDate, bookInfo);
   }
 
   void _bookEventUndo() {
@@ -638,8 +720,6 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
 
     await context.read<AppCubit>().deleteBookEventCassero(
         widget.upperEvent.id!, widget.bookData.eventUid);
-
-
 
     await AwesomeDialog(
       context: context,

@@ -25,6 +25,7 @@ class ParticipantDataCassero {
   String bookUserName;
   int number;
   int childrenNumber;
+  int infantBookNumber;
   String? uid;
   String eventUid;
   DateTime? date;
@@ -42,12 +43,14 @@ class ParticipantDataCassero {
       required this.name,
       required this.number,
       required this.childrenNumber,
+      required this.infantBookNumber,
       required this.eventUid,
       this.date,
       this.allergy,
       this.allergyNote,
       this.paied,
-      this.childrenPaied, this.confirmed});
+      this.childrenPaied,
+      this.confirmed});
 
   static ParticipantDataCassero? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
@@ -64,6 +67,9 @@ class ParticipantDataCassero {
           json['childrenPaied'] == null ? 0 : json['childrenPaied']! as int,
       childrenNumber:
           json['childrenNumber'] == null ? 0 : json['childrenNumber']! as int,
+      infantBookNumber: json['infantBookNumber'] == null
+          ? 0
+          : json['infantBookNumber']! as int,
       allergy: json['allergy'] == null
           ? false
           : json['allergy']! == true
@@ -82,6 +88,7 @@ class ParticipantDataCassero {
       'name': name,
       'number': number,
       'childrenNumber': childrenNumber,
+      'infantBookNumber': infantBookNumber,
       'date': date,
       'allergy': allergy,
       'allergyNote': allergyNote,

@@ -49,6 +49,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
   String bookName = "";
   int bookNumber = 1;
   int childBookNumber = 0;
+  int infantBookNumber = 0;
 
   final TextEditingController _bookEventController = TextEditingController();
   final TextEditingController _allergyNoteController = TextEditingController();
@@ -66,6 +67,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
     bookName = widget.bookData.name;
     bookNumber = widget.bookData.number;
     childBookNumber = widget.bookData.childrenNumber;
+    infantBookNumber = widget.bookData.infantBookNumber;
 
     allergy = widget.bookData.allergy ?? false;
     _allergyNoteController.text = widget.bookData.allergyNote ?? "";
@@ -336,6 +338,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
           _bookEventController.text,
           bookNumber,
           childBookNumber,
+          infantBookNumber,
           allergy,
           _allergyNoteController.text,
           paied,

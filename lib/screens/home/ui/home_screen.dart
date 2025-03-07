@@ -259,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen>
             name: "${_loggedUser.name} ${_loggedUser.surname}",
             number: 1,
             childrenNumber: 0,
+            infantBookNumber: 0,
             eventUid: _events[index].id!,
             bookUserName: "${_loggedUser.name} ${_loggedUser.surname}"),
         'image': _events[index].image,

@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen>
             _events[i].sumUpMyBookPerson +=
                 _currentEventBookData[i].elementAt(y).number;
             _events[i].sumUpMyBookChildren +=
-                _currentEventBookData[i].elementAt(y).childrenNumber;
+                _currentEventBookData[i].elementAt(y).childrenNumber + _currentEventBookData[i].elementAt(y).infantBookNumber;
             if (_currentEventBookData[i].elementAt(y).confirmed != null && _currentEventBookData[i].elementAt(y).confirmed == false){
               _events[i].confirmedBooks = false;
             }
@@ -210,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen>
             _currentEventBookData[i].add(item);
 
             if (_isAdmin)
-              totalBookedPlaces[i] += (item.number + item.childrenNumber);
+              totalBookedPlaces[i] += (item.number + item.childrenNumber + item.infantBookNumber);
 
 
 
@@ -713,7 +713,7 @@ class _HomeScreenState extends State<HomeScreen>
     for (var book in list) {
       //var event = UpperEvent.fromJson(doc.data());
       //print(doc.id);
-      sum += book.number + book.childrenNumber;
+      sum += book.number + book.childrenNumber + book.infantBookNumber;
     }
     return sum;
   }

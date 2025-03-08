@@ -155,14 +155,14 @@ class _EventBookScreenState extends State<EventBookScreen> {
     return sum;
   }
 
-  int getTotalBookChild(List<ParticipantDataCassero> list, bool paied) {
+  int getTotalBookChild(List<ParticipantDataCassero> list, bool paied, bool countInfant) {
     int sum = 0;
     for (var book in list) {
       //var event = UpperEvent.fromJson(doc.data());
       //print(doc.id);
       sum += paied
           ? book.childrenPaied ?? 0
-          : (book.childrenNumber + book.infantBookNumber);
+          : countInfant ? (book.childrenNumber + book.infantBookNumber) : book.childrenNumber;
     }
     return sum;
   }
@@ -243,7 +243,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                     Visibility(
                       visible: widget.loggedUser.isAdmin!,
                       child: Text(
-                        "Persone totali: ${getTotalBookPeople(_preFilteredBook, false)}",
+                        "Persone totali: ${getTotalBookPeople(_preFilteredBook, false) + getTotalBookChild(_preFilteredBook, false, true)}",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),
@@ -251,8 +251,8 @@ class _EventBookScreenState extends State<EventBookScreen> {
                       visible: widget.loggedUser.isAdmin!,
                       child: Text(
                         getTotalBookInfant(_preFilteredBook) == 0
-                            ? "Bambini totali: ${getTotalBookChild(_preFilteredBook, false)}"
-                            : "Bambini totali: ${getTotalBookChild(_preFilteredBook, false)} (${getTotalBookInfant(_preFilteredBook)} neonati)",
+                            ? "Adulti: ${getTotalBookPeople(_preFilteredBook, false)} / Bambini totali: ${getTotalBookChild(_preFilteredBook, false, true)}"
+                            : "Adulti: ${getTotalBookPeople(_preFilteredBook, false)} / Bambini totali: ${getTotalBookChild(_preFilteredBook, false, true)} (${getTotalBookInfant(_preFilteredBook)} neonati)",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),
@@ -261,7 +261,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                           widget.upperEvent.price != null &&
                           widget.upperEvent.childrenPrice != null,
                       child: Text(
-                        "Incasso previsto: ${(widget.upperEvent.price! * getTotalBookPeople(_preFilteredBook, false)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(_preFilteredBook, false))} €",
+                        "Incasso previsto: ${(widget.upperEvent.price! * getTotalBookPeople(_preFilteredBook, false)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(_preFilteredBook, false, false))} €",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),
@@ -270,7 +270,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                           widget.upperEvent.price != null &&
                           widget.upperEvent.childrenPrice != null,
                       child: Text(
-                        "Incasso attuale: ${(widget.upperEvent.price! * getTotalBookPeople(_preFilteredBook, true)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(_preFilteredBook, true))} €",
+                        "Incasso attuale: ${(widget.upperEvent.price! * getTotalBookPeople(_preFilteredBook, true)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(_preFilteredBook, true, false))} €",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),

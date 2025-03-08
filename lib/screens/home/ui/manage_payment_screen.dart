@@ -150,7 +150,7 @@ class _ManagePaymentScreenState extends State<ManagePaymentScreen> {
                           widget.upperEvent.price != null &&
                           widget.upperEvent.childrenPrice != null,
                       child: Text(
-                        "Incasso previsto: ${(widget.upperEvent.price! * widget.bookData.number!) + (widget.upperEvent.childrenPrice! * widget.bookData.childrenNumber!)} €",
+                        "Incasso previsto: ${(widget.upperEvent.price! * widget.bookData.number) + (widget.upperEvent.childrenPrice! * widget.bookData.childrenNumber)} €",
                         style: TextStyle(color: ColorsManager.gray17),
                       ),
                     ),

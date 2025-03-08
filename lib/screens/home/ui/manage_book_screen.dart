@@ -669,7 +669,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
               widget.upperEvent.date.toString(),
               childBookNumber == 0
                   ? "${bookNumber}"
-                  : "${bookNumber} + ${childBookNumber} bambini");
+                  : "${bookNumber} + ${childBookNumber+infantBookNumber} bambini");
           if (!email_result) {
             await AwesomeDialog(
               context: context,

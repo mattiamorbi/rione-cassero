@@ -479,7 +479,7 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                   title: Text(
                                     totalBook > 1
                                         ? user.infantBookNumber > 0 && widget.isMoneyScreen ? "${user.name} (${totalBook} persone, ${user.infantBookNumber} neonato)" : "${user.name} (${totalBook} persone)"
-                                        : "${user.name} (${totalBook} persona)",
+                                        : user.infantBookNumber > 0 && widget.isMoneyScreen ? "${user.name} (${totalBook} persona, ${user.infantBookNumber} neonato)" : "${user.name} (${totalBook} persona)",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,

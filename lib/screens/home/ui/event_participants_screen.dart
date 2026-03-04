@@ -242,6 +242,57 @@ class _EventParticipantScreenState extends State<EventParticipantScreen> {
     setState(() {});
   }
 
+
+
+
+//Future<void> generateBookingPdf({
+//  required String nomeEvento,
+//  required List<Prenotazione> prenotazioni,
+//}) async {
+//  final pdf = pw.Document();
+
+//  // 1. CARICAMENTO DEI FONT
+//  // Questo permette di vedere correttamente l'Euro (€) e le accentate
+//  final fontData = await rootBundle.load("assets/fonts/Roboto-Regular.ttf");
+//  final fontBoldData = await rootBundle.load("assets/fonts/Roboto-Bold.ttf");
+//  final myFont = pw.Font.ttf(fontData);
+//  final myFontBold = pw.Font.ttf(fontBoldData);
+
+//  // Creiamo uno stile base che usa il nostro font
+//  final baseStyle = pw.TextStyle(font: myFont, fontSize: 10);
+//  final boldStyle = pw.TextStyle(font: myFontBold, fontSize: 10, fontWeight: pw.FontWeight.bold);
+
+//  pdf.addPage(
+//    pw.MultiPage(
+//      theme: pw.ThemeData.withFont(
+//        base: myFont,
+//        bold: myFontBold,
+//      ),
+//      build: (context) => [
+//        pw.Header(
+//          level: 0,
+//          child: pw.Text(nomeEvento, style: pw.TextStyle(font: myFontBold, fontSize: 20)),
+//        ),
+
+//        pw.TableHelper.fromTextArray(
+//          headers: ['Nome', 'Cognome', 'Totale Due', 'Note'],
+//          headerStyle: boldStyle.copyWith(color: PdfColors.white),
+//          headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey),
+//          data: prenotazioni.map((p) => [
+//            p.nome,
+//            p.cognome,
+//            "€ ${p.totaleDovuto.toStringAsFixed(2)}", // Ora l'Euro si vedrà!
+//            "________________", // Spazio per la penna
+//          ]).toList(),
+//          cellStyle: baseStyle,
+//        ),
+//      ],
+//    ),
+//  );
+
+//  await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+//}
+
   @override
   void dispose() {
     super.dispose();

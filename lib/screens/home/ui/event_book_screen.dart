@@ -11,6 +11,15 @@ import 'package:rione_cassero/theming/colors.dart';
 
 import '../../../routing/routes.dart';
 
+import 'package:flutter/services.dart'; // Necessario per rootBundle
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
+
+import 'dart:html' as html; // Importante
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 // ignore: must_be_immutable
 class EventBookScreen extends StatefulWidget {
   UpperEvent upperEvent;
@@ -354,6 +363,24 @@ class _EventBookScreenState extends State<EventBookScreen> {
                                     ? Colors.lightGreen
                                     : Colors.black,
                               )),
+                          Gap(20.w),
+                          GestureDetector(
+                              onTap: () => setState(() async {
+
+                                try {
+                                  await generateAdvancedBookingPdf(upperEvent: widget.upperEvent, prenotazioni:  this.widget.bookData, );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("Errore durante la creazione del PDF: $e"))
+                                  );
+                                }
+
+
+                              }),
+                              child: Icon(Icons.download,
+                                size: 30,
+                                color: Colors.black,
+                              )),
                         ],
                       ),
                     ),
@@ -625,6 +652,163 @@ class _EventBookScreenState extends State<EventBookScreen> {
       },
     );
     setState(() {});
+  }
+
+
+
+  Future<void> generateAdvancedBookingPdf({
+    required UpperEvent upperEvent,
+    required List<ParticipantDataCassero> prenotazioni,
+  }) async {
+    final pdf = pw.Document();
+    final formatValuta = NumberFormat.currency(locale: 'it_IT', symbol: '€');
+
+    // Caricamento Font per simboli € e accentate
+    final fontData = await rootBundle.load("assets/fonts/Roboto.ttf");
+    final fontBoldData = await rootBundle.load("assets/fonts/Roboto.ttf");
+    final myFont = pw.Font.ttf(fontData);
+    final myFontBold = pw.Font.ttf(fontBoldData);
+
+    prenotazioni.sortBy((u) => u.name.toUpperCase());
+
+    // Calcolo riepilogo generale
+    double incassoTotale = 0;//prenotazioni.fold(0, (sum, item) => sum + item.totaleDovuto);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4.portrait,
+        theme: pw.ThemeData.withFont(base: myFont, bold: myFontBold),
+        build: (context) => [
+          // --- HEADER EVENTO ---
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(upperEvent.title.toUpperCase(),
+                        style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold)),
+                    pw.Text("Data: ${upperEvent.date} ore ${upperEvent.time}"),
+                    pw.Text("Luogo: ${upperEvent.place}"),
+                    pw.Text("Data stampa: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year} ${DateTime.now().hour}:${DateTime.now().minute}")
+                  ],
+                ),
+              ),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(color: PdfColors.grey100),
+                child: pw.Column(
+                  children: [
+                    pw.Text("PARTECIPANTI", style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text((getTotalBookPeople(prenotazioni, false) + getTotalBookChild(prenotazioni, false, true)).toString(), style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.green900)),
+                    //pw.Text("INCASSO ATTESO", style: const pw.TextStyle(fontSize: 10)),
+                    //pw.Text(formatValuta.format((widget.upperEvent.price! * getTotalBookPeople(prenotazioni, false)) + (widget.upperEvent.childrenPrice! * getTotalBookChild(prenotazioni, false, false))),
+                    //    style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.green900)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 20),
+
+          // --- TABELLA PRENOTAZIONI ---
+          pw.Table(
+            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(2), // Nome
+              1: const pw.FlexColumnWidth(2), // Cognome
+              2: const pw.FlexColumnWidth(3), // Dettaglio Partecipanti
+              3: const pw.FlexColumnWidth(1.5), // Totale Dovuto
+              4: const pw.FlexColumnWidth(2.5), // Note a penna
+            },
+            children: [
+              // Header Tabella
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.blueGrey700),
+                children: [
+                  headerCell("Nome"),
+                  headerCell("Utente"),
+                  headerCell("Dettaglio Partecipanti"),
+                  headerCell("Totale"),
+                  headerCell("Note"),
+                ],
+              ),
+              // Righe Dinamiche
+              ...prenotazioni.map((p) {
+                return pw.TableRow(
+                  verticalAlignment: pw.TableCellVerticalAlignment.middle,
+                  children: [
+                    cellText(p.name),
+                    cellText(p.bookUserName),
+                    // COLONNA DETTAGLIO (Logica richiesta)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          if (p.number > 0)
+                            pw.Text("Adulti: ${p.number} (${formatValuta.format(p.number * (upperEvent.price ?? 0))})", style: const pw.TextStyle(fontSize: 9)),
+                          if (p.childrenNumber > 0)
+                            pw.Text("Ridotti: ${p.childrenNumber} (${formatValuta.format(p.childrenNumber * (upperEvent.childrenPrice ?? 0))})", style: const pw.TextStyle(fontSize: 9)),
+                          if (p.infantBookNumber > 0)
+                            pw.Text("Neonati: ${p.infantBookNumber} (Gratis)", style: const pw.TextStyle(fontSize: 9)),
+                        ],
+                      ),
+                    ),
+                    // COLONNA TOTALE
+                    pw.Container(
+                      alignment: pw.Alignment.center,
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(formatValuta.format(p.number * (upperEvent.price ?? 0) + p.childrenNumber * (upperEvent.childrenPrice ?? 0)), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    // SPAZIO NOTE
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(""),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    final Uint8List bytes = await pdf.save();
+
+    if (kIsWeb) {
+      // Usiamo direttamente il DOM del browser senza passare dal plugin 'printing'
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute("download", "lista_prenotazioni_${upperEvent.title}.pdf")
+        ..click(); // Questo forza il download immediato
+
+      html.Url.revokeObjectUrl(url);
+      print("Download avviato tramite Blob");
+    } else {
+      // Solo qui usiamo il plugin (per app Android/iOS native)
+      await Printing.sharePdf(bytes: bytes, filename: 'lista.pdf');
+    }
+  }
+
+// Widget helper per le celle header
+  pw.Widget headerCell(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(5),
+      child: pw.Text(text, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 11)),
+    );
+  }
+
+// Widget helper per le celle testo
+  pw.Widget cellText(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(5),
+      child: pw.Text(text, style: const pw.TextStyle(fontSize: 10)),
+    );
   }
 
   @override

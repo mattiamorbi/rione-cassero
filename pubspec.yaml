@@ -46,7 +46,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
   cached_network_image: ^3.4.1
   cloud_firestore: ^5.4.3
-  intl: ^0.20.1
+  intl: ^0.20.2
   flutter_web_qrcode_scanner: ^1.1.1
   pretty_qr_code: ^3.3.0
   toastification: ^2.3.0
@@ -60,6 +60,8 @@ dependencies:
   pretty_qr_code_plus: ^0.0.1
   collection: ^1.18.0
   dio: ^5.8.0+1
+  pdf: ^3.11.3
+  printing: ^5.14.2
   #html: ^0.15.0
 
 dev_dependencies:
@@ -85,6 +87,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/fonts/Roboto.ttf
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

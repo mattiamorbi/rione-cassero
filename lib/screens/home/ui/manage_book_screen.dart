@@ -230,7 +230,12 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                               ),
                               onTap: () => setState(() {
                                 bookNumber--;
-                                if (bookNumber <= 1) bookNumber = 1;
+                                // solo gli amministratori possono impostare il numero di adulti a 0
+                                if (widget.loggedUser.isAdmin! == false) {
+                                  if (bookNumber <= 1) bookNumber = 1;
+                                } else {
+                                  if (bookNumber <= 0) bookNumber = 0;
+                                }
                               }),
                             ),
                             Text(
@@ -297,7 +302,7 @@ class _ManageEventScreenState extends State<ManageEventScreen> {
                         Gap(15.h),
                         Center(
                             child: Text(
-                              "Neonati",
+                              widget.loggedUser.isAdmin! ? "Neonati / Omaggi" : "Neonati",
                               style: TextStyle(fontSize: 15),
                             )),
                         Row(
